@@ -1,0 +1,37 @@
+{% extends 'main_app/base.html' %}
+
+{% block title %} Sign Up {% endblock %}
+<!-- Continue here -->
+{% block content%}
+<div class="col-md-6 offset-md-3">
+    <h2>Sign Up</h2>
+    <br>
+    <form method="post" action="">
+        {% csrf_token %}
+        {% if form.errors %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                Your form has errors:
+                {% for field in form %}
+                    {% if field.errors %}
+                        {{field.errors}}
+                    {% endif %}
+                {% endfor %}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+
+        {% for field in form %}
+            <div class="form-floating mb-3">
+                {{ field }}
+                {{ field.label_tag }}
+                {% if field.help_text %}
+                    <span class="help">{{ field.help_text|safe }}</span>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <br>
+        <button type="submit" class="btn btn-dark">Sign Up</button>
+    </form>
+</div>
+
+{% endblock %}

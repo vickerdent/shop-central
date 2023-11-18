@@ -1,0 +1,166 @@
+{% extends "main_app/base.html" %}
+
+{% block title %} {{ curr_user }} {% endblock %}
+{% block content%}
+{% load static %}
+<!-- Continue here -->
+    <div class="d-flex mb-3">
+        <div class="me-auto p-2">
+            <h2>Your Profile</h2>
+        </div>
+        <div class="p-2">
+            <a href="{% url 'change_password' %}" class="btn btn-dark">Change Password</a>
+        </div>
+    </div>
+    <div class="vstack bg-dark text-light rounded shadow-sm">
+        <div class="d-flex align-items-center p-2 ps-3">
+            <div class="flex-shrink-0">
+                <img src="{{ curr_user.image.0 }}" class="rounded-circle" alt="Profile Image" width="200px">
+            </div>
+            <div class="flex-grow-1 ms-4">
+                <p>Personalize your account with a memorable photo.</p>
+                <!-- Button calls Image dialog -->
+                <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#changeImage">
+                    Change Photo
+                </button>
+            </div>
+        </div>
+        <hr class="border border-light opacity-50">
+        <div class="container bg-dark text-light rounded">
+            <div class="row gx-3">
+                <div class="col-3">
+                    <div class="ps-4">Full Name</div>
+                </div>
+                <div class="col-3">
+                    <div class="ps-1"><b>{{ curr_user }}</b></div>
+                </div>
+                <div class="col-2">
+                    <div class="ps-1"><b></b></div>
+                </div>
+                <div class="col-2">
+                    <div class="ps-1"><b></b></div>
+                </div>
+                <div class="col-2">
+                    <div class="pb-1 ps-5">
+                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#editName">
+                            Edit Name
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class="bg-dark text-light rounded shadow-sm">
+        <div class="row gx-3">
+            <div class="col-3">
+             <div class="pt-2 ps-4"><b>Account Information</b></div>
+            </div>
+        </div>
+        <hr class="border border-light opacity-50">
+        <div class="row gx-3">
+          <div class="col-3">
+            <div class="ps-4">Email Address</div>
+          </div>
+          <div class="col-3">
+            <div class="ps-2"><b>{{ curr_user.email }}</b></div>
+          </div>
+        </div>
+        <hr class="border border-light opacity-50">
+        <div class="row gx-3">
+            <div class="col-3">
+              <div class="ps-4">Phone Number</div>
+            </div>
+            <div class="col-3">
+              <div class="ps-2"><b>{{ curr_user.phone_no }}</b></div>
+            </div>
+        </div>
+        <hr class="border border-light opacity-50">
+        <div class="row gx-3">
+            <div class="col-3">
+              <div class="ps-4">Residential Address </div>
+            </div>
+            <div class="col-3">
+              <div class=""><b>{{ curr_user.address }}, {{ curr_user.state }}</b></div>
+            </div>
+        </div>
+        <hr class="border border-light opacity-50">
+    </div>
+
+    <!-- Image Dialog -->
+    <div class="modal fade" id="changeImage" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="changeImageLabel" aria-hidden="true" data-bs-theme="dark">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-light" id="changeImageLabel" data-bs-theme="light">Change Profile Image</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-light">
+                    <form method="post" action="" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% if image_form.errors %}
+                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                Your form has errors:
+                                {{ image_form.non_field_errors }}
+                                {% for field in form %}
+                                    {% if field.errors %}
+                                        {{field.errors}}
+                                    {% endif %}
+                                {% endfor %}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endif %}
+                        {{ image_form.as_p }}
+                        <button type="submit" class="btn btn-light">Update Image</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Name Dialog -->
+    <div class="modal fade" id="editName" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="editNameLabel" aria-hidden="true" data-bs-theme="dark">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-light" id="editNameLabel" data-bs-theme="light">Edit Your Name</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-light">
+                    <form method="post" action="" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% if name_form.errors %}
+                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                Your form has errors:
+                                {{ name_form.non_field_errors }}
+                                {% for field in form %}
+                                    {% if field.errors %}
+                                        {{field.errors}}
+                                    {% endif %}
+                                {% endfor %}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endif %}
+                        {% for field in name_form %}
+                            <div class="form-floating mb-3">
+                                {{ field.errors }}
+                                {{ field }}
+                                {{ field.label_tag }}
+                                {% if field.help_text %}
+                                    <span class="help">{{ field.help_text|safe }}</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-light">Save</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

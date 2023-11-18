@@ -1,0 +1,41 @@
+{% extends 'main_app/base.html' %}
+
+{% block title %} Login {% endblock %}
+
+<!-- Continue here -->
+{% block content%}
+<div class="col-md-6 offset-md-3">
+    <h2>Login</h2>
+    <br>
+
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        {% if form.errors %}
+        <div class="alert alert-warning d-flex align-items-center alert-dismissible fade show" role="alert">
+            <svg class="bi flex-shrink-0 me-2" width="16" height="16" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+            <div>
+                Your username and password didn't match. Please try again.
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endif %}
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" name="username" placeholder="Username" required autofocus>
+            <label for="username">Username</label>            
+        </div>
+        <div class="form-floating mb-3">
+            <input type="password" class="form-control" name="password" placeholder="Password" required>
+            <label for="password">Password</label>
+        </div>
+        <input type="hidden" name="next" value="{{ request.GET.next }}">
+        <br>
+        <button type="submit" class="btn btn-dark">Login</button>
+    </form>
+    <br>
+    <div class="mb-3">
+        {# Assumes you set up the reset_password view in your URLconf #}
+        <a class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover" href="{% url 'reset_password' %}">Forgot password?</a>
+    </div>
+</div>
+
+{% endblock %}

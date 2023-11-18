@@ -1,0 +1,106 @@
+{% extends "main_app/base.html" %}
+
+{% block title %} Home {% endblock %}
+
+{% block content %}
+{% load static %}
+{% load humanize %}
+
+    <script src="{% static 'home_pro.js' %}"></script>
+
+    <div class="modal fade" id="productInfoModal" tabindex="-1" aria-labelledby="productInfoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="productInfoModalLabel">New message</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form>
+                <div class="mb-3">
+                  <label for="recipient-name" class="col-form-label">Recipient:</label>
+                  <input type="text" class="form-control" id="recipient-name">
+                </div>
+                <div class="mb-3">
+                  <label for="message-text" class="col-form-label">Message:</label>
+                  <textarea class="form-control" id="message-text"></textarea>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary">Send message</button>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <!-- <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="..." class="d-block w-100" alt="...">
+            </div>
+            Run for loop against one div here
+            <div class="carousel-item">
+                <img src="..." class="d-block w-100" alt="...">
+            </div>
+            <div class="carousel-item">
+                <img src="..." class="d-block w-100" alt="...">
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+        </button>
+    </div> -->
+    <div class="d-flex flex-wrap">
+        <!-- Available items (Items in stock) -->
+        {% for item in inventory %}
+            {% if item.singles_stock > 0 %}
+                <a href="#" role="button" data-bs-toggle="modal" data-bs-target="#productInfoModal" data-bs-slug="{{ item.slug}}">
+                    <div style="width: 168px;" class="me-3 mb-3">
+                        <div class="card h-100">
+                            <img src="{{ item.product_image.0}}" class="card-img-top" alt="Product's Image" width="50">
+                            <div class="card-body" style="font-size: 14px;">
+                                {{ item.name|truncatechars:20 }} <br>
+                                <strong>₦{{ item.retail_price|intcomma }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            {% endif %}
+        {% empty %}
+            <div><p>No item found in inventory. Contact the site administrator for help.</p></div>
+        {% endfor %}
+
+        <!-- Unavailable items (items out of stock) -->
+        {% for item in inventory %}
+            {% if item.singles_stock == 0 %}
+                <a href="#" role="button"><div style="width: 168px;" class="me-3 mb-3">
+                    <div class="card h-100">
+                        <img src="{{ item.product_image.0}}" class="card-img-top" alt="Product's Image" width="50">
+                        <div class="card-body" style="font-size: 14px;">
+                            {{ item.name|truncatechars:20 }} <br>
+                            <strong>₦{{ item.retail_price|intcomma }}</strong> <br>
+                            Needs replacing.
+                        </div>
+                    </div>
+                </div></a>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <!-- Remove in due time -->
+    <div class="col-md-6 offset-md-3">
+        <p>What's happening here?</p>
+    </div>
+
+{% endblock %}
