@@ -21,4 +21,5 @@ urlpatterns = [
     path('add_product/', views.add_product, name='add_product'),
     path('privacy_policy/', views.privacy_policy, name='privacy_policy'),
     path('find_product/', views.find_product, name='find_product'),
+    path('edit_product/<str:slug>', views.edit_product, name='edit_product'),
 ]

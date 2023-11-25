@@ -11,7 +11,7 @@ import pymongo
 
 from .o_functions import correct_id, humans
 from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, \
-    EditProfileImageForm, EditNameForm, AddProductForm, CarouselForm
+    EditProfileImageForm, EditNameForm, AddProductForm, CarouselForm, EditProductForm
 from .models import TheUser, Buyer, Product, Cart, Carousel
 from .custom_storage import handle_user_image, default_user_image, compress_image, \
     change_image_name, delete_image, default_bulk_image, default_carton_image, \
@@ -567,6 +567,35 @@ def privacy_policy(request):
 
 def find_product(request):
     # Find product from mongodb
-    the_product = products_collection.find_one({"slug": request.GET.get("product")})
+    the_product = products_collection.find_one({"slug": request.GET.get("product")}, {"_id": 0})
     if the_product:
         return JsonResponse(the_product)
+    
+def edit_product(request, slug):
+    # Check if user is admin or staff
+    curr_user = user_collection.find_one({"email": request.user.email})
+
+    if curr_user:
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["email"],
+                         curr_user["username"], curr_user["gender"], curr_user["phone_no"],
+                         curr_user["address"], curr_user["state"], curr_user["image"],
+                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+        
+        curr_product = products_collection.find_one({"slug": slug})
+        
+        form = EditProductForm(request.POST or None, request.FILES or None)
+
+        BULK_CHOICES = ("Dozen", "Pack", "Packet", "Roll")
+
+        if a_user.is_admin:
+            context = {"form": form, "is_admin": True, "is_staff": True, "bulk": BULK_CHOICES}
+            return render(request, "main_app/edit_product.html", context)
+        elif a_user.is_staff:
+            context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES}
+            return render(request, "main_app/edit_product.html", context)
+        else:
+            messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
+            return render(request, "main_app/400.html", {})
+    else:
+        messages.error(request, "An internal error occurred. Please try again later.")
+        return render(request, "main_app/404.html", {})

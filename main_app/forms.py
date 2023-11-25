@@ -564,6 +564,10 @@ class AddProductForm(forms.Form):
     
 
 class CarouselForm(forms.Form):
+    """
+    Form to add Carousel Images to Home page of web application
+    Least number of images is always 3
+    """
     car_image_1 = forms.ImageField(required=False, widget=forms.widgets.ClearableFileInput(
         attrs={"class":"form-control", "id": "car_image_1"}), label="Slide 1")
     
@@ -572,3 +576,123 @@ class CarouselForm(forms.Form):
 
     car_image_3 = forms.ImageField(required=False, widget=forms.widgets.ClearableFileInput(
         attrs={"class":"form-control", "id": "car_image_3"}), label="Slide 3")
+    
+class EditProductForm(forms.Form):
+    """Form to edit products already in MongoDB in the
+    web application for use"""
+
+    BULK_NAME_CHOICES = [
+        ("", "Select one"),
+        ("dozen", "Dozen"),
+        ("packet", "Packet"),
+        ("pack", "Pack"),
+        ("roll", "Roll"),
+    ]
+
+    YES_NO_CHOICES = [
+        ("", "---Select one---"),
+        ("True", "True"),
+        ("False", "False"),
+    ]
+
+    CARTON_BAG_CHOICES = [
+        ("", "---Select one---"),
+        ("none", "None"),
+        ("carton", "Carton"),
+        ("bag", "Bag"),
+    ]
+
+    
+
+    brand_name = forms.CharField(label="Brand Name", required=True, max_length=150, widget=forms.widgets.TextInput(
+        attrs={"name": "brand_name", "class": "form-control", "autofocus": "true", 
+               "placeholder": "The Brand's Name"}), label_suffix="")
+    
+    product_name = forms.CharField(label="Product Name", required=True, max_length=150, widget=forms.widgets.TextInput(
+        attrs={"name": "product_name", "class": "form-control", 
+               "placeholder": "The Product's Name"}), label_suffix="")
+    
+    size = forms.CharField(label="Size", required=True, max_length=150, widget=forms.widgets.TextInput(
+        attrs={"name": "size", "class": "form-control", 
+               "placeholder": "One Size"}), label_suffix="")
+
+    retail_price = forms.IntegerField(label="Retail Price", required=True, widget=forms.widgets.NumberInput(
+        attrs={"name": "retail_price", "class": "form-control", "id": "retail_price",
+               "placeholder": "The Retail Price"}), label_suffix="")
+    
+    wholesale_price = forms.IntegerField(label="Wholesale Price", required=True, widget=forms.widgets.NumberInput(
+        attrs={"name": "wholesale_price", "class": "form-control", 
+               "placeholder": "The wholesale price"}), label_suffix="")
+
+    is_discount = forms.ChoiceField(required=True, choices=YES_NO_CHOICES, widget=forms.widgets.Select(
+        attrs={"placeholder":"is discount", "class":"form-select", "id": "is_discount"}),
+        label="Does Product's Retail Price Have Discount?", label_suffix="", initial=False)
+    
+    discount_retail_price = forms.IntegerField(label="Discounted Retail Price", required=False, widget=forms.widgets.NumberInput(
+        attrs={"class": "form-control", "id": "discount_retail_price", "placeholder": "Discounted Retail Price"}), label_suffix="")
+
+    has_bulk = forms.ChoiceField(required=True, choices=YES_NO_CHOICES, widget=forms.widgets.Select(
+        attrs={"placeholder":"has bulk", "class":"form-select", "id": "has_bulk"}),
+        label="Does Product Have Bulk?", label_suffix="")
+    
+    bulk_type_1 = forms.CharField(required=False, widget=DataListInput(
+        attrs={"class":"form-control", "id": "bulk_type_1", "autocomplete": "off"}),
+        label="Type of Bulk 1", label_suffix="")
+
+    bulk_price_1 = forms.IntegerField(label="Price of Bulk 1", required=False, widget=forms.widgets.NumberInput(
+        attrs={"class": "form-control", "placeholder": "bulk price", "id": "bulk_price_1"}), label_suffix="")
+
+    no_in_bulk_1 = forms.IntegerField(label="Number In Bulk 1", required=False, max_value=100, widget=forms.widgets.NumberInput(
+        attrs={"class": "form-control", 
+               "placeholder": "no in bulk", "id": "no_in_bulk_1"}), label_suffix="")
+
+    bulk_image_1 = forms.ImageField(required=False, widget=forms.widgets.ClearableFileInput(
+        attrs={"class":"form-control", "id": "bulk_image_1"}), label="Bulk 1's Image")
+
+    is_carton_bag = forms.ChoiceField(required=True, choices=CARTON_BAG_CHOICES, widget=forms.widgets.Select(
+        attrs={"placeholder":"is carton or bag", "class":"form-select", "id": "is_carton_bag"}),
+        label="Does Product come in Cartons or Bags?", label_suffix="")
+
+    carton_price = forms.IntegerField(label="Price of Carton", required=False, widget=forms.widgets.NumberInput(
+        attrs={"name": "carton_price", "class": "form-control", 
+               "placeholder":"carton price", "id": "carton_price"}), label_suffix="")
+    
+    no_in_carton = forms.IntegerField(label="Quantity In Carton", required=False, widget=forms.widgets.NumberInput(
+        attrs={"name": "no_in_carton", "class": "form-control", 
+               "placeholder":"no in carton", "id": "no_in_carton"}), label_suffix="")
+    
+    carton_image = forms.ImageField(required=False, widget=forms.widgets.ClearableFileInput(
+        attrs={"class":"form-control", "id": "carton_image"}), label="Image of Carton")
+
+    carton_stock = forms.IntegerField(label="Number of Cartons in Stock", required=False, widget=forms.widgets.NumberInput(
+        attrs={"id": "carton_stock", "class": "form-control", 
+               "placeholder":"The carton stock"}), label_suffix="")
+    
+    bag_price = forms.IntegerField(label="Price of Bag", required=False, widget=forms.widgets.NumberInput(
+        attrs={"name": "bag_price", "class": "form-control", 
+               "placeholder":"bag price", "id": "bag_price"}), label_suffix="")
+    
+    no_in_bag = forms.IntegerField(label="Quantity In Bag", required=False, widget=forms.widgets.NumberInput(
+        attrs={"name": "no_in_bag", "class": "form-control", 
+               "placeholder":"no in bag", "id": "no_in_bag"}), label_suffix="")
+
+    bag_image = forms.ImageField(required=False, widget=forms.widgets.ClearableFileInput(
+        attrs={"class":"form-control", "id": "bag_image"}), label="Image of Bag")
+
+    bag_stock = forms.IntegerField(label="Number of Bags in Stock", required=False, widget=forms.widgets.NumberInput(
+        attrs={"id": "bag_stock", "class": "form-control", 
+               "placeholder":"The bag stock"}), label_suffix="")
+
+    singles_stock = forms.IntegerField(label="Number of Single Quantities in Stock", required=True, widget=forms.widgets.NumberInput(
+        attrs={"name": "singles_stock", "class": "form-control", 
+               "placeholder":"The single's stock"}), label_suffix="")
+
+    tags = forms.CharField(label="Tags", required=True, widget=forms.widgets.TextInput(
+        attrs={"name": "tags", "class": "form-control",
+               "placeholder": "The Tags"}), label_suffix="",
+               help_text='<span class="form-text text-muted"><small>Separate each tag \
+                            value with commas. Each genre can have spaces in its name.</small></span>')
+    
+    description = forms.CharField(label="Description", required=False, widget=TinyMCEWidget(attrs={
+        "required": False, "cols": 30, "rows": 10
+    }))

@@ -8,31 +8,57 @@
 
     <script src="{% static 'home_pro.js' %}"></script>
 
-    <div class="modal fade" id="productInfoModal" tabindex="-1" aria-labelledby="productInfoModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+    <div class="modal fade" id="productInfoModal" tabindex="-1" aria-labelledby="productInfoModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-theme="dark">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content">
             <div class="modal-header">
-              <h1 class="modal-title fs-5" id="productInfoModalLabel">New message</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <h1 class="modal-title fs-5 text-light d-none d-lg-block" id="productInfoModalLabel"></h1>
+              <div class="float-end">
+                <button style="margin-right: 5px;" class="btn btn-light" id="priceCall" data-bs-target="#prodPriceModal" data-bs-toggle="modal" data-bs-slug="{{ item.slug }}">Update Prices</button>
+                <a href="#" class="btn btn-light" id="editCall">Edit Product</a>
+              </div>
             </div>
             <div class="modal-body">
-              <form>
-                <div class="mb-3">
-                  <label for="recipient-name" class="col-form-label">Recipient:</label>
-                  <input type="text" class="form-control" id="recipient-name">
+              <div class="container-fluid">
+                <div class="d-flex justify-content-center" id="picHold">
                 </div>
-                <div class="mb-3">
-                  <label for="message-text" class="col-form-label">Message:</label>
-                  <textarea class="form-control" id="message-text"></textarea>
+                <div id="productHold">
+                  <h6 class="fs-6 text-light d-flex justify-content-center" id="prodName"></h6>
+                  <h3 class="fs-3 text-light d-flex justify-content-center" id="prodPrice"></h3>
+                  <div class="d-flex justify-content-start">
+                    <h4 class="me-2 text-light">Sale Type:</h4>
+                    <h4 class="text-light" id="saleType"></h4>
+                  </div>
+                  <div class="d-flex flex-wrap" id="buttonHolder">
+                  </div>
                 </div>
-              </form>
+              </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary">Send message</button>
+              <button type="button" class="btn btn-light">Send message</button>
             </div>
           </div>
         </div>
+    </div>
+
+    <!-- Price modal -->
+    <div class="modal fade" id="prodPriceModal" aria-hidden="true" aria-labelledby="prodPriceModalLabel2" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-theme="dark">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5 text-light" id="prodPriceModalLabel2">Update Price</h1>
+            <button type="button" class="btn-close" data-bs-target="#productInfoModal" data-bs-toggle="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-light">
+            Hide this modal and show the first with the button below.
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-target="#productInfoModal" data-bs-toggle="modal">Cancel</button>
+              <a class="btn btn-light" data-bs-target="#productInfoModal" data-bs-toggle="modal">Update</a>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
@@ -62,14 +88,14 @@
         <span class="visually-hidden">Next</span>
         </button>
     </div> -->
-    <div class="d-flex flex-wrap">
+    <div class="d-flex flex-wrap justify-content-center">
         <!-- Available items (Items in stock) -->
         {% for item in inventory %}
             {% if item.singles_stock > 0 %}
-                <a href="#" role="button" data-bs-toggle="modal" data-bs-target="#productInfoModal" data-bs-slug="{{ item.slug}}">
+                <a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-bs-toggle="modal" data-bs-target="#productInfoModal" data-bs-slug="{{ item.slug }}">
                     <div style="width: 168px;" class="me-3 mb-3">
                         <div class="card h-100">
-                            <img src="{{ item.product_image.0}}" class="card-img-top" alt="Product's Image" width="50">
+                            <img src="{{ item.product_image.0 }}" class="card-img-top" alt="Product's Image" width="50">
                             <div class="card-body" style="font-size: 14px;">
                                 {{ item.name|truncatechars:20 }} <br>
                                 <strong>₦{{ item.retail_price|intcomma }}</strong>
