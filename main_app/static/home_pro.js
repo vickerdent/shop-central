@@ -137,9 +137,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 bulkText.textContent = "Bulk";
                 bulkText.className = "text-light";
 
-                buttonHome.appendChild(newBulkDiv);
+                
                 
                 if (Object.keys(data.bulk).length !== 0) {
+                    const vRule = document.createElement("div");
+                    vRule.className = "vr me-2";
+                    vRule.style.color = "white";
+                    buttonHome.append(vRule);
+
                     newBulkDiv.append(bulkText);
                     for (const key in data.bulk) {
                         if (key.startsWith("bulk_type")) {
@@ -171,11 +176,14 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     }
                 }
+
+                buttonHome.append(newBulkDiv);
                 
                 // Quantity
                 // make use of display: none here, with if quantity is 1,
                 // pressing the minus button will hide the textbox and make a 1/2 text visible
-                // again will make 1/4 text visible                
+                // again will make 1/4 text visible
+                // const quantHold = 
                 
             }) 
             .catch(error => {
