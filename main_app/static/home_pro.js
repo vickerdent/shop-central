@@ -42,7 +42,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const price_modified_date = data.price_modified_date
                 const singles_stock = data.singles_stock
                 const carton_bag_stock = data.carton_bag_stock
-                const description = data.description
 
                 modalTitle.textContent = `${brand_name} ${product_name}: ${size}`
                 const existingPic = document.getElementById("centrePic")
@@ -136,20 +135,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 const bulkText = document.createElement("h6");
                 bulkText.textContent = "Bulk";
                 bulkText.className = "text-light";
+                
+                const vRule = document.createElement("div");
+                vRule.className = "vr me-2";
+                vRule.style.color = "white";
+                vRule.id = "Separ";
 
-                
-                
-                if (Object.keys(data.bulk).length !== 0) {
-                    const vRule = document.createElement("div");
-                    vRule.className = "vr me-2";
-                    vRule.style.color = "white";
+                if (has_bulk) {
+                    
                     buttonHome.append(vRule);
 
                     newBulkDiv.append(bulkText);
-                    for (const key in data.bulk) {
+                    for (const key in bulk) {
                         if (key.startsWith("bulk_type")) {
                             // Extract value of key to assign to dataset
-                            const element = data.bulk[key];
+                            const element = bulk[key];
     
                             // Create button per bulk
                             const bulkButton = document.createElement("input");
@@ -162,7 +162,10 @@ document.addEventListener("DOMContentLoaded", () => {
                             
                             // Get num of items in bulk
                             const num = parseInt(key.split("_")[2]);
-                            bulkButton.dataset.number = data.bulk["no_in_bulk_" + num];
+                            bulkButton.dataset.number = bulk["no_in_bulk_" + num];
+
+                            // Get image of bulk
+                            bulkButton.dataset.image = bulk["bulk_image_" + num][0];
     
                             // Create label for button
                             const am = document.createElement("label");
@@ -175,6 +178,37 @@ document.addEventListener("DOMContentLoaded", () => {
                             newBulkDiv.append(am);
                         }
                     }
+                }
+                
+                if (is_carton_bag != "none") {
+                    if (has_bulk == false) {
+                        buttonHome.append(vRule);
+                        newBulkDiv.append(bulkText);
+                    }
+                    const cartButton = document.createElement("input");
+                    cartButton.type = "radio";
+                    cartButton.className = "btn-check bulk";
+                    cartButton.name = "saleType";
+                    cartButton.autocomplete = "off";
+                    cartButton.id = "cartButton";
+                    cartButton.dataset.price = carton_bag_price;
+                    cartButton.dataset.number = no_in_carton_bag;
+                    cartButton.dataset.image = carton_bag_image[0];
+
+                    // Create label for button
+                    if (is_carton_bag == "carton") {
+                        var element = "Carton";
+                    } else {
+                        element = "Bag";
+                    }
+                    const y = document.createElement("label");
+                    const z = document.createTextNode(element)
+                    y.setAttribute("for", cartButton.id);
+                    y.appendChild(z);
+                    y.className = "btn btn-outline-light me-2";
+
+                    newBulkDiv.append(cartButton);
+                    newBulkDiv.append(y);
                 }
 
                 buttonHome.append(newBulkDiv);
@@ -192,10 +226,15 @@ document.addEventListener("DOMContentLoaded", () => {
         })
 
         // Remove bulk info on close
-        productInfoModal.addEventListener("hide.bs.modal", () => {
+        productInfoModal.addEventListener("hidden.bs.modal", () => {
             const bulkInfo = document.getElementById("bulkDiv");
-
-            bulkInfo.remove();
+            if (bulkInfo) {
+                bulkInfo.remove();
+            }
+            const separator = document.getElementById("Separ");
+            if (separator) {
+                separator.remove();
+            }
         })
     }
 });

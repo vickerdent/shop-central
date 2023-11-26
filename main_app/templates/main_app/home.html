@@ -30,8 +30,15 @@
                     <h4 class="text-light" id="saleType"></h4>
                   </div>
                   <div class="d-flex flex-wrap" id="buttonHolder">
+                  </div> <br>
+                  <h4 class="text-light">Quantity</h4>
+                  <div class="container text-center">
+                    <div class="row row-cols-auto" id="quantHold">
+                      <div class="col"><button type="button" class="btn btn-light" id="minus_button" onclick="decrease_quantity()">-</button></div>
+                      <div class="col-2"><input type="number" class="form-control" name="quantity" id="prodquantity" value="1" style="text-align: center;"></div>
+                      <div class="col"><button type="button" class="btn btn-light" id="plus_button" onclick="increase_quantity()">+</button></div>
+                    </div>
                   </div>
-                  <div id="quantHold"></div>
                 </div>
               </div>
             </div>
