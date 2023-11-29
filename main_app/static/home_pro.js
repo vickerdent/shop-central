@@ -161,11 +161,13 @@ document.addEventListener("DOMContentLoaded", () => {
                             bulkButton.name = "saleType";
                             bulkButton.autocomplete = "off";
                             bulkButton.id = key;
-                            bulkButton.dataset.price = element;
                             
                             // Get num of items in bulk
                             const num = parseInt(key.split("_")[2]);
                             bulkButton.dataset.number = bulk["no_in_bulk_" + num];
+
+                            // Get price of bulk
+                            bulkButton.dataset.price = bulk["bulk_price_" + num];
 
                             // Get image of bulk
                             bulkButton.dataset.image = bulk["bulk_image_" + num][0];
