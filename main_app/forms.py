@@ -247,9 +247,7 @@ class AddProductForm(forms.Form):
         ("none", "None"),
         ("carton", "Carton"),
         ("bag", "Bag"),
-    ]
-
-    
+    ]   
 
     brand_name = forms.CharField(label="Brand Name", required=True, max_length=150, widget=forms.widgets.TextInput(
         attrs={"name": "brand_name", "class": "form-control", "autofocus": "true", 
@@ -562,7 +560,6 @@ class AddProductForm(forms.Form):
             raise forms.ValidationError("")
         return data
     
-
 class CarouselForm(forms.Form):
     """
     Form to add Carousel Images to Home page of web application
@@ -696,3 +693,13 @@ class EditProductForm(forms.Form):
     description = forms.CharField(label="Description", required=False, widget=TinyMCEWidget(attrs={
         "required": False, "cols": 30, "rows": 10
     }))
+
+class StaffCartForm:
+    """
+    Form handling cart processing for sellers within the app
+    """
+    
+    
+
+
+

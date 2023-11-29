@@ -1,4 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
+    const otherQuantity = document.getElementById("otherquantity");
+    otherQuantity.style.display = "none";
+
     const productInfoModal = document.getElementById('productInfoModal')
     if (productInfoModal) {
         productInfoModal.addEventListener('show.bs.modal', event => {
@@ -218,6 +221,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 // pressing the minus button will hide the textbox and make a 1/2 text visible
                 // again will make 1/4 text visible
                 // const quantHold = 
+                const quantLeft = document.getElementById("quantityLeft");
+                var totalQuantity = (no_in_carton_bag * carton_bag_stock) + singles_stock;
+                quantLeft.textContent = `${totalQuantity} available`;
+
+                // Fetch cart data from Django
+                fetch("/open_staff_carts")
+                .then(response => response.json())
+                .then(data => {
+                    data.carts.forEach(element => {
+                        const dataList = document.getElementById("cartList");
+                        dataList.add(element)
+                    });
+                })
                 
             }) 
             .catch(error => {

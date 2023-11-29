@@ -180,16 +180,16 @@ class Carousel:
             "images": {**self.images}
         }
 
-class Cart:
+class StaffCart:
     """
     Class definition for carts containing
     items to be bought.
     """
     __slot__ = ("name_of_buyer", "staff_id", "items", "total_amount", "checkout_date",
-                "amount_paid")
+                "amount_paid", "created_date")
     
     def __init__(self, name_of_buyer: str, staff_id: str, items: list, total_amount: int,
-                 checkout_date: datetime, amount_paid: int) -> None:
+                 checkout_date: datetime, amount_paid: int, created_date = datetime.now()) -> None:
         self.name_of_buyer = name_of_buyer
         self.staff_id = staff_id
         self.items = items
@@ -197,4 +197,21 @@ class Cart:
         self.checkout_date = checkout_date
         self.amount_paid = amount_paid
         self.amount_owed = self.total_amount - self.amount_paid
+        self.created_date = created_date
+
+    def to_dict(self):
+        """
+        Returns dictionary containing info for
+        writing to MongoDB
+        """
+        return {
+            "name_of_buyer": self.name_of_buyer,
+            "staff_id": self.staff_id,
+            "items": self.items,
+            "total_amount": self.total_amount,
+            "checkout_date": self.checkout_date,
+            "amount_paid": self.amount_paid,
+            "amount_owed": self.amount_owed,
+            "created_date": self.created_date
+        }
     

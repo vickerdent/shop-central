@@ -18,6 +18,7 @@ database = client["JDS"]
 user_collection = database["the_users"]
 new_accounts_collection = database["new_accounts"]
 products_collection = database["products"]
+staff_carts_collection = database["staff_carts"]
 
 # human TheUser("Victor Abuka", "vickerdent@gmail.com", "vickerdent", "Male", "08080360932",
 #                 "No. 42, Winners' Way, Dawaki, Abuja", "F.C.T.", [], True, True, True)

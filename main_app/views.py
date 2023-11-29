@@ -12,11 +12,12 @@ import pymongo
 from .o_functions import correct_id, humans
 from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, \
     EditProfileImageForm, EditNameForm, AddProductForm, CarouselForm, EditProductForm
-from .models import TheUser, Buyer, Product, Cart, Carousel
+from .models import TheUser, Buyer, Product, StaffCart, Carousel
 from .custom_storage import handle_user_image, default_user_image, compress_image, \
     change_image_name, delete_image, default_bulk_image, default_carton_image, \
         handle_product_image
-from utils import user_collection, send_email_code, new_accounts_collection, products_collection
+from utils import user_collection, send_email_code, new_accounts_collection, products_collection, \
+      staff_carts_collection
 
 # Create your views here.
 @login_required
@@ -570,7 +571,29 @@ def find_product(request):
     the_product = products_collection.find_one({"slug": request.GET.get("product")}, {"_id": 0})
     if the_product:
         return JsonResponse(the_product)
+
+@login_required
+def open_staff_carts(request):
+    # Get all carts from mongodb
+    all_carts = list(staff_carts_collection.find())
+    cart_names = []
+    for i in all_carts:
+        cart_names.append(i["name_of_buyer"])
     
+    return JsonResponse({"carts": cart_names})
+
+@login_required
+def find_staff_cart(request):
+    # Check for cart name from mongodb
+    the_cart = staff_carts_collection.find_one({"name_of_buyer": request.GET.get("cartName")})
+
+    if the_cart:
+        # 
+        # Add dictionary to list of items: {"product_name": request.GET.get("prodName"), "sale_type": request.GET.get("saleType")}
+        staff_carts_collection.update_one({"name_of_buyer": request.GET.get("cartName")},
+                                          {"$push": {"items": request.GET.get("")}})
+
+@login_required
 def edit_product(request, slug):
     # Check if user is admin or staff
     curr_user = user_collection.find_one({"email": request.user.email})
