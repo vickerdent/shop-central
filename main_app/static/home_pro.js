@@ -13,10 +13,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Set attribute data-bs-slug to buttons for price and editing product
             var btnPrice = document.getElementById("priceCall");
+
+            // URGENT: Inspect elements to see if button present as a data attribute
             btnPrice.setAttribute('data-bs-slug', recipient);
 
             var editProd = document.getElementById("editCall");
-            editProd.setAttribute("href", "{% url 'edit_product' " + recipient + " %}")
+            editProd.setAttribute("href", `edit_product?product=${recipient}`)
 
             const modalTitle = productInfoModal.querySelector('.modal-title')
 
