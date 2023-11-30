@@ -566,9 +566,9 @@ def privacy_policy(request):
             return render(request, "main_app/privacy.html", {"is_staff": True})
     return render(request, "main_app/privacy.html", {})
 
-def find_product(request):
+def find_product(request, slug):
     # Find product from mongodb
-    the_product = products_collection.find_one({"slug": request.GET.get("product")}, {"_id": 0})
+    the_product = products_collection.find_one({"slug": slug}, {"_id": 0})
     if the_product:
         return JsonResponse(the_product)
 
@@ -583,15 +583,32 @@ def open_staff_carts(request):
     return JsonResponse({"carts": cart_names})
 
 @login_required
-def find_staff_cart(request):
+def find_staff_cart(request, cartname):
     # Check for cart name from mongodb
-    the_cart = staff_carts_collection.find_one({"name_of_buyer": request.GET.get("cartName")})
+    the_cart = staff_carts_collection.find_one({"name_of_buyer": cartname})
 
     if the_cart:
-        # 
+        # Find out the number of items in the items dictionary
+        product_names = []
+        for name in the_cart["items"].keys():
+            if name.startswith("product_name"):
+                product_names.append(name)
+        
+        # Get last product from list
+        curr_num = int(product_names[-1].split("_")[2])
+
+        # Create dictionary for new item
+        new_item = {"product_name_" + str(curr_num + 1): request.GET.get("prodName"),
+                    "sale_type_" + str(curr_num + 1): request.GET.get("saleType"),
+                    "product_price_" + str(curr_num + 1): request.GET.get("prodPrice"),
+                    "product_image_" + str(curr_num + 1): request.GET.get("prodImage"),
+                    "product_quantity_" + str(curr_num + 1): request.GET.get("prodQuantity"),
+                    "product_slug_" + str(curr_num + 1): request.GET.get("prodSlug")}
+        
+
         # Add dictionary to list of items: {"product_name": request.GET.get("prodName"), "sale_type": request.GET.get("saleType")}
-        staff_carts_collection.update_one({"name_of_buyer": request.GET.get("cartName")},
-                                          {"$push": {"items": request.GET.get("")}})
+        staff_carts_collection.update_one({"name_of_buyer": cartname},
+                                          {"$push": {"items": new_item}})
 
 @login_required
 def edit_product(request, slug):

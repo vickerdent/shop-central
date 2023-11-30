@@ -8,22 +8,22 @@ document.addEventListener("DOMContentLoaded", () => {
             // Link that triggered the modal
             const link = event.relatedTarget
             
-            // Extract info from data-bs-* attributes
-            const recipient = link.getAttribute('data-bs-slug')
+            // Extract info from data-* attributes
+            const recipient = link.getAttribute('data-slug')
 
-            // Set attribute data-bs-slug to buttons for price and editing product
+            // Set attribute data-slug to buttons for price and editing product
             var btnPrice = document.getElementById("priceCall");
 
-            // URGENT: Inspect elements to see if button present as a data attribute
-            btnPrice.setAttribute('data-bs-slug', recipient);
+            // Can use this to set dataset attribute instead
+            btnPrice.setAttribute('data-slug', recipient);
 
             var editProd = document.getElementById("editCall");
-            editProd.setAttribute("href", `edit_product?product=${recipient}`)
+            editProd.setAttribute("href", `/edit_product/${recipient}`)
 
             const modalTitle = productInfoModal.querySelector('.modal-title')
 
             // Fetch product's data from Django view
-            fetch(`/find_product?product=${recipient}`)
+            fetch(`/find_product/${recipient}`)
             // Get response in json format
             .then(response => response.json())
             // and then do the updating in a callback.

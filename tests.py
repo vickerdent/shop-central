@@ -5,3 +5,5 @@ product = {"name_of": "Victor",
 allof = {inst : product["all_of"][inst] for inst in product["all_of"] if inst.startswith("animal")}
 print(allof)
 
+
+

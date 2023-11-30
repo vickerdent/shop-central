@@ -112,7 +112,7 @@
         <!-- Available items (Items in stock) -->
         {% for item in inventory %}
             {% if item.singles_stock > 0 %}
-                <a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-bs-toggle="modal" data-bs-target="#productInfoModal" data-bs-slug="{{ item.slug }}">
+                <a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-bs-toggle="modal" data-bs-target="#productInfoModal" data-slug="{{ item.slug }}">
                     <div style="width: 168px;" class="me-3 mb-3">
                         <div class="card h-100">
                             <img src="{{ item.product_image.0 }}" class="card-img-top" alt="Product's Image" width="50">
