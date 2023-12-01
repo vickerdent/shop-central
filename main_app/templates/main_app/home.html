@@ -12,7 +12,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content">
             <div class="modal-header">
-              <h1 class="modal-title fs-5 text-light d-none d-lg-block" id="productInfoModalLabel"></h1>
+              <h1 class="modal-title fs-5 text-light d-none d-lg-block d-xl-block d-xxl-block" id="productInfoModalLabel"></h1>
               <div class="float-end">
                 <button style="margin-right: 5px;" class="btn btn-light" id="priceCall" data-bs-target="#prodPriceModal" data-bs-toggle="modal" data-bs-slug="{{ item.slug }}">Update Prices</button>
                 <a href="#" class="btn btn-light" id="editCall">Edit Product</a>
@@ -33,13 +33,13 @@
                   </div> <br>
                   <h4 class="text-light">Quantity</h4>
                   <div class="container text-center">
-                    <div class="row row-cols-auto" id="quantHold">
-                      <div class="col"><button type="button" class="btn btn-light" id="minus_button" onclick="decrease_quantity()">-</button></div>
+                    <div class="row g-2 align-items-center" id="quantHold">
+                      <div class="col-auto"><button type="button" class="btn btn-light" id="minus_button" onclick="decrease_quantity()">-</button></div>
                       <div class="col-2">
                         <input type="number" class="form-control" name="quantity" id="prodquantity" value="1" style="text-align: center;">
                         <input type="text" class="form-control" name="oquantity" id="otherquantity" aria-label="Disabled input example" style="text-align: center;" disabled readonly>
                       </div>
-                      <div class="col"><button type="button" class="btn btn-light" id="plus_button" onclick="increase_quantity()">+</button></div>
+                      <div class="col-auto"><button type="button" class="btn btn-light" id="plus_button" onclick="increase_quantity()">+</button></div>
                       <div class="col-auto">
                         <span id="quantityLeft" class="form-text">
                         </span>
@@ -51,11 +51,11 @@
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <div>
-                <input autocomplete="off" placeholder="Type to select/add Cart" id="openCart" list="cartList">
+              <div class="d-flex flex-row">
+                <div class="me-2 ms-2"><input autocomplete="off" placeholder="Type to select/add Cart" id="openCart" list="cartList" class="form-control"></div>
+                <div><button type="button" class="btn btn-light">Add To Cart</button></div>
                 <datalist id="cartList">
                 </datalist>
-                <button type="button" class="btn btn-light">Add To Cart</button>
               </div>              
             </div>
           </div>

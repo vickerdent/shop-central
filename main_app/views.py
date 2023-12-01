@@ -7,6 +7,7 @@ from django.contrib import messages
 from datetime import datetime
 from django.conf import settings
 from django.http import JsonResponse
+from bson.son import SON
 import pymongo
 
 from .o_functions import correct_id, humans
@@ -574,8 +575,8 @@ def find_product(request, slug):
 
 @login_required
 def open_staff_carts(request):
-    # Get all carts from mongodb
-    all_carts = list(staff_carts_collection.find())
+    # Get all carts from mongodb belonging to particular user
+    all_carts = list(staff_carts_collection.find({"staff_id": request.user.email}))
     cart_names = []
     for i in all_carts:
         cart_names.append(i["name_of_buyer"])
@@ -590,25 +591,51 @@ def find_staff_cart(request, cartname):
     if the_cart:
         # Find out the number of items in the items dictionary
         product_names = []
-        for name in the_cart["items"].keys():
-            if name.startswith("product_name"):
-                product_names.append(name)
+        for item in the_cart["items"]:
+            for name in item.keys():
+                if name.startswith("product_name"):
+                    product_names.append(name)
         
         # Get last product from list
         curr_num = int(product_names[-1].split("_")[2])
 
         # Create dictionary for new item
-        new_item = {"product_name_" + str(curr_num + 1): request.GET.get("prodName"),
-                    "sale_type_" + str(curr_num + 1): request.GET.get("saleType"),
-                    "product_price_" + str(curr_num + 1): request.GET.get("prodPrice"),
-                    "product_image_" + str(curr_num + 1): request.GET.get("prodImage"),
-                    "product_quantity_" + str(curr_num + 1): request.GET.get("prodQuantity"),
-                    "product_slug_" + str(curr_num + 1): request.GET.get("prodSlug")}
-        
+        new_item = SON([("product_name_" + str(curr_num + 1), request.GET.get("prodName")),
+                        ("sale_type_" + str(curr_num + 1), request.GET.get("saleType")),
+                        ("product_price_" + str(curr_num + 1), int(request.GET.get("prodPrice"))),
+                        ("product_image_" + str(curr_num + 1), request.GET.get("prodImage")),
+                        ("product_quantity_" + str(curr_num + 1), request.GET.get("prodQuantity")),
+                        ("product_slug_" + str(curr_num + 1), request.GET.get("prodSlug"))])
+
+        # new_item = {"product_name_" + str(curr_num + 1): request.GET.get("prodName"),
+        #             "sale_type_" + str(curr_num + 1): request.GET.get("saleType"),
+        #             "product_price_" + str(curr_num + 1): request.GET.get("prodPrice"),
+        #             "product_image_" + str(curr_num + 1): request.GET.get("prodImage"),
+        #             "product_quantity_" + str(curr_num + 1): request.GET.get("prodQuantity"),
+        #             "product_slug_" + str(curr_num + 1): request.GET.get("prodSlug")}
 
         # Add dictionary to list of items: {"product_name": request.GET.get("prodName"), "sale_type": request.GET.get("saleType")}
         staff_carts_collection.update_one({"name_of_buyer": cartname},
-                                          {"$push": {"items": new_item}})
+                                          {"$push": {"items": new_item},
+                                           "$inc": {"total_amount": int(request.GET.get("prodPrice"))}})
+        
+        return JsonResponse(data={"result": True})
+    else:
+        # It's a new cart
+        # Create dictionary for new item
+        new_item = SON([("product_name_1", request.GET.get("prodName")),
+                        ("sale_type_1", request.GET.get("saleType")),
+                        ("product_price_1", int(request.GET.get("prodPrice"))),
+                        ("product_image_1", request.GET.get("prodImage")),
+                        ("product_quantity_1", request.GET.get("prodQuantity")),
+                        ("product_slug_1", request.GET.get("prodSlug"))])
+        
+        whole_cart = StaffCart(cartname, request.user.email, [new_item], int(request.GET.get("prodPrice")), 0)
+
+        staff_carts_collection.insert_one(whole_cart.to_dict())
+
+        return JsonResponse(data={"result": True})
+
 
 @login_required
 def edit_product(request, slug):

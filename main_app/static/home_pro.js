@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 bulkText.className = "text-light";
                 
                 const vRule = document.createElement("div");
-                vRule.className = "vr me-2";
+                vRule.className = "vr me-2 d-none d-md-block d-lg-block d-xl-block d-xxl-block";
                 vRule.style.color = "white";
                 vRule.id = "Separ";
 
@@ -243,6 +243,10 @@ document.addEventListener("DOMContentLoaded", () => {
             .catch(error => {
                 console.error();
             });            
+        })
+
+        document.addEventListener("select", function() {
+            
         })
 
         // Remove bulk info on close

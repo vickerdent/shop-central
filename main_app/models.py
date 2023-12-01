@@ -189,13 +189,14 @@ class StaffCart:
                 "amount_paid", "created_date")
     
     def __init__(self, name_of_buyer: str, staff_id: str, items: list, total_amount: int,
-                 checkout_date: datetime, amount_paid: int, created_date = datetime.now()) -> None:
+                 amount_paid: int, created_date = datetime.now(), checkout_date = datetime.now()) -> None:
         self.name_of_buyer = name_of_buyer
         self.staff_id = staff_id
         self.items = items
         self.total_amount = total_amount
         self.checkout_date = checkout_date
         self.amount_paid = amount_paid
+        # Note that amount owed can be negative, which will translate to giving customer change
         self.amount_owed = self.total_amount - self.amount_paid
         self.created_date = created_date
 
@@ -209,9 +210,9 @@ class StaffCart:
             "staff_id": self.staff_id,
             "items": self.items,
             "total_amount": self.total_amount,
-            "checkout_date": self.checkout_date,
             "amount_paid": self.amount_paid,
             "amount_owed": self.amount_owed,
-            "created_date": self.created_date
+            "created_date": self.created_date,
+            "checkout_date": self.checkout_date
         }
     
