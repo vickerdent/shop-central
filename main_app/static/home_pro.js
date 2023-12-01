@@ -81,7 +81,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 const singDiv = document.getElementById("singDiv");
 
                 if (singDiv) {
-                    document.getElementById("retailbutton").checked = true;
+                    const retailButton = document.getElementById("retailbutton");
+                    retailButton.checked = true;
+                    retailButton.dataset.price = retail_price;
+
+                    const wholesaleButton = document.getElementById("wholesalebutton");
+                    wholesaleButton.dataset.price = wholesale_price;
                 } else {
                     const newSingDiv = document.createElement("div");
                     newSingDiv.id = "singDiv";
@@ -102,6 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     retailButton.autocomplete = "off";
                     retailButton.id = "retailbutton";
                     retailButton.dataset.price = retail_price;
+                    retailButton.value = "Pieces (Retail)"
 
                     // Create label for retail button
                     let l = document.createElement("LABEL");
@@ -121,6 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     wholesaleButton.autocomplete = "off";
                     wholesaleButton.id = "wholesalebutton";
                     wholesaleButton.dataset.price = wholesale_price;
+                    wholesaleButton.value = "Pieces (Wholesale)"
 
                     // Create label for wholesale button
                     let n = document.createElement("LABEL");
@@ -173,6 +180,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             // Get image of bulk
                             bulkButton.dataset.image = bulk["bulk_image_" + num][0];
+
+                            bulkButton.value = `${element} (${bulk["no_in_bulk_" + num]})`
     
                             // Create label for button
                             const am = document.createElement("label");
@@ -210,6 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                     const y = document.createElement("label");
                     const z = document.createTextNode(element)
+                    cartButton.value = element;
                     y.setAttribute("for", cartButton.id);
                     y.appendChild(z);
                     y.className = "btn btn-outline-light me-2";
@@ -241,13 +251,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 
             }) 
             .catch(error => {
-                console.error();
+                console.error({"error": error});
             });            
         })
 
-        document.addEventListener("select", function() {
-            
+        document.addEventListener("click", event => {
+            const element = event.target;
+
+            if (element.name == "saleType") {
+                const saleType = document.getElementById("saleType");
+                saleType.textContent = `${element.value}`;
+
+                const priceHold = document.getElementById("prodPrice")
+                priceHold.textContent = `₦${editPrice(element.dataset.price)}`
+            }
         })
+
+        // document.addEventListener("")
 
         // Remove bulk info on close
         productInfoModal.addEventListener("hidden.bs.modal", () => {
@@ -259,27 +279,30 @@ document.addEventListener("DOMContentLoaded", () => {
             if (separator) {
                 separator.remove();
             }
+            const quantField = document.getElementById("prodquantity");
+            quantField.value = 1;
+
+            const otherquant = document.getElementById("otherquantity");
+            otherquant.style.display = "none";
         })
     }
 });
 
 function editPrice(dPrice) {
     var strPrice  = dPrice.toString();
+    var revStrPrice = strPrice.split("").reverse().join("");
     var humPrice = "";
-    if (strPrice.length > 3) {
-        for (let index = 0; index < strPrice.length; index++) {
-            const element = strPrice[index];
+    if (revStrPrice.length > 3) {
+        for (let index = 0; index < revStrPrice.length; index++) {
+            const element = revStrPrice[index];
             humPrice += element;
-            if (index == 0) {
+            if ((index + 1) % 3 == 0 && index != revStrPrice.length - 1) {
                 humPrice += ",";
-                continue;
-            } else if (index % 3 == 0 && index != strPrice.length - 1) {
-                humPrice += ",";
-                continue;
             }
         }
+        strPrice = humPrice.split("").reverse().join("");
     } else {
-        humPrice = strPrice;
+        return strPrice;
     }
-    return humPrice;
+    return strPrice;
 }
