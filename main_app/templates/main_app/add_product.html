@@ -6,7 +6,7 @@
 {% load static %}
 <script src="{% static 'add_depend.js' %}"></script>
 
-<div>
+<div class="container">
     <h2>Add A Product</h2>
     <br>
     <form method="post" action="" enctype="multipart/form-data" id="super_form">
@@ -79,12 +79,16 @@
         
         <div class="row g-2">
             <div class="form-floating mb-3 col-md-6">
+                {{ form.is_divisible }}
+                {{ form.is_divisible.label_tag }}
+            </div>
+            <div class="form-floating mb-3 col-md-6">
                 {{ form.is_discount }}
                 {{ form.is_discount.label_tag }}
             </div>
         </div>
         <div class="row g-2">
-            <div class="col-1 d-none d-lg-block">
+            <div class="col-md-6 d-none d-lg-block">
                 <div class="ps-1"><b></b></div>
             </div>
             <div class="col-md-6">
@@ -186,6 +190,17 @@
                 </div>
             </div>
         </div>
+        <div class="row justify-content-evenly">
+            <div class="col-md-4">
+                <div class="form-floating mb-3">
+                    {{ form.is_carton_divisible }}
+                    {{ form.is_carton_divisible.label_tag }}
+                </div>
+            </div>
+            <div class="col-md-4 d-none d-lg-block">
+                <div class="ps-1"><b></b></div>
+            </div>
+        </div>
 
         <div class="row justify-content-evenly">
             <div class="col-md-4">
@@ -216,6 +231,17 @@
                     {{ form.bag_stock }}
                     {{ form.bag_stock.label_tag }}
                 </div>
+            </div>
+        </div>
+        <div class="row justify-content-evenly">
+            <div class="col-md-4">
+                <div class="form-floating mb-3">
+                    {{ form.is_bag_divisible }}
+                    {{ form.is_bag_divisible.label_tag }}
+                </div>
+            </div>
+            <div class="col-md-4 d-none d-lg-block">
+                <div class="ps-1"><b></b></div>
             </div>
         </div>
 

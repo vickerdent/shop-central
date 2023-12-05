@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const otherQuantity = document.getElementById("otherquantity");
-    otherQuantity.style.display = "none";
 
     const productInfoModal = document.getElementById('productInfoModal')
     if (productInfoModal) {
@@ -16,6 +14,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Can use this to set dataset attribute instead
             btnPrice.setAttribute('data-slug', recipient);
+
+            document.getElementById("minus_button").disabled = true;
 
             var editProd = document.getElementById("editCall");
             editProd.setAttribute("href", `/edit_product/${recipient}`)
@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const wholesale_price = data.wholesale_price
                 const is_discount = data.is_discount
                 const discount_retail_price = data.discount_retail_price
+                const is_divisible = data.is_divisible
                 const has_bulk = data.has_bulk
                 // Can loop through bulk if needed
                 const bulk = data.bulk
@@ -44,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const carton_bag_price = data.carton_bag_price
                 const no_in_carton_bag = data.no_in_carton_bag
                 const carton_bag_image = data.carton_bag_image
-                const price_modified_date = data.price_modified_date
+                const is_carton_bag_divisible = data.is_carton_bag_divisible
                 const singles_stock = data.singles_stock
                 const carton_bag_stock = data.carton_bag_stock
 
@@ -74,6 +75,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 const saleType = document.getElementById("saleType");
                 saleType.textContent = "Pieces (Retail)";
 
+                // Either disable or enable half and quarter buttons
+                const halfButton = document.getElementById("half_button");
+                const quartButton = document.getElementById("quart_button");
+
+                if (is_divisible === false) {
+                    halfButton.disabled = true;
+                    quartButton.disabled = true;
+                }
+
                 // place buttons for singles (retail and wholesale) in div,
                 // with the other bulk and carton buttons in a separate div together
                 // can use flex to put them together responsively
@@ -84,9 +94,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     const retailButton = document.getElementById("retailbutton");
                     retailButton.checked = true;
                     retailButton.dataset.price = retail_price;
+                    retailButton.dataset.image = product_image[0];
+                    retailButton.dataset.divisibility = is_divisible.toString();
 
                     const wholesaleButton = document.getElementById("wholesalebutton");
                     wholesaleButton.dataset.price = wholesale_price;
+                    wholesaleButton.dataset.image = product_image[0];
+                    wholesaleButton.dataset.divisibility = is_divisible.toString();
                 } else {
                     const newSingDiv = document.createElement("div");
                     newSingDiv.id = "singDiv";
@@ -107,7 +121,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     retailButton.autocomplete = "off";
                     retailButton.id = "retailbutton";
                     retailButton.dataset.price = retail_price;
-                    retailButton.value = "Pieces (Retail)"
+                    retailButton.value = "Pieces (Retail)";
+                    retailButton.dataset.image = product_image[0];
+                    retailButton.dataset.divisibility = is_divisible.toString();
 
                     // Create label for retail button
                     let l = document.createElement("LABEL");
@@ -127,7 +143,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     wholesaleButton.autocomplete = "off";
                     wholesaleButton.id = "wholesalebutton";
                     wholesaleButton.dataset.price = wholesale_price;
-                    wholesaleButton.value = "Pieces (Wholesale)"
+                    wholesaleButton.value = "Pieces (Wholesale)";
+                    wholesaleButton.dataset.image = product_image[0];
+                    wholesaleButton.dataset.divisibility = is_divisible.toString();
 
                     // Create label for wholesale button
                     let n = document.createElement("LABEL");
@@ -152,6 +170,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 vRule.className = "vr me-2 d-none d-md-block d-lg-block d-xl-block d-xxl-block";
                 vRule.style.color = "white";
                 vRule.id = "Separ";
+
+                const holder = document.getElementById("quantleft");
+                var totalQuantity = (no_in_carton_bag * carton_bag_stock) + singles_stock;
+                holder.value = totalQuantity;
 
                 if (has_bulk) {
                     
@@ -182,6 +204,11 @@ document.addEventListener("DOMContentLoaded", () => {
                             bulkButton.dataset.image = bulk["bulk_image_" + num][0];
 
                             bulkButton.value = `${element} (${bulk["no_in_bulk_" + num]})`
+                            
+                            // Test this whenever possible
+                            if (parseInt(bulkButton.dataset.number) > totalQuantity) {
+                                bulkButton.disabled = true;
+                            }
     
                             // Create label for button
                             const am = document.createElement("label");
@@ -210,6 +237,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     cartButton.dataset.price = carton_bag_price;
                     cartButton.dataset.number = no_in_carton_bag;
                     cartButton.dataset.image = carton_bag_image[0];
+                    cartButton.dataset.divisibility = is_carton_bag_divisible.toString()
+
+                    if (parseInt(cartButton.dataset.number) > totalQuantity) {
+                        cartButton.disabled = true;
+                    }
 
                     // Create label for button
                     if (is_carton_bag == "carton") {
@@ -236,8 +268,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 // again will make 1/4 text visible
                 // const quantHold = 
                 const quantLeft = document.getElementById("quantityLeft");
-                var totalQuantity = (no_in_carton_bag * carton_bag_stock) + singles_stock;
-                quantLeft.textContent = `${totalQuantity} available`;
+                if (totalQuantity < 10) {
+                    quantLeft.textContent = `Only ${totalQuantity} left`;
+                } else {
+                    quantLeft.textContent = `${totalQuantity} available`;
+                }
 
                 // Fetch cart data from Django
                 fetch("/open_staff_carts")
@@ -245,7 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 .then(data => {
                     data.carts.forEach(element => {
                         const dataList = document.getElementById("cartList");
-                        dataList.add(element)
+                        dataList.add(element);
                     });
                 })
                 
@@ -257,15 +292,104 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.addEventListener("click", event => {
             const element = event.target;
+            const halfButton = document.getElementById("half_button");
+            const quartButton = document.getElementById("quart_button");
+            const quantity = document.getElementById("prodquantity");
 
             if (element.name == "saleType") {
+                const resetQuant = document.querySelector("#prodquantity");
+                resetQuant.value = 1;
+                if (element.dataset.divisibility == "false") {
+                    halfButton.disabled = true;
+                    quartButton.disabled = true;
+                } else {
+                    halfButton.disabled = false;
+                    quartButton.disabled = false;
+                }
+
+                const thePic = document.getElementById("centrePic");
+                thePic.src = element.dataset.image;
+
                 const saleType = document.getElementById("saleType");
                 saleType.textContent = `${element.value}`;
 
-                const priceHold = document.getElementById("prodPrice")
-                priceHold.textContent = `₦${editPrice(element.dataset.price)}`
+                const priceHold = document.getElementById("prodPrice");
+                priceHold.textContent = `₦${editPrice(element.dataset.price)}`;
+            } else if (element.id == "plus_button") {
+                quantity.value = parseInt(quantity.value) + 1;
+                if (parseInt(quantity.value) > 1) {
+                    document.getElementById("minus_button").disabled = false;
+                }
+            } else if (element.id == "minus_button") {
+                quantity.value = parseInt(quantity.value) - 1;
+                if (parseInt(quantity.value) >= 1) {
+                    document.getElementById("plus_button").disabled = false;
+                    if (parseInt(quantity.value) == 1) {
+                        document.getElementById("minus_button").disabled = true;
+                        return;
+                    }
+                    document.getElementById("minus_button").disabled = false;
+                }
             }
         })
+
+        document.querySelector("#prodquantity").onkeyup = () => {
+            const currSaleType = document.querySelector("input[name=saleType]:checked");
+            if (currSaleType.value == "Pieces (Retail)") {
+                if (parseInt(document.querySelector("#prodquantity").value) < 1) {
+                    document.querySelector("#prodquantity").value = 1;
+                    document.getElementById("minus_button").disabled = true;
+                    document.getElementById("plus_button").disabled = false;
+                } else if (parseInt(document.querySelector("#prodquantity").value) > parseInt(document.getElementById("quantleft").value)) {
+                    document.querySelector("#prodquantity").value = document.getElementById("quantleft").value;
+                    document.getElementById("minus_button").disabled = false;
+                    document.getElementById("plus_button").disabled = true;
+                } else {
+                    document.getElementById("minus_button").disabled = false;
+                    document.getElementById("plus_button").disabled = false;
+                }
+            } else if (currSaleType.value == "Pieces (Wholesale)") {
+                if (parseInt(document.querySelector("#prodquantity").value) < 1) {
+                    document.querySelector("#prodquantity").value = 1;
+                    document.getElementById("minus_button").disabled = true;
+                    document.getElementById("plus_button").disabled = false;
+                } else if (parseInt(document.querySelector("#prodquantity").value) > parseInt(document.getElementById("quantleft").value)) {
+                    document.querySelector("#prodquantity").value = document.getElementById("quantleft").value;
+                    document.getElementById("minus_button").disabled = false;
+                    document.getElementById("plus_button").disabled = true;
+                } else {
+                    document.getElementById("minus_button").disabled = false;
+                    document.getElementById("plus_button").disabled = false;
+                }
+            } else if (currSaleType.value == "Carton" || currSaleType.value == "Bag") {
+                if (parseInt(document.querySelector("#prodquantity").value) < 1) {
+                    document.querySelector("#prodquantity").value = 1;
+                    document.getElementById("minus_button").disabled = true;
+                    document.getElementById("plus_button").disabled = false;
+                } else if (parseInt(document.querySelector("#prodquantity").value) > parseInt(currSaleType.dataset.number)) {
+                    document.querySelector("#prodquantity").value = currSaleType.dataset.number;
+                    document.getElementById("minus_button").disabled = false;
+                    document.getElementById("plus_button").disabled = true;
+                } else {
+                    document.getElementById("minus_button").disabled = false;
+                    document.getElementById("plus_button").disabled = false;
+                }
+            } else {
+                if (parseInt(document.querySelector("#prodquantity").value) < 1) {
+                    document.querySelector("#prodquantity").value = 1;
+                    document.getElementById("minus_button").disabled = true;
+                    document.getElementById("plus_button").disabled = false;
+                } else if ((parseInt(document.querySelector("#prodquantity").value) * parseInt(currSaleType.dataset.number)) > parseInt(document.getElementById("quantleft").value)) {
+                    var allowQuant = Math.floor(parseInt(document.getElementById("quantleft").value)/parseInt(currSaleType.dataset.number))
+                    document.querySelector("#prodquantity").value = allowQuant;
+                    document.getElementById("minus_button").disabled = false;
+                    document.getElementById("plus_button").disabled = true;
+                } else {
+                    document.getElementById("minus_button").disabled = false;
+                    document.getElementById("plus_button").disabled = false;
+                }
+            }
+        }
 
         // document.addEventListener("")
 
@@ -281,9 +405,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             const quantField = document.getElementById("prodquantity");
             quantField.value = 1;
-
-            const otherquant = document.getElementById("otherquantity");
-            otherquant.style.display = "none";
         })
     }
 });

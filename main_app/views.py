@@ -36,7 +36,8 @@ def home(request):
                        {bk_img : product["bulk"][bk_img] for bk_img in product["bulk"] if bk_img.startswith("bulk_image")},
                        product["is_carton_bag"], product["carton_bag_price"], product["no_in_carton_bag"],
                        product["carton_bag_image"], product["price_modified_date"], product["singles_stock"],
-                       product["carton_bag_stock"], product["description"], product["slug"])
+                       product["carton_bag_stock"], product["description"], product["slug"], product["is_divisible"],
+                       product["is_carton_bag_divisible"])
         inventory.append(item)
 
     # check that user is registered
@@ -276,21 +277,24 @@ def add_product(request):
             brand_name = form.cleaned_data["brand_name"]
             product_name = form.cleaned_data["product_name"]
             size = form.cleaned_data["size"]
-            product_image = request.FILES["product_image"]
+            product_image = request.FILES.get("product_image")
             retail_price = form.cleaned_data["retail_price"]
             wholesale_price = form.cleaned_data["wholesale_price"]
             is_discount = form.cleaned_data["is_discount"]
             discount_retail_price = form.cleaned_data["discount_retail_price"]
+            is_divisible = form.cleaned_data["is_divisible"]
             has_bulk = form.cleaned_data["has_bulk"]
             is_carton_bag = form.cleaned_data["is_carton_bag"]
             carton_price = form.cleaned_data["carton_price"]
             no_in_carton = form.cleaned_data["no_in_carton"]
             carton_image = request.FILES.get("carton_image", False)
             carton_stock = form.cleaned_data["carton_stock"]
+            is_carton_divisible = form.cleaned_data["is_carton_divisible"]
             bag_price = form.cleaned_data["bag_price"]
             no_in_bag = form.cleaned_data["no_in_bag"]
             bag_image = request.FILES.get("bag_image", False)
             bag_stock = form.cleaned_data["bag_stock"]
+            is_bag_divisible = form.cleaned_data["is_bag_divisible"]
             singles_stock = form.cleaned_data["singles_stock"]
             tags = form.cleaned_data["tags"]
             description = form.cleaned_data.get("description")
@@ -398,15 +402,20 @@ def add_product(request):
             product_img_url, product_img_path = handle_product_image(compress_image(product_image))
 
             # Determine if carton or bag and process accordingly
+            is_carton_bag_divisible = False
 
             if is_carton_bag == "carton":
                 carton_bag_price = carton_price
                 no_in_carton_bag = no_in_carton
                 carton_bag_stock = carton_stock
+                if is_carton_divisible == "True":
+                    is_carton_bag_divisible = True
             elif is_carton_bag == "bag":
                 carton_bag_price = bag_price
                 no_in_carton_bag = no_in_bag
                 carton_bag_stock = bag_stock
+                if is_bag_divisible == "True":
+                    is_carton_bag_divisible = True
             else:
                 carton_bag_price = 0
                 no_in_carton_bag = 0
@@ -443,6 +452,11 @@ def add_product(request):
             else:
                 bulk_fact = False
 
+            if is_divisible == "True":
+                divisible_fact = True
+            else:
+                divisible_fact = False
+
             new_tags = str(tags).split(", ")
             
             # Create Product object and add to mongodb
@@ -450,7 +464,7 @@ def add_product(request):
                                   retail_price, wholesale_price, discount_fact, discount_retail_price if discount_fact else 0,
                                   bulk_fact, bulk_prices, bulk_types, nos_in_bulk, bulk_images, is_carton_bag,
                                   carton_bag_price, no_in_carton_bag, carton_bag_image, datetime.now(), singles_stock,
-                                  carton_bag_stock, description, product_id
+                                  carton_bag_stock, description, product_id, divisible_fact, is_carton_bag_divisible
                                   )
 
             products_collection.insert_one(new_product.to_dict())

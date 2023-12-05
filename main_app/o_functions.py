@@ -1,10 +1,9 @@
 from email.message import EmailMessage
 import os, ssl, smtplib
 from dotenv import load_dotenv
-from infisical import InfisicalClient
 
 load_dotenv()
-security_guard = InfisicalClient(token=os.getenv("INFISICAL_URI"))
+from utils import security_guard
 
 def correct_id(name) -> str:
     """ Used to introduce correct

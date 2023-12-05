@@ -279,6 +279,10 @@ class AddProductForm(forms.Form):
     discount_retail_price = forms.IntegerField(label="Discounted Retail Price", required=False, widget=forms.widgets.NumberInput(
         attrs={"class": "form-control", "id": "discount_retail_price", "placeholder": "Discounted Retail Price"}), label_suffix="")
 
+    is_divisible = forms.ChoiceField(required=True, choices=YES_NO_CHOICES, widget=forms.widgets.Select(
+        attrs={"placeholder":"is divisible", "class":"form-select", "id": "is_divisible"}),
+        label="Can Product Be Divided For Sale?", label_suffix="", initial=False)
+
     has_bulk = forms.ChoiceField(required=True, choices=YES_NO_CHOICES, widget=forms.widgets.Select(
         attrs={"placeholder":"has bulk", "class":"form-select", "id": "has_bulk"}),
         label="Does Product Have Bulk?", label_suffix="")
@@ -316,6 +320,10 @@ class AddProductForm(forms.Form):
         attrs={"id": "carton_stock", "class": "form-control", 
                "placeholder":"The carton stock"}), label_suffix="")
     
+    is_carton_divisible = forms.ChoiceField(required=True, choices=YES_NO_CHOICES, widget=forms.widgets.Select(
+        attrs={"placeholder":"is carton divisible", "class":"form-select", "id": "is_carton_divisible"}),
+        label="Can Carton Be Divided For Sale?", label_suffix="", initial=True)
+    
     bag_price = forms.IntegerField(label="Price of Bag", required=False, widget=forms.widgets.NumberInput(
         attrs={"name": "bag_price", "class": "form-control", 
                "placeholder":"bag price", "id": "bag_price"}), label_suffix="")
@@ -330,6 +338,10 @@ class AddProductForm(forms.Form):
     bag_stock = forms.IntegerField(label="Number of Bags in Stock", required=False, widget=forms.widgets.NumberInput(
         attrs={"id": "bag_stock", "class": "form-control", 
                "placeholder":"The bag stock"}), label_suffix="")
+    
+    is_bag_divisible = forms.ChoiceField(required=True, choices=YES_NO_CHOICES, widget=forms.widgets.Select(
+        attrs={"placeholder":"is bag divisible", "class":"form-select", "id": "is_bag_divisible"}),
+        label="Can Bag Be Divided For Sale?", label_suffix="", initial=True)
 
     singles_stock = forms.IntegerField(label="Number of Single Quantities in Stock", required=True, widget=forms.widgets.NumberInput(
         attrs={"name": "singles_stock", "class": "form-control", 
@@ -475,11 +487,13 @@ class AddProductForm(forms.Form):
         no_in_carton = self.cleaned_data.get("no_in_carton")
         carton_image = self.cleaned_data.get("carton_image")
         carton_stock = self.cleaned_data.get("carton_stock")
+        is_carton_divisible = self.cleaned_data.get("is_carton_divisible")
 
         bag_price = self.cleaned_data.get("bag_price")
         no_in_bag = self.cleaned_data.get("no_in_bag")
         bag_image = self.cleaned_data.get("bag_image")
         bag_stock = self.cleaned_data.get("bag_stock")
+        is_bag_divisible = self.cleaned_data.get("is_bag_divisible")
 
         if is_carton_bag:
             if is_carton_bag == "carton" and carton_price == None:
@@ -494,6 +508,8 @@ class AddProductForm(forms.Form):
                 self.add_error("carton_stock", "Number of cartons in stock required!")
             elif is_carton_bag == "carton" and carton_stock < 0:
                 self.add_error("carton_stock", "You can't have a negative stock!")
+            elif is_carton_bag == "bag" and is_carton_divisible == None:
+                self.add_error("bag_stock", "Carton's Divisibility required!")
 
             if is_carton_bag == "bag" and bag_price == None:
                 self.add_error("bag_price", "Price of bag required!")
@@ -508,6 +524,8 @@ class AddProductForm(forms.Form):
                 self.add_error("bag_stock", "Number of bags in stock required!")
             elif is_carton_bag == "bag" and bag_stock < 0:
                 self.add_error("bag_stock", "You can't have a negative stock!")
+            elif is_carton_bag == "bag" and is_bag_divisible == None:
+                self.add_error("bag_stock", "Carton's Divisibility required!")
 
             if is_carton_bag == "none" and carton_price != None:
                 self.add_error("is_carton_bag", "Product does not have carton/bag!")
@@ -517,6 +535,8 @@ class AddProductForm(forms.Form):
                 self.add_error("is_carton_bag", "Product does not have carton/bag!")
             elif is_carton_bag == "none" and carton_stock != None:
                 self.add_error("is_carton_bag", "Product does not have carton/bag!")
+            elif is_carton_bag == "none" and is_carton_divisible != None:
+                self.add_error("is_carton_bag", "Product does not have carton/bag!")
             elif is_carton_bag == "none" and bag_price != None:
                 self.add_error("is_carton_bag", "Product does not have carton/bag!")
             elif is_carton_bag == "none" and no_in_bag != None:
@@ -524,6 +544,8 @@ class AddProductForm(forms.Form):
             elif is_carton_bag == "none" and bag_image != None:
                 self.add_error("is_carton_bag", "Product does not have carton/bag!")
             elif is_carton_bag == "none" and bag_stock != None:
+                self.add_error("is_carton_bag", "Product does not have carton/bag!")
+            elif is_carton_bag == "none" and is_bag_divisible != None:
                 self.add_error("is_carton_bag", "Product does not have carton/bag!")
 
         return self.cleaned_data
@@ -628,6 +650,8 @@ class EditProductForm(forms.Form):
     discount_retail_price = forms.IntegerField(label="Discounted Retail Price", required=False, widget=forms.widgets.NumberInput(
         attrs={"class": "form-control", "id": "discount_retail_price", "placeholder": "Discounted Retail Price"}), label_suffix="")
 
+    # Will add soon
+
     has_bulk = forms.ChoiceField(required=True, choices=YES_NO_CHOICES, widget=forms.widgets.Select(
         attrs={"placeholder":"has bulk", "class":"form-select", "id": "has_bulk"}),
         label="Does Product Have Bulk?", label_suffix="")
@@ -665,6 +689,8 @@ class EditProductForm(forms.Form):
         attrs={"id": "carton_stock", "class": "form-control", 
                "placeholder":"The carton stock"}), label_suffix="")
     
+    # Will add soon
+    
     bag_price = forms.IntegerField(label="Price of Bag", required=False, widget=forms.widgets.NumberInput(
         attrs={"name": "bag_price", "class": "form-control", 
                "placeholder":"bag price", "id": "bag_price"}), label_suffix="")
@@ -679,6 +705,8 @@ class EditProductForm(forms.Form):
     bag_stock = forms.IntegerField(label="Number of Bags in Stock", required=False, widget=forms.widgets.NumberInput(
         attrs={"id": "bag_stock", "class": "form-control", 
                "placeholder":"The bag stock"}), label_suffix="")
+    
+    # Will add soon
 
     singles_stock = forms.IntegerField(label="Number of Single Quantities in Stock", required=True, widget=forms.widgets.NumberInput(
         attrs={"name": "singles_stock", "class": "form-control", 

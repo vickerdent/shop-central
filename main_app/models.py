@@ -92,6 +92,10 @@ class Buyer(Human):
             "gender": self.gender,
             "address": self.address,
             "state": self.state,
+            "image": self.image,
+            "description": self.description,
+            "date_modified": self.date_modified,
+            "amount_owed": self.amount_owed,
             "image": self.image
         }
 
@@ -106,13 +110,14 @@ class Product:
     __slot__ = ("brand_name", "product_name", "size", "product_image", "tags", "retail_price", "wholesale_price",
                 "is_discount", "discount_retail_price", "has_bulk", "bulk_prices", "bulk_types", "nos_in_bulk", "bulk_images",
                 "is_carton_bag", "carton_bag_price", "no_in_carton_bag", "carton_bag_image", "price_modified_date",
-                "singles_stock", "carton_bag_stock", "description", "slug")
+                "singles_stock", "carton_bag_stock", "description", "slug", "is_divisible", "is_carton_bag_divisible")
     
     def __init__(self, brand_name: str, product_name: str, size: str, product_image: list, tags: list,
                  retail_price: int, wholesale_price: int, is_discount: bool, discount_retail_price: int, has_bulk: bool,
                  bulk_prices: dict, bulk_types: dict, nos_in_bulk: dict, bulk_images: dict, is_carton_bag: str,
                  carton_bag_price: int, no_in_carton_bag: int, carton_bag_image: list, price_modified_date: datetime,
-                 singles_stock: int, carton_bag_stock: int, description: str, slug: str) -> None:
+                 singles_stock: int, carton_bag_stock: int, description: str, slug: str, is_divisible: bool,
+                 is_carton_bag_divisible: bool) -> None:
         self.brand_name = brand_name
         self.product_name = product_name
         self.size = size
@@ -122,6 +127,7 @@ class Product:
         self.wholesale_price = wholesale_price
         self.is_discount = is_discount
         self.discount_retail_price = discount_retail_price
+        self.is_divisible = is_divisible
         self.has_bulk = has_bulk
         self.bulk_prices = bulk_prices
         self.bulk_types = bulk_types
@@ -135,6 +141,7 @@ class Product:
         self.singles_stock = singles_stock
         self.carton_bag_stock = carton_bag_stock
         self.descripton = description
+        self.is_carton_bag_divisible = is_carton_bag_divisible
         self.slug = slug
         self.name = self.brand_name + " " + self.product_name + " - " + self.size
 
@@ -153,12 +160,14 @@ class Product:
             "wholesale_price": self.wholesale_price,
             "is_discount": self.is_discount,
             "discount_retail_price": self.discount_retail_price,
+            "is_divisible": self.is_divisible,
             "has_bulk": self.has_bulk,
             "bulk": {**self.bulk_types, **self.bulk_prices, **self.nos_in_bulk, **self.bulk_images},
             "is_carton_bag": self.is_carton_bag,
             "carton_bag_price": self.carton_bag_price,
             "no_in_carton_bag": self.no_in_carton_bag,
             "carton_bag_image": self.carton_bag_image,
+            "is_carton_bag_divisible": self.is_carton_bag_divisible,
             "price_modified_date": self.price_modified_date,
             "singles_stock": self.singles_stock,
             "carton_bag_stock": self.carton_bag_stock,
