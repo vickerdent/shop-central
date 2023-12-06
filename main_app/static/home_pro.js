@@ -75,9 +75,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 const saleType = document.getElementById("saleType");
                 saleType.textContent = "Pieces (Retail)";
 
-                // Either disable or enable half and quarter buttons
+                // Either disable or enable half and quarter buttons, but ensure they're unchecked
                 const halfButton = document.getElementById("half_button");
                 const quartButton = document.getElementById("quart_button");
+
+                halfButton.checked = false;
+                quartButton.checked = false;
 
                 if (is_divisible === false) {
                     halfButton.disabled = true;
@@ -237,6 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     cartButton.dataset.price = carton_bag_price;
                     cartButton.dataset.number = no_in_carton_bag;
                     cartButton.dataset.image = carton_bag_image[0];
+                    cartButton.dataset.stock = carton_bag_stock
                     cartButton.dataset.divisibility = is_carton_bag_divisible.toString()
 
                     if (parseInt(cartButton.dataset.number) > totalQuantity) {
@@ -295,18 +299,32 @@ document.addEventListener("DOMContentLoaded", () => {
             const halfButton = document.getElementById("half_button");
             const quartButton = document.getElementById("quart_button");
             const quantity = document.getElementById("prodquantity");
+            const totalQuant = document.getElementById("totalQuantity");
 
             if (element.name == "saleType") {
-                const resetQuant = document.querySelector("#prodquantity");
-                resetQuant.value = 1;
+                quantity.value = 1;
+                totalQuant.textContent = 1;
+                halfButton.checked = false;
+                quartButton.checked = false;
                 if (element.dataset.divisibility == "false") {
                     halfButton.disabled = true;
                     quartButton.disabled = true;
+                    document.getElementById("minus_button").disabled = false;
+                    document.getElementById("plus_button").disabled = false;
                 } else {
                     halfButton.disabled = false;
                     quartButton.disabled = false;
+                    document.getElementById("minus_button").disabled = false;
+                    document.getElementById("plus_button").disabled = false;
                 }
 
+                if ((parseInt(element.dataset.number) % 2) != 0) {
+                    halfButton.disabled = true;
+                }
+                if ((parseInt(element.dataset.number) % 4) != 0) {
+                    quartButton.disabled = true;
+                }
+                
                 const thePic = document.getElementById("centrePic");
                 thePic.src = element.dataset.image;
 
@@ -316,9 +334,111 @@ document.addEventListener("DOMContentLoaded", () => {
                 const priceHold = document.getElementById("prodPrice");
                 priceHold.textContent = `₦${editPrice(element.dataset.price)}`;
             } else if (element.id == "plus_button") {
-                quantity.value = parseInt(quantity.value) + 1;
+                const currSaleType = document.querySelector("input[name=saleType]:checked");
+                if (currSaleType.value == "Pieces (Retail)") {
+                    quantity.value = parseInt(quantity.value) + 1;
+                    if (parseInt(quantity.value) < 1) {
+                        quantity.value = 1;
+                        document.getElementById("minus_button").disabled = true;
+                        document.getElementById("plus_button").disabled = false;
+                    } else if (parseInt(quantity.value) == parseInt(document.getElementById("quantleft").value)) {
+                        quantity.value = document.getElementById("quantleft").value;
+                        document.getElementById("minus_button").disabled = false;
+                        document.getElementById("plus_button").disabled = true;
+                    } else {
+                        document.getElementById("minus_button").disabled = false;
+                        document.getElementById("plus_button").disabled = false;
+                    }
+                } else if (currSaleType.value == "Pieces (Wholesale)") {
+                    quantity.value = parseInt(quantity.value) + 1;
+                    if (parseInt(quantity.value) < 1) {
+                        quantity.value = 1;
+                        document.getElementById("minus_button").disabled = true;
+                        document.getElementById("plus_button").disabled = false;
+                    } else if (parseInt(quantity.value) == parseInt(document.getElementById("quantleft").value)) {
+                        quantity.value = document.getElementById("quantleft").value;
+                        document.getElementById("minus_button").disabled = false;
+                        document.getElementById("plus_button").disabled = true;
+                    } else {
+                        document.getElementById("minus_button").disabled = false;
+                        document.getElementById("plus_button").disabled = false;
+                    }
+                } else if (currSaleType.value == "Carton" || currSaleType.value == "Bag") {
+                    quantity.value = parseInt(quantity.value) + 1;
+                    if (parseInt(quantity.value) < 1) {
+                        quantity.value = 1;
+                        document.getElementById("minus_button").disabled = true;
+                        document.getElementById("plus_button").disabled = false;
+                    } else if (parseInt(quantity.value) >= parseInt(currSaleType.dataset.number)) {
+                        quantity.value = currSaleType.dataset.number;
+                        var remainder = parseInt(document.getElementById("quantleft").value) - (parseInt(currSaleType.dataset.number) * currSaleType.dataset.stock)
+                        if (remainder < Math.floor(parseInt(currSaleType.dataset.number)/2)) {
+                            halfButton.checked = false;
+                            halfButton.disabled = true;
+                            quartButton.checked = false;
+                            quartButton.disabled = true;
+                        } else if (remainder < Math.floor(parseInt(currSaleType.dataset.number)/4)) {
+                            halfButton.checked = false;
+                            halfButton.disabled = false;
+                            quartButton.checked = false;
+                            quartButton.disabled = true;
+                        } else {
+                            halfButton.checked = false;
+                            halfButton.disabled = false;
+                            quartButton.checked = false;
+                            quartButton.disabled = false;
+                        }
+                        document.getElementById("minus_button").disabled = false;
+                        document.getElementById("plus_button").disabled = true;
+                    } else {
+                        document.getElementById("minus_button").disabled = false;
+                        document.getElementById("plus_button").disabled = false;
+                    }
+                } else {
+                    quantity.value = parseInt(quantity.value) + 1;
+                    if (parseInt(quantity.value) < 1) {
+                        quantity.value = 1;
+                        document.getElementById("minus_button").disabled = true;
+                        document.getElementById("plus_button").disabled = false;
+                    } else if ((parseInt(quantity.value) * parseInt(currSaleType.dataset.number)) >= parseInt(document.getElementById("quantleft").value)) {
+                        document.getElementById("plus_button").disabled = true;
+                        // Getting a headache here
+                        var allowQuant = Math.floor(parseInt(document.getElementById("quantleft").value)/parseInt(currSaleType.dataset.number))
+                        quantity.value = allowQuant;
+                        var remainder = parseInt(document.getElementById("quantleft").value) % parseInt(currSaleType.dataset.number)
+                        if (remainder < Math.floor(parseInt(currSaleType.dataset.number)/2)) {
+                            halfButton.checked = false;
+                            halfButton.disabled = true;
+                            quartButton.checked = false;
+                            quartButton.disabled = true;
+                        } else if (remainder < Math.floor(parseInt(currSaleType.dataset.number)/4)) {
+                            halfButton.checked = false;
+                            halfButton.disabled = false;
+                            quartButton.checked = false;
+                            quartButton.disabled = true;
+                        } else {
+                            halfButton.checked = false;
+                            halfButton.disabled = false;
+                            quartButton.checked = false;
+                            quartButton.disabled = false;
+                        }
+                        document.getElementById("minus_button").disabled = false;
+                    } else {
+                        document.getElementById("minus_button").disabled = false;
+                        document.getElementById("plus_button").disabled = false;
+                    }
+                }
                 if (parseInt(quantity.value) > 1) {
                     document.getElementById("minus_button").disabled = false;
+                }
+                if (halfButton.checked) {
+                    totalQuant.textContent = `${quantity.value} and a half`
+                } else if (quartButton.checked) {
+                    totalQuant.textContent = `${quantity.value} and a quarter`
+                } else if (halfButton.checked && quartButton.checked) {
+                    totalQuant.textContent = `${quantity.value} and 3 quarters`
+                } else {
+                    totalQuant.textContent = `${quantity.value}`
                 }
             } else if (element.id == "minus_button") {
                 quantity.value = parseInt(quantity.value) - 1;
@@ -330,10 +450,23 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                     document.getElementById("minus_button").disabled = false;
                 }
+                if (halfButton.checked) {
+                    totalQuant.textContent = `${quantity.value} and a half`
+                } else if (quartButton.checked) {
+                    totalQuant.textContent = `${quantity.value} and a quarter`
+                } else if (halfButton.checked && quartButton.checked) {
+                    totalQuant.textContent = `${quantity.value} and 3 quarters`
+                } else {
+                    totalQuant.textContent = `${quantity.value}`
+                }
             }
         })
 
-        document.querySelector("#prodquantity").onkeyup = () => {
+        document.querySelector("#prodquantity").onkeyup = function keyingUp() {
+            const halfButton = document.getElementById("half_button");
+            const quartButton = document.getElementById("quart_button");
+            const quantity = document.getElementById("prodquantity");
+            const totalQuant = document.getElementById("totalQuantity");
             const currSaleType = document.querySelector("input[name=saleType]:checked");
             if (currSaleType.value == "Pieces (Retail)") {
                 if (parseInt(document.querySelector("#prodquantity").value) < 1) {
@@ -370,6 +503,23 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.querySelector("#prodquantity").value = currSaleType.dataset.number;
                     document.getElementById("minus_button").disabled = false;
                     document.getElementById("plus_button").disabled = true;
+                    var remainder = parseInt(document.getElementById("quantleft").value) - (parseInt(currSaleType.dataset.number) * currSaleType.dataset.stock)
+                        if (remainder < Math.floor(parseInt(currSaleType.dataset.number)/2)) {
+                            halfButton.checked = false;
+                            halfButton.disabled = true;
+                            quartButton.checked = false;
+                            quartButton.disabled = true;
+                        } else if (remainder < Math.floor(parseInt(currSaleType.dataset.number)/4)) {
+                            halfButton.checked = false;
+                            halfButton.disabled = false;
+                            quartButton.checked = false;
+                            quartButton.disabled = true;
+                        } else {
+                            halfButton.checked = false;
+                            halfButton.disabled = false;
+                            quartButton.checked = false;
+                            quartButton.disabled = false;
+                        }
                 } else {
                     document.getElementById("minus_button").disabled = false;
                     document.getElementById("plus_button").disabled = false;
@@ -382,12 +532,38 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else if ((parseInt(document.querySelector("#prodquantity").value) * parseInt(currSaleType.dataset.number)) > parseInt(document.getElementById("quantleft").value)) {
                     var allowQuant = Math.floor(parseInt(document.getElementById("quantleft").value)/parseInt(currSaleType.dataset.number))
                     document.querySelector("#prodquantity").value = allowQuant;
+                    var remainder = parseInt(document.getElementById("quantleft").value) % parseInt(currSaleType.dataset.number)
+                        if (remainder < Math.floor(parseInt(currSaleType.dataset.number)/2)) {
+                            halfButton.checked = false;
+                            halfButton.disabled = true;
+                            quartButton.checked = false;
+                            quartButton.disabled = true;
+                        } else if (remainder < Math.floor(parseInt(currSaleType.dataset.number)/4)) {
+                            halfButton.checked = false;
+                            halfButton.disabled = false;
+                            quartButton.checked = false;
+                            quartButton.disabled = true;
+                        } else {
+                            halfButton.checked = false;
+                            halfButton.disabled = false;
+                            quartButton.checked = false;
+                            quartButton.disabled = false;
+                        }
                     document.getElementById("minus_button").disabled = false;
                     document.getElementById("plus_button").disabled = true;
                 } else {
                     document.getElementById("minus_button").disabled = false;
                     document.getElementById("plus_button").disabled = false;
                 }
+            }
+            if (halfButton.checked) {
+                totalQuant.textContent = `${quantity.value} and a half`
+            } else if (quartButton.checked) {
+                totalQuant.textContent = `${quantity.value} and a quarter`
+            } else if (halfButton.checked && quartButton.checked) {
+                totalQuant.textContent = `${quantity.value} and 3 quarters`
+            } else {
+                totalQuant.textContent = `${quantity.value}`
             }
         }
 
@@ -427,3 +603,4 @@ function editPrice(dPrice) {
     }
     return strPrice;
 }
+
