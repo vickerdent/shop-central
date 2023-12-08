@@ -566,8 +566,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 const currSaleType = document.querySelector("input[name=saleType]:checked");
                 remainder = (parseInt(document.getElementById("quantleft").value) - (parseInt(quantity.value) * parseInt(currSaleType.dataset.number))) % parseInt(currSaleType.dataset.number)
                 if (remainder >= (parseInt(currSaleType.dataset.number)/4)) {
+                    alert("Alert 1")
                     var quest = remainder - parseInt(currSaleType.dataset.number);
                     if (quest % 2 == 0) {
+                        alert("Alert 2")
                         halfButtonButton.disabled = false;
                         if (halfButton.checked && quartButton.checked) {
                             totalQuant.textContent = `${quantity.value} and three quarters (¾)`
@@ -578,11 +580,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         } else {
                             totalQuant.textContent = `${quantity.value}`
                         }
-                        return;
                     } else {
+                        alert("Alert 3")
                         halfButton.disabled = true;
                         totalQuant.textContent = `${quantity.value} and a quarter (¼)`
-                        return;
                     }
                 }
                 if (halfButton.checked && quartButton.checked) {
