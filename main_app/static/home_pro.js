@@ -400,6 +400,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         document.getElementById("minus_button").disabled = false;
                         document.getElementById("plus_button").disabled = true;
                     } else {
+                        quantity.value = parseInt(quantity.value);
                         document.getElementById("minus_button").disabled = false;
                         document.getElementById("plus_button").disabled = false;
                     }
@@ -413,6 +414,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         document.getElementById("minus_button").disabled = false;
                         document.getElementById("plus_button").disabled = true;
                     } else {
+                        quantity.value = parseInt(quantity.value);
                         document.getElementById("minus_button").disabled = false;
                         document.getElementById("plus_button").disabled = false;
                     }
@@ -462,6 +464,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         document.getElementById("minus_button").disabled = false;
                         document.getElementById("plus_button").disabled = true;
                     } else {
+                        quantity.value = parseInt(quantity.value);
                         document.getElementById("minus_button").disabled = false;
                         document.getElementById("plus_button").disabled = false;
                         var remainder = parseInt(document.getElementById("quantleft").value) - (parseInt(element.dataset.number) * parseInt(element.dataset.stock))
@@ -526,6 +529,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                         document.getElementById("minus_button").disabled = false;
                     } else {
+                        quantity.value = parseInt(quantity.value);
                         document.getElementById("minus_button").disabled = false;
                         document.getElementById("plus_button").disabled = false;
                     }
@@ -557,6 +561,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         document.getElementById("minus_button").disabled = false;
                         document.getElementById("plus_button").disabled = true;
                     } else {
+                        quantity.value = parseInt(quantity.value);
                         document.getElementById("minus_button").disabled = false;
                         document.getElementById("plus_button").disabled = false;
                     }
@@ -570,6 +575,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         document.getElementById("minus_button").disabled = false;
                         document.getElementById("plus_button").disabled = true;
                     } else {
+                        quantity.value = parseInt(quantity.value);
                         document.getElementById("minus_button").disabled = false;
                         document.getElementById("plus_button").disabled = false;
                     }
@@ -616,6 +622,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         document.getElementById("minus_button").disabled = false;
                         document.getElementById("plus_button").disabled = true;
                     } else {
+                        quantity.value = parseInt(quantity.value);
                         document.getElementById("minus_button").disabled = false;
                         document.getElementById("plus_button").disabled = false;
                         var remainder = parseInt(document.getElementById("quantleft").value) - (parseInt(element.dataset.number) * parseInt(element.dataset.stock))
@@ -704,6 +711,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                         document.getElementById("minus_button").disabled = false;
                     } else {
+                        quantity.value = parseInt(quantity.value);
                         var remainder = parseInt(document.getElementById("quantleft").value) - (parseInt(currSaleType.dataset.number) * parseInt(quantity.value))
                         if ((remainder > (Math.floor(parseInt(currSaleType.dataset.number) / 4) + Math.floor(parseInt(currSaleType.dataset.number) / 2))) && ((parseInt(currSaleType.dataset.number) % 4) == 0) && ((parseInt(currSaleType.dataset.number) % 2) == 0)) {
                             halfButton.disabled = false;
@@ -733,7 +741,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                         document.getElementById("minus_button").disabled = false;
                         document.getElementById("plus_button").disabled = false;
-
                     }
                 }
                 // if (parseInt(quantity.value) >= 1) {
@@ -971,15 +978,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 var oquantity = document.getElementsByName("oquantity");
                 for (const box of oquantity) {
                     if (box.checked) {
-                        finQuantity += parseInt(box.value)
+                        finQuantity += parseFloat(box.value)
                     }
                 }
                 var prodImage = document.getElementById("centrePic").src;
-                var sluger = document.getElementById("priceCall").dataset.recipient;
+                var sluger = document.getElementById("priceCall").dataset.slug;
                 var price = document.getElementById("priceHold").value;
                 var prodName = document.querySelector('.modal-title').textContent;
+
+                fetch(``)
                 
-                alert(`${currSaleType} ${finQuantity} ${prodImage}\n ${sluger} ${price} ${prodName}`)
+                alert(`${currSaleType.value} ${finQuantity} ${prodImage}\n ${sluger} ${price} ${prodName}`)
             }
         })
 
@@ -1004,6 +1013,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById("minus_button").disabled = false;
                     document.getElementById("plus_button").disabled = true;
                 } else {
+                    quantity.value = parseInt(quantity.value);
                     document.getElementById("minus_button").disabled = false;
                     document.getElementById("plus_button").disabled = false;
                 }
@@ -1017,6 +1027,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById("minus_button").disabled = false;
                     document.getElementById("plus_button").disabled = true;
                 } else {
+                    quantity.value = parseInt(quantity.value);
                     document.getElementById("minus_button").disabled = false;
                     document.getElementById("plus_button").disabled = false;
                 }
@@ -1063,6 +1074,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById("minus_button").disabled = false;
                     document.getElementById("plus_button").disabled = true;
                 } else {
+                    quantity.value = parseInt(quantity.value);
                     document.getElementById("minus_button").disabled = false;
                     document.getElementById("plus_button").disabled = false;
                     var remainder = parseInt(document.getElementById("quantleft").value) - (parseInt(element.dataset.number) * parseInt(element.dataset.stock))
@@ -1160,6 +1172,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                     document.getElementById("minus_button").disabled = false;
                 } else {
+                    quantity.value = parseInt(quantity.value);
                     var remainder = parseInt(document.getElementById("quantleft").value) - (parseInt(currSaleType.dataset.number) * parseInt(quantity.value))
                     
                     if ((remainder > (Math.floor(parseInt(currSaleType.dataset.number) / 4) + Math.floor(parseInt(currSaleType.dataset.number) / 2))) && ((parseInt(currSaleType.dataset.number) % 4) == 0) && ((parseInt(currSaleType.dataset.number) % 2) == 0)) {
