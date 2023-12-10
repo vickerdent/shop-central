@@ -10,7 +10,7 @@ from django.http import JsonResponse
 from bson.son import SON
 import pymongo
 
-from .o_functions import correct_id, humans
+from .o_functions import humans
 from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, \
     EditProfileImageForm, EditNameForm, AddProductForm, CarouselForm, EditProductForm
 from .models import TheUser, Buyer, Product, StaffCart, Carousel

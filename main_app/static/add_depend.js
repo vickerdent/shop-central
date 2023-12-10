@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (is_carton_bag === "carton") {
         carton_price.required = true;
         no_in_carton.required = true;
-        carton_image.required = true;
+        carton_image.required = false;
         carton_stock.required = true;
         carton_divis.required = true;
 
@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (is_carton_bag === "bag") {
         bag_price.required = true;
         no_in_bag.required = true;
-        bag_image.required = true;
+        bag_image.required = false;
         bag_stock.required = true;
         bag_divis.required = true;
 
@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (select === "carton") {
             carton_price.required = true;
             no_in_carton.required = true;
-            carton_image.required = true;
+            carton_image.required = false;
             carton_stock.required = true;
             carton_divis.required = true;
 
@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (select === "bag") {
             bag_price.required = true;
             no_in_bag.required = true;
-            bag_image.required = true;
+            bag_image.required = false;
             bag_stock.required = true;
             bag_divis.required = true;
 

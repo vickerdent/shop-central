@@ -25,6 +25,7 @@
                 <div id="productHold">
                   <h6 class="fs-6 text-light d-flex justify-content-center" id="prodName"></h6>
                   <h3 class="fs-3 text-light d-flex justify-content-center" id="prodPrice"></h3>
+                  <input type="hidden" name="priced" id="priceHold">
                   <div class="d-flex justify-content-start">
                     <h4 class="me-2 text-light">Sale Type:</h4>
                     <h4 class="text-light" id="saleType"></h4>
@@ -45,11 +46,11 @@
                       </div>
                       <div class="col-auto"><button type="button" class="btn btn-light" id="plus_button">+</button></div>
                       <div class="col-auto">
-                        <input type="checkbox" class="btn-check" id="half_button" autocomplete="off" name="oquantity1" value="0.5">
+                        <input type="checkbox" class="btn-check" id="half_button" autocomplete="off" name="oquantity" value="0.5">
                         <label class="btn btn-outline-light" for="half_button">Half (½)</label>
                       </div>
                       <div class="col-auto">
-                        <input type="checkbox" class="btn-check" id="quart_button" autocomplete="off" name="oquantity2" value="0.25">
+                        <input type="checkbox" class="btn-check" id="quart_button" autocomplete="off" name="oquantity" value="0.25">
                         <label class="btn btn-outline-light" for="quart_button">Quarter (¼)</label>
                       </div>
                       <div class="col-auto">
@@ -65,7 +66,7 @@
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
               <div class="d-flex flex-row">
                 <div class="me-2 ms-2"><input autocomplete="off" placeholder="Type to select/add Cart" id="openCart" list="cartList" class="form-control"></div>
-                <div><button type="button" class="btn btn-light">Add To Cart</button></div>
+                <div><button type="button" class="btn btn-light" id="addToCart">Add To Cart</button></div>
                 <datalist id="cartList">
                 </datalist>
               </div>              
