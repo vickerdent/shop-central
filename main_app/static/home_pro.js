@@ -337,6 +337,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 halfButton.checked = false;
                 quartButton.checked = false;
                 isWhole.checked = false;
+                document.getElementById("plus_button").disabled = false;
+                quantity.disabled = false;
 
                 // Disable quantity buttons if not feasible, set quantity to value: 1
                 if (element.dataset.divisibility == "false") {
@@ -854,14 +856,52 @@ document.addEventListener("DOMContentLoaded", () => {
                             }
                         }
                     } else {
-                        
+                        // Customer only wants half
+                        remainder = parseInt(document.getElementById("quantleft").value) - (1 * parseInt(currSaleType.dataset.number))
+                        if (remainder >= (parseInt(currSaleType.dataset.number) / 2)) {
+                            // There's probably enough to supply quarter more
+                            var quest = remainder - (parseInt(currSaleType.dataset.number) / 2);
+
+                            // Only possible if number is divisible by 4
+                            if (parseInt(currSaleType.dataset.number) % 4 == 0) {
+                                if ((quest >= (parseInt(currSaleType.dataset.number) / 4)) && (quartButton.checked == true)) {
+                                    // There definitely is
+                                    quartButton.disabled = false;
+                                    if (halfButton.checked && quartButton.checked) {
+                                        totalQuant.textContent = `Three quarters (¾)`
+                                    } else if (quartButton.checked) {
+                                        totalQuant.textContent = `Quarter (¼)`
+                                    } else if (halfButton.checked) {
+                                        totalQuant.textContent = `Half (½)`
+                                    }
+                                    return;
+                                } else if ((quest >= (parseInt(currSaleType.dataset.number) / 4)) && (quartButton.checked == false)) {
+                                    // There definitely is
+                                    quartButton.disabled = false;
+                                    if (halfButton.checked && quartButton.checked) {
+                                        totalQuant.textContent = `Three quarters (¾)`
+                                    } else if (quartButton.checked) {
+                                        totalQuant.textContent = `Quarter (¼)`
+                                    } else if (halfButton.checked) {
+                                        totalQuant.textContent = `Half (½)`
+                                    }
+                                    return;
+                                } else {
+                                    // There definitely isn't
+                                    quartButton.disabled = true;
+                                    totalQuant.textContent = `Half (½)`
+                                    return;
+                                }
+                            }
+                        }
                     }
                 } else {
                     // alert("False");
                     // Customer no longer wants half, or half more
                     const currSaleType = document.querySelector("input[name=saleType]:checked");
                     if (isWhole.checked == false) {
-                        remainder = parseInt(document.getElementById("quantleft").value) - (parseInt(quantity.value) * parseInt(currSaleType.dataset.number))
+                        // Customer wants both whole and probably quarter quantities
+                        remainder = parseInt(document.getElementById("quantleft").value) - (parseInt(quantity.value) * parseInt(currSaleType.dataset.number));
 
                         // Free up quantity to check for quarter availability
                         // var quest = remainder - parseInt(currSaleType.dataset.number);
@@ -898,14 +938,44 @@ document.addEventListener("DOMContentLoaded", () => {
                                 return;
                             } else {
                                 // There definitely isn't
-                                alert(`${remainder} ${currSaleType.dataset.number} ${quartButton.checked}`)
+                                // alert(`${remainder} ${currSaleType.dataset.number} ${quartButton.checked}`)
                                 quartButton.disabled = true;
                                 totalQuant.textContent = `${quantity.value}`;
                                 return;
                             }
                         }
                     } else {
-                        
+                        // Customer only wants halved quantities
+                        remainder = parseInt(document.getElementById("quantleft").value) - (1 * parseInt(currSaleType.dataset.number));
+
+                        // Only possible if number is divisible by 4
+                        if (parseInt(currSaleType.dataset.number) % 4 == 0) {
+                            if ((remainder >= (parseInt(currSaleType.dataset.number) / 4)) && (quartButton.checked == true)) {
+                                // There definitely is enough for quarter
+                                // alert("True disable");
+                                quartButton.disabled = false;
+                                if (halfButton.checked && quartButton.checked) {
+                                    totalQuant.textContent = `Three quarters (¾)`
+                                } else if (quartButton.checked) {
+                                    totalQuant.textContent = `Quarter (¼)`
+                                } else if (halfButton.checked) {
+                                    totalQuant.textContent = `Half (½)`
+                                }
+                                return;
+                            } else if ((remainder >= (parseInt(currSaleType.dataset.number) / 4)) && (quartButton.checked == false)) {
+                                // Customer wants neither, revert.
+                                // alert("False disable");
+                                quartButton.disabled = false;
+                                isWhole.click();
+                                return;
+                            } else {
+                                // There definitely isn't
+                                // alert(`${remainder} ${currSaleType.dataset.number} ${quartButton.checked}`)
+                                quartButton.disabled = true;
+                                isWhole.click();
+                                return;
+                            }
+                        }
                     }
                 }
                 if (halfButton.checked && quartButton.checked) {
@@ -963,13 +1033,46 @@ document.addEventListener("DOMContentLoaded", () => {
                             }
                         }
                     } else {
-                        
+                        remainder = parseInt(document.getElementById("quantleft").value) - (1 * parseInt(currSaleType.dataset.number))
+                        if (remainder >= (parseInt(currSaleType.dataset.number) / 4)) {
+                            // There's probably enough to supply half more
+                            var quest = remainder - (parseInt(currSaleType.dataset.number) / 4);
+                            // May do likewise here
+                            if (quest >= (parseInt(currSaleType.dataset.number) / 2) && (halfButton.checked == true)) {
+                                // There definitely is
+                                halfButton.disabled = false;
+                                if (halfButton.checked && quartButton.checked) {
+                                    totalQuant.textContent = `Three quarters (¾)`
+                                } else if (quartButton.checked) {
+                                    totalQuant.textContent = `Quarter (¼)`
+                                } else if (halfButton.checked) {
+                                    totalQuant.textContent = `Half (½)`
+                                }
+                                return;
+                            } else if (quest >= (parseInt(currSaleType.dataset.number) / 2) && (halfButton.checked == false)) {
+                                // There definitely is
+                                halfButton.disabled = false;
+                                if (halfButton.checked && quartButton.checked) {
+                                    totalQuant.textContent = `Three quarters (¾)`
+                                } else if (quartButton.checked) {
+                                    totalQuant.textContent = `Quarter (¼)`
+                                } else if (halfButton.checked) {
+                                    totalQuant.textContent = `Half (½)`
+                                }
+                                return;
+                            } else {
+                                // There definitely isn't
+                                halfButton.disabled = true;
+                                totalQuant.textContent = `Quarter (¼)`;
+                                return;
+                            }
+                        }
                     }
                 } else {
                     // Customer no longer wants quarter, or quarter more
                     const currSaleType = document.querySelector("input[name=saleType]:checked");
                     if (isWhole.checked == false) {
-                        remainder = parseInt(document.getElementById("quantleft").value) - (parseInt(quantity.value) * parseInt(currSaleType.dataset.number))
+                        remainder = parseInt(document.getElementById("quantleft").value) - (parseInt(quantity.value) * parseInt(currSaleType.dataset.number));
                     
                         // Free up quantity to check for half availability
                         // var quest = remainder - parseInt(currSaleType.dataset.number);
@@ -1009,7 +1112,32 @@ document.addEventListener("DOMContentLoaded", () => {
                             return;
                         }
                     } else {
-                        
+                        remainder = parseInt(document.getElementById("quantleft").value) - (1 * parseInt(currSaleType.dataset.number));
+
+                        if ((remainder >= (parseInt(currSaleType.dataset.number) / 2)) && (halfButton.checked == true)) {
+                            // There definitely is enough for half
+                            // alert("True disable");
+                            halfButton.disabled = false;
+                            if (halfButton.checked && quartButton.checked) {
+                                totalQuant.textContent = `Three quarters (¾)`
+                            } else if (quartButton.checked) {
+                                totalQuant.textContent = `Quarter (¼)`
+                            } else if (halfButton.checked) {
+                                totalQuant.textContent = `Half (½)`
+                            }
+                            return;
+                        } else if ((remainder >= (parseInt(currSaleType.dataset.number) / 2)) && (halfButton.checked == false)) {
+                            // Customer wants neither, revert.
+                            // alert("False disable");
+                            halfButton.disabled = false;
+                            isWhole.click();
+                            return;
+                        } else {
+                            // There definitely isn't
+                            halfButton.disabled = true;
+                            isWhole.click();
+                            return;
+                        }
                     }                 
                 }
                 if (halfButton.checked && quartButton.checked) {
@@ -1040,6 +1168,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 var sluger = document.getElementById("priceCall").dataset.slug;
                 var price = document.getElementById("priceHold").value;
                 var prodName = document.querySelector('.modal-title').textContent;
+
+                cartData = {"cartName": cartName.value, "prodName": prodName, "saleType": currSaleType.value, "prodPrice": price,
+                "prodImage": prodImage, "prodQuantity": finQuantity, "prodSlug": sluger};
                 
                 // Use POST, not GET
                 fetch(`/find_staff_cart/${cartName.value}?prodName=${prodName}&saleType=${currSaleType.value}\
@@ -1063,15 +1194,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
             } else if (element.id == "isWhole") {
                 // button is determinant of customer buying only half, or 1 and half
+                halfButton.checked = false;
+                quartButton.checked = false;
                 if (element.checked == true) {
                     // Customer only wants half
                     quantity.disabled = true;
                     quantity.value = 0;
                     document.getElementById("plus_button").disabled = true;
+                    document.getElementById("minus_button").disabled = true;
+                    if (halfButton.disabled == false) {
+                        halfButton.checked = true;
+                        totalQuant.textContent = "Half (½)";
+                    } else if (quartButton.disabled == false) {
+                        quartButton.checked = true;
+                        totalQuant.textContent = "Quarter (¼)";
+                    }
                 } else {
                     // Customer wants 1 and half
                     quantity.disabled = false;
                     quantity.value = 1;
+                    document.getElementById("plus_button").disabled = false;
+                    document.getElementById("minus_button").disabled = true;
+                    halfButton.checked = false;
+                    quartButton.checked = false;
+                    totalQuant.textContent = 1;
                 }
             }
         })
