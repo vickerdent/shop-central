@@ -1156,7 +1156,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 // obtain variables here
                 const currSaleType = document.querySelector("input[name=saleType]:checked");
-                var finQuantity = parseInt(quantity.value);
+                var finQuantity = parseFloat(quantity.value);
                 // quantity textbox is still available
                 var oquantity = document.getElementsByName("oquantity");
                 for (const box of oquantity) {
@@ -1169,12 +1169,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 var price = document.getElementById("priceHold").value;
                 var prodName = document.querySelector('.modal-title').textContent;
 
-                cartData = {"cartName": cartName.value, "prodName": prodName, "saleType": currSaleType.value, "prodPrice": price,
+                var cartData = {"cartName": cartName.value, "prodName": prodName, "saleType": currSaleType.value, "prodPrice": price,
                 "prodImage": prodImage, "prodQuantity": finQuantity, "prodSlug": sluger};
                 
                 // Use POST, not GET
-                fetch(`/find_staff_cart/${cartName.value}?prodName=${prodName}&saleType=${currSaleType.value}\
-                &prodPrice=${price}&prodImage=${prodImage}&prodQuantity=${finQuantity}&prodSlug=${sluger}`)
+                fetch(`/find_staff_cart/`, {
+                    method: "POST",
+                    body: JSON.stringify(cartData)
+                })
                 .then(response => response.json())
                 .then(data => {
                     const result = data.result
@@ -1233,6 +1235,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.querySelector("#addToCart").disabled = true;
             }
         }
+
+        // Get variables needed here for toast
+        const successToast = document.getElementById("toastSuccess")
+        successToast.addEventListener("show.bs.toast", () => {
+            var productName = document.querySelector('.modal-title').textContent;
+            var customerName = document.querySelector("#openCart").value;
+            document.getElementById("prodID").textContent = productName;
+            document.getElementById("custID").textContent = customerName;
+        })
 
         // Acts similarly with plus and minus buttons
         document.querySelector("#prodquantity").onkeyup = function() {
@@ -1456,6 +1467,16 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 totalQuant.textContent = `${quantity.value}`
             }
+
+            if (document.querySelector("#openCart").value.length > 0) {
+                if (document.querySelector("#prodquantity").value.length > 0) {
+                    document.querySelector("#addToCart").disabled = false;
+                } else {
+                    document.querySelector("#addToCart").disabled = true;
+                }
+            } else {
+                document.querySelector("#addToCart").disabled = true;
+            }
         }
 
         // document.addEventListener("")
@@ -1476,6 +1497,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (discountDiv) {
                 discountDiv.remove();
             }
+            document.querySelector("#openCart").value = "";
+            document.querySelector("#totalQuantity").textContent = 1;
+            document.querySelector("#quantleft").value = "";
         })
     }
 });

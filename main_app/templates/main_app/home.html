@@ -85,6 +85,20 @@
     <!-- Toast -->
     <div aria-live="polite" aria-atomic="true" class="position-relative">
       <div class="toast-container top-0 end-0 p-3">
+        <!-- Successful -->
+        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="toastSuccess" data-bs-theme="dark">
+          <div class="toast-header ">
+            <!-- <img src="..." class="rounded me-2" alt="..."> -->
+            <strong class="me-auto">Jovimifah Destiny Store</strong>
+            <small class="text-body-secondary">Just now</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+          <div class="toast-body text-light">
+            <span id="prodID"> </span> added to <span id="custID"></span>'s cart successfully.
+          </div>
+        </div>
+
+        <!-- Failed -->
         <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="toastError" data-bs-theme="dark">
           <div class="toast-header text-light">
             <!-- <img src="..." class="rounded me-2" alt="..."> -->
@@ -96,19 +110,9 @@
             Request failed. Try again at a later time, or refresh this page.
           </div>
         </div>
-        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="toastSuccess" data-bs-theme="dark">
-          <div class="toast-header ">
-            <!-- <img src="..." class="rounded me-2" alt="..."> -->
-            <strong class="me-auto">Jovimifah Destiny Store</strong>
-            <small class="text-body-secondary">Just now</small>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-          </div>
-          <div class="toast-body text-light">
-            Product added to customer's cart successfully.
-          </div>
-        </div>
       </div>
     </div>
+
     <!-- Price modal -->
     <div class="modal fade" id="prodPriceModal" aria-hidden="true" aria-labelledby="prodPriceModalLabel2" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-theme="dark">
       <div class="modal-dialog modal-dialog-centered">

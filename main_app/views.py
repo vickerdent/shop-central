@@ -598,57 +598,69 @@ def open_staff_carts(request):
     return JsonResponse({"carts": cart_names})
 
 @login_required
-def find_staff_cart(request, cartname):
-    # Check for cart name from mongodb
-    the_cart = staff_carts_collection.find_one({"name_of_buyer": cartname})
+def find_staff_cart(request):
+    # Gotta be POST
+    if request.method == "POST":
+        cartName = request.POST.get("cartName")
+        prodName = request.POST.get("prodName")
+        saleType = request.POST.get("saleType")
+        prodPrice = int(request.POST.get("prodPrice"))
+        prodImage = request.POST.get("prodImage")
+        prodQuantity = float(request.POST.get("prodQuantity"))
+        prodSlug = request.POST.get("prodSlug")
+        # Check for cart name from mongodb
+        the_cart = staff_carts_collection.find_one({"name_of_buyer": cartName})
 
-    if the_cart:
-        # Find out the number of items in the items dictionary
-        product_names = []
-        for item in the_cart["items"]:
-            for name in item.keys():
-                if name.startswith("product_name"):
-                    product_names.append(name)
-        
-        # Get last product from list
-        curr_num = int(product_names[-1].split("_")[2])
+        if the_cart:
+            # Find out the number of items in the items dictionary
+            product_names = []
+            for item in the_cart["items"]:
+                for name in item.keys():
+                    if name.startswith("product_name"):
+                        product_names.append(name)
+            
+            # Get last product from list
+            curr_num = int(product_names[-1].split("_")[2])
 
-        # Create dictionary for new item
-        new_item = SON([("product_name_" + str(curr_num + 1), request.GET.get("prodName")),
-                        ("sale_type_" + str(curr_num + 1), request.GET.get("saleType")),
-                        ("product_price_" + str(curr_num + 1), int(request.GET.get("prodPrice"))),
-                        ("product_image_" + str(curr_num + 1), request.GET.get("prodImage")),
-                        ("product_quantity_" + str(curr_num + 1), request.GET.get("prodQuantity")),
-                        ("product_slug_" + str(curr_num + 1), request.GET.get("prodSlug"))])
+            # Create dictionary for new item
+            new_item = SON([("product_name_" + str(curr_num + 1), prodName),
+                            ("sale_type_" + str(curr_num + 1), saleType),
+                            ("product_price_" + str(curr_num + 1), prodPrice),
+                            ("product_image_" + str(curr_num + 1), prodImage),
+                            ("product_quantity_" + str(curr_num + 1), prodQuantity),
+                            ("product_slug_" + str(curr_num + 1), prodSlug)])
 
-        # new_item = {"product_name_" + str(curr_num + 1): request.GET.get("prodName"),
-        #             "sale_type_" + str(curr_num + 1): request.GET.get("saleType"),
-        #             "product_price_" + str(curr_num + 1): request.GET.get("prodPrice"),
-        #             "product_image_" + str(curr_num + 1): request.GET.get("prodImage"),
-        #             "product_quantity_" + str(curr_num + 1): request.GET.get("prodQuantity"),
-        #             "product_slug_" + str(curr_num + 1): request.GET.get("prodSlug")}
+            # new_item = {"product_name_" + str(curr_num + 1): prodName,
+            #             "sale_type_" + str(curr_num + 1): saleType,
+            #             "product_price_" + str(curr_num + 1): prodPrice,
+            #             "product_image_" + str(curr_num + 1): prodImage,
+            #             "product_quantity_" + str(curr_num + 1): prodQuantity,
+            #             "product_slug_" + str(curr_num + 1): prodSlug}
 
-        # Add dictionary to list of items: {"product_name": request.GET.get("prodName"), "sale_type": request.GET.get("saleType")}
-        staff_carts_collection.update_one({"name_of_buyer": cartname},
-                                          {"$push": {"items": new_item},
-                                           "$inc": {"total_amount": int(request.GET.get("prodPrice"))}})
-        
-        return JsonResponse(data={"result": True})
+            # Add dictionary to list of items: {"product_name": prodName, "sale_type": saleType}
+            staff_carts_collection.update_one({"name_of_buyer": cartName},
+                                            {"$push": {"items": new_item},
+                                            "$inc": {"total_amount": int(prodPrice)}})
+            
+            return JsonResponse(data={"result": True})
+        else:
+            # It's a new cart
+            # Create dictionary for new item
+            new_item = SON([("product_name_1", prodName),
+                            ("sale_type_1", saleType),
+                            ("product_price_1", int(prodPrice)),
+                            ("product_image_1", prodImage),
+                            ("product_quantity_1", prodQuantity),
+                            ("product_slug_1", prodSlug)])
+            
+            whole_cart = StaffCart(cartName, request.user.email, [new_item], int(prodPrice), 0)
+
+            staff_carts_collection.insert_one(whole_cart.to_dict())
+
+            return JsonResponse(data={"result": True})
     else:
-        # It's a new cart
-        # Create dictionary for new item
-        new_item = SON([("product_name_1", request.GET.get("prodName")),
-                        ("sale_type_1", request.GET.get("saleType")),
-                        ("product_price_1", int(request.GET.get("prodPrice"))),
-                        ("product_image_1", request.GET.get("prodImage")),
-                        ("product_quantity_1", request.GET.get("prodQuantity")),
-                        ("product_slug_1", request.GET.get("prodSlug"))])
-        
-        whole_cart = StaffCart(cartname, request.user.email, [new_item], int(request.GET.get("prodPrice")), 0)
-
-        staff_carts_collection.insert_one(whole_cart.to_dict())
-
-        return JsonResponse(data={"result": True})
+        return JsonResponse(data={"result": False})
+    
 
 
 @login_required
