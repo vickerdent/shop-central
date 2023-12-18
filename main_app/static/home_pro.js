@@ -1152,6 +1152,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             } else if (element.id == "addToCart") {
                 // button is the add to cart button that adds item to customer's cart
+                document.getElementById("addToCart").disabled = true;
                 const cartName = document.getElementById("openCart");
                 
                 // obtain variables here
