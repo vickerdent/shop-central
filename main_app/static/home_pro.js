@@ -1171,10 +1171,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 var cartData = {"cartName": cartName.value, "prodName": prodName, "saleType": currSaleType.value, "prodPrice": price,
                 "prodImage": prodImage, "prodQuantity": finQuantity, "prodSlug": sluger};
+
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 
                 // Use POST, not GET
                 fetch(`/find_staff_cart/`, {
                     method: "POST",
+                    headers: {'X-CSRFToken': csrftoken},
                     mode: "same-origin",
                     body: JSON.stringify(cartData),
                     
