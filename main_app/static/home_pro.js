@@ -1175,7 +1175,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Use POST, not GET
                 fetch(`/find_staff_cart/`, {
                     method: "POST",
-                    body: JSON.stringify(cartData)
+                    mode: "same-origin",
+                    body: JSON.stringify(cartData),
+                    
                 })
                 .then(response => response.json())
                 .then(data => {
