@@ -52,8 +52,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -87,6 +87,9 @@ TEMPLATES = [
 
 # FORM_RENDERER = "shop_central.settings.CustomFormRenderer"
 
+CSRF_USE_SESSIONS = True
+
+CSRF_COOKIE_HTTPONLY = True
 
 WSGI_APPLICATION = 'shop_central.wsgi.application'
 

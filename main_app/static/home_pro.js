@@ -315,8 +315,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         dataList.appendChild(option);
                     });
                 })
-                
-            }) 
+            })
             .catch(error => {
                 console.error({"error": error});
             });            
@@ -1174,7 +1173,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 "prodImage": prodImage, "prodQuantity": finQuantity, "prodSlug": sluger};
 
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                
+
+                const successful = document.getElementById("toastSuccess")
+                const successToast = bootstrap.Toast.getOrCreateInstance(successful)
+                const unSuccess = document.getElementById("toastError")
+                const failToast = bootstrap.Toast.getOrCreateInstance(unSuccess)
+
                 // Use POST, not GET
                 fetch(`/find_staff_cart/`, {
                     method: "POST",
@@ -1183,22 +1187,28 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: JSON.stringify(cartData),
                     
                 })
-                .then(response => response.json())
+                .then((response) => {
+                    if (!response.ok) {
+                        console.log("Entered space");
+                        failToast.show();
+                        console.log("About to leave space");
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json()})
                 .then(data => {
                     const result = data.result
                     if (result) {
                         cartName.value = "";
                         const productModal = bootstrap.Modal.getInstance(document.getElementById('productInfoModal'))
                         productModal.hide()
-                        const successful = document.getElementById("toastSuccess")
-                        const successToast = bootstrap.Toast.getOrCreateInstance(successful)
                         successToast.show()
-                    } else {
-                        const unSuccess = document.getElementById("toastError")
-                        const failToast = bootstrap.Toast.getOrCreateInstance(unSuccess)
-                        failToast.show()
                     }
                 })
+                .catch(error => {
+                    failToast.show();
+                    console.log("Past the toast again");
+                    console.error({"error": error});
+                });
 
             } else if (element.id == "isWhole") {
                 // button is determinant of customer buying only half, or 1 and half
@@ -1243,8 +1253,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Get variables needed here for toast
-        const successToast = document.getElementById("toastSuccess")
-        successToast.addEventListener("show.bs.toast", () => {
+        const successfulToast = document.getElementById("toastSuccess")
+        successfulToast.addEventListener("show.bs.toast", () => {
             var productName = document.querySelector('.modal-title').textContent;
             var customerName = document.querySelector("#openCart").value;
             document.getElementById("prodID").textContent = productName;
