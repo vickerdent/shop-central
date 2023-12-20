@@ -611,15 +611,16 @@ def find_staff_cart(request):
         prodQuantity = postData.get("prodQuantity")
         prodSlug = postData.get("prodSlug")
 
-        print(cartName)
-        print(prodPrice)
-        print(prodQuantity)
         # Check for cart name from mongodb
         the_cart = staff_carts_collection.find_one({"name_of_buyer": cartName})
 
         if the_cart:
             # Ensure item isn't in cart list already
-            
+            if prodSlug in the_cart["items"].values():
+                # product is among items in cart
+                # update new info
+                
+                return JsonResponse(data={"result": True})
 
             # Find out the number of items in the items dictionary
             product_names = []

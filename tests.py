@@ -1,9 +1,12 @@
-# product = {"name_of": "Victor",
-#     "all_of" : {"human_1": "Victor", "human_2": "Joshua", "human_3": "Micah",
-#             "animal_1": "Dog", "animal_3": "Donkey", "animal_4": "Lion"}}
+product = {"name_of": "Victor",
+    "all_of" : {"human_1": "Victor", "human_2": "Joshua", "human_3": "Micah",
+            "animal_1": "Dog", "animal_3": "Donkey", "animal_4": "Lion"}}
 
-# allof = {inst : product["all_of"][inst] for inst in product["all_of"] if inst.startswith("animal")}
-# print(allof)
+if "Donkey" in product["all_of"].values():
+    print("You already got this nah")
+
+allof = {inst : product["all_of"][inst] for inst in product["all_of"] if inst.startswith("animal")}
+print(allof)
 
 # price = 1000
 # hum_price = ""
