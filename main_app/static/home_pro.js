@@ -20,6 +20,11 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("isWhole").checked = false;
             document.getElementById("isWhole").disabled = true;
 
+            const successful = document.getElementById("toastSuccess")
+            const successfulerToast = bootstrap.Toast.getOrCreateInstance(successful)
+            const unSuccess = document.getElementById("toastError")
+            const failToast = bootstrap.Toast.getOrCreateInstance(unSuccess)
+
             var editProd = document.getElementById("editCall");
             editProd.setAttribute("href", `/edit_product/${recipient}`)
 
@@ -28,7 +33,12 @@ document.addEventListener("DOMContentLoaded", () => {
             // Fetch product's data from Django view
             fetch(`/find_product/${recipient}`)
             // Get response in json format
-            .then(response => response.json())
+            .then((response) => {
+                if (!response.ok) {
+                    failToast.show();
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json()})
             // and then do the updating in a callback.
             .then(data => {
                 const brand_name = data.brand_name
@@ -306,7 +316,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // Fetch cart data from Django
                 fetch("/open_staff_carts")
-                .then(response => response.json())
+                .then((response) => {
+                    if (!response.ok) {
+                        failToast.show();
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json()})
                 .then(data => {
                     const dataList = document.getElementById("cartList");
                     data.carts.forEach(element => {
@@ -317,10 +332,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 })
             })
             .catch(error => {
+                // failToast.show();
                 console.error({"error": error});
-            });            
+            });
         })
-
+        
         document.addEventListener("click", event => {
             const element = event.target;
             const halfButton = document.getElementById("half_button");
@@ -328,7 +344,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const quantity = document.getElementById("prodquantity");
             const totalQuant = document.getElementById("totalQuantity");
             const isWhole = document.getElementById("isWhole");
-
+            
             // Make changes to information shown in dialog
             if (element.name == "saleType") {
                 quantity.value = 1;
@@ -338,6 +354,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 isWhole.checked = false;
                 document.getElementById("plus_button").disabled = false;
                 quantity.disabled = false;
+                console.log(`Before change: ${document.getElementById("priceHold").value}`);
 
                 // Disable quantity buttons if not feasible, set quantity to value: 1
                 if (element.dataset.divisibility == "false") {
@@ -405,6 +422,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const priceHold = document.getElementById("prodPrice");
                 priceHold.textContent = `₦${editPrice(element.dataset.price)}`;
                 document.getElementById("priceHold").value = element.dataset.price;
+                console.log(`After change: ${document.getElementById("priceHold").value}`);
 
                 const quantLeft = document.getElementById("quantityLeft");
                 if (element.id == "cartButton") {
@@ -1150,9 +1168,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
             } else if (element.id == "addToCart") {
+                const successful = document.getElementById("toastSuccess")
+                const successfulerToast = bootstrap.Toast.getOrCreateInstance(successful)
+                const unSuccess = document.getElementById("toastError")
+                const failToast = bootstrap.Toast.getOrCreateInstance(unSuccess)
                 // button is the add to cart button that adds item to customer's cart
                 document.getElementById("addToCart").disabled = true;
-                const cartName = document.getElementById("openCart");
+                const custName = document.getElementById("openCart");
                 
                 // obtain variables here
                 const currSaleType = document.querySelector("input[name=saleType]:checked");
@@ -1164,49 +1186,41 @@ document.addEventListener("DOMContentLoaded", () => {
                         finQuantity += parseFloat(box.value);
                     }
                 }
-                var prodImage = document.getElementById("retailbutton").dataset.image;
-                var sluger = document.getElementById("priceCall").dataset.slug;
-                var price = document.getElementById("priceHold").value;
-                var prodName = document.querySelector('.modal-title').textContent;
+                const productImage = document.getElementById("retailbutton").dataset.image;
+                const sluger = document.getElementById("priceCall").dataset.slug;
+                const productPrice = document.getElementById("priceHold").value;
+                const productName = document.querySelector('.modal-title').textContent;
 
-                var cartData = {"cartName": cartName.value, "prodName": prodName, "saleType": currSaleType.value, "prodPrice": price,
-                "prodImage": prodImage, "prodQuantity": finQuantity, "prodSlug": sluger};
+                const cartData = {cartName: custName.value, prodName: productName,
+                saleType: currSaleType.value, prodPrice: productPrice, prodImage: productImage,
+                prodQuantity: finQuantity, prodSlug: sluger};
 
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-                const successful = document.getElementById("toastSuccess")
-                const successToast = bootstrap.Toast.getOrCreateInstance(successful)
-                const unSuccess = document.getElementById("toastError")
-                const failToast = bootstrap.Toast.getOrCreateInstance(unSuccess)
 
                 // Use POST, not GET
                 fetch(`/find_staff_cart/`, {
                     method: "POST",
-                    headers: {'X-CSRFToken': csrftoken},
+                    headers: {'X-CSRFToken': csrftoken,
+                                "Content-Type": "application/json"},
                     mode: "same-origin",
                     body: JSON.stringify(cartData),
-                    
                 })
                 .then((response) => {
                     if (!response.ok) {
-                        console.log("Entered space");
                         failToast.show();
-                        console.log("About to leave space");
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
                     return response.json()})
                 .then(data => {
                     const result = data.result
                     if (result) {
-                        cartName.value = "";
                         const productModal = bootstrap.Modal.getInstance(document.getElementById('productInfoModal'))
+                        successfulerToast.show()
                         productModal.hide()
-                        successToast.show()
                     }
                 })
                 .catch(error => {
-                    failToast.show();
-                    console.log("Past the toast again");
+                    // failToast.show();
                     console.error({"error": error});
                 });
 

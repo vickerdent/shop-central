@@ -8,7 +8,7 @@ from datetime import datetime
 from django.conf import settings
 from django.http import JsonResponse
 from bson.son import SON
-import pymongo
+import pymongo, json
 
 from .o_functions import humans
 from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, \
@@ -601,17 +601,26 @@ def open_staff_carts(request):
 def find_staff_cart(request):
     # Gotta be POST
     if request.method == "POST":
-        cartName = request.POST.get("cartName")
-        prodName = request.POST.get("prodName")
-        saleType = request.POST.get("saleType")
-        prodPrice = int(request.POST.get("prodPrice"))
-        prodImage = request.POST.get("prodImage")
-        prodQuantity = float(request.POST.get("prodQuantity"))
-        prodSlug = request.POST.get("prodSlug")
+        postData = json.loads(request.body.decode("utf-8"))
+
+        cartName = postData.get("cartName")
+        prodName = postData.get("prodName")
+        saleType = postData.get("saleType")
+        prodPrice = postData.get("prodPrice")
+        prodImage = postData.get("prodImage")
+        prodQuantity = postData.get("prodQuantity")
+        prodSlug = postData.get("prodSlug")
+
+        print(cartName)
+        print(prodPrice)
+        print(prodQuantity)
         # Check for cart name from mongodb
         the_cart = staff_carts_collection.find_one({"name_of_buyer": cartName})
 
         if the_cart:
+            # Ensure item isn't in cart list already
+            
+
             # Find out the number of items in the items dictionary
             product_names = []
             for item in the_cart["items"]:
@@ -625,9 +634,9 @@ def find_staff_cart(request):
             # Create dictionary for new item
             new_item = SON([("product_name_" + str(curr_num + 1), prodName),
                             ("sale_type_" + str(curr_num + 1), saleType),
-                            ("product_price_" + str(curr_num + 1), prodPrice),
+                            ("product_price_" + str(curr_num + 1), int(prodPrice)),
                             ("product_image_" + str(curr_num + 1), prodImage),
-                            ("product_quantity_" + str(curr_num + 1), prodQuantity),
+                            ("product_quantity_" + str(curr_num + 1), float(prodQuantity)),
                             ("product_slug_" + str(curr_num + 1), prodSlug)])
 
             # new_item = {"product_name_" + str(curr_num + 1): prodName,
@@ -650,7 +659,7 @@ def find_staff_cart(request):
                             ("sale_type_1", saleType),
                             ("product_price_1", int(prodPrice)),
                             ("product_image_1", prodImage),
-                            ("product_quantity_1", prodQuantity),
+                            ("product_quantity_1", float(prodQuantity)),
                             ("product_slug_1", prodSlug)])
             
             whole_cart = StaffCart(cartName, request.user.email, [new_item], int(prodPrice), 0)
