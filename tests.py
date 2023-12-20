@@ -4,6 +4,7 @@ product = {"name_of": "Victor",
 
 if "Donkey" in product["all_of"].values():
     print("You already got this nah")
+    pass
 
 allof = {inst : product["all_of"][inst] for inst in product["all_of"] if inst.startswith("animal")}
 print(allof)

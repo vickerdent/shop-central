@@ -618,8 +618,9 @@ def find_staff_cart(request):
             # Ensure item isn't in cart list already
             if prodSlug in the_cart["items"].values():
                 # product is among items in cart
-                # update new info
-                
+                # update new info by running through items
+                for prod in the_cart["items"]:
+
                 return JsonResponse(data={"result": True})
 
             # Find out the number of items in the items dictionary
