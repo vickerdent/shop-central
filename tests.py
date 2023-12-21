@@ -1,16 +1,20 @@
 product = {"name_of": "Victor",
-    "all_of" : {"human_1": "Victor", "human_2": "Joshua", "human_3": "Micah",
-            "animal_1": "Dog", "animal_3": "Donkey", "animal_4": "Lion"}}
+    "all_of" : [{"human_1": "Victor", "human_2": "Joshua", "human_3": "Micah",
+            "animal_1": "Dog", "animal_3": "Donkey", "animal_4": "Lion"}, 
+            {"human_7": "Loise", "human_10": "Queen", "animal_17": "Zebra", "animal_23": "Giraffe"}]}
 
-if "Donkey" in product["all_of"].values():
-    print("You already got this nah")
-    pass
+for item in product["all_of"]:
+    if "Donkey" in item.values():
+        print("You already got this nah")
 
-allof = {inst : product["all_of"][inst] for inst in product["all_of"] if inst.startswith("animal")}
-print(allof)
 
-# price = 1000
-# hum_price = ""
+# allof = {inst : product["all_of"][inst] for inst in product["all_of"] if inst.startswith("animal")}
+# print(allof)
+
+price = int(1000)
+quantity = 2.5
+total = int(price * quantity)
+print(total)
 
 # price_str = str(price)
 # rev_price = price_str[::-1]

@@ -79,6 +79,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 document.getElementById("prodName").textContent = `${brand_name} ${product_name}: ${size}`
                 
+                // Check if product is in any customer's list and display appropriate warning
+
+                
                 // Display price of selected sale type in bold font, with retail price being default
                 const priceHold = document.getElementById("prodPrice")
                 
@@ -1217,6 +1220,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         const productModal = bootstrap.Modal.getInstance(document.getElementById('productInfoModal'))
                         successfulerToast.show()
                         productModal.hide()
+                    } else {
+                        failToast.show();
                     }
                 })
                 .catch(error => {
