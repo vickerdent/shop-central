@@ -615,6 +615,7 @@ def find_staff_cart(request):
         the_cart = staff_carts_collection.find_one({"name_of_buyer": cartName})
 
         if the_cart:
+            total_amount = the_cart["total_amount"]
             # Ensure item isn't in cart list already
             for product in the_cart["items"]:
                 if prodSlug in product.values():
@@ -627,6 +628,7 @@ def find_staff_cart(request):
                     
                     # Check which slug has the info we need
                     for slug in product_slugs:
+                        print(slug)
                         for item in the_cart["items"]:
                             if item[slug] == prodSlug:
                                 # Found the slug
@@ -639,14 +641,16 @@ def find_staff_cart(request):
                                 # item["product_price_" + str(zehNum)] = int(prodPrice)
                                 # item["product_quantity_" + str(zehNum)] = float(prodQuantity)
                                 updateResult = staff_carts_collection.update_one({"name_of_buyer": cartName}, 
-                                                                  {"$set": {"items.$[elem].sale_type_" + str(zehNum): saleType,
+                                                                  {"$inc": {"total_amount": priceDiff},
+                                                                   "$set": {"items.$[elem].sale_type_" + str(zehNum): saleType,
                                                                             "items.$[elem].product_price_" + str(zehNum): int(prodPrice),
-                                                                            "items.$[elem].product_quantity_" + str(zehNum): float(prodQuantity)},
-                                                                    "$inc": {"total_amount": priceDiff}},
+                                                                            "items.$[elem].product_quantity_" + str(zehNum): float(prodQuantity),
+                                                                            "amount_owed": total_amount + priceDiff},
+                                                                    },
                                                                   array_filters=[{"elem." + slug: prodSlug}])
                                 
                                 if updateResult.modified_count == 1:
-                                    return JsonResponse(data={"result": True})
+                                    return JsonResponse(data={"result": 1})
                                 else:
                                     return JsonResponse(data={"result": False})
 
@@ -678,7 +682,8 @@ def find_staff_cart(request):
             # Add dictionary to list of items: {"product_name": prodName, "sale_type": saleType}
             staff_carts_collection.update_one({"name_of_buyer": cartName},
                                             {"$push": {"items": new_item},
-                                            "$inc": {"total_amount": int(int(prodPrice) * float(prodQuantity))}})
+                                            "$inc": {"total_amount": int(int(prodPrice) * float(prodQuantity))},
+                                            "$set": {"amount_owed": total_amount + int(int(prodPrice) * float(prodQuantity))}})
             
             return JsonResponse(data={"result": True})
         else:
@@ -700,6 +705,20 @@ def find_staff_cart(request):
         return JsonResponse(data={"result": False})
     
 # Create view to check if given product is in cart already
+@login_required
+def check_product_in_cart(request, slug):
+    # Check through all carts belonging to user in mongo, if product is already in
+    all_carts = list(staff_carts_collection.find({"staff_id": request.user.email}))
+    for cart in all_carts:
+        for item in cart["items"]:
+            if slug in item.values():
+                # Given product is already in cart
+                print("2nd", slug)
+                return JsonResponse(data={"result": True})
+            else:
+                # It isn't
+                return JsonResponse(data={"result": False})
+
 
 @login_required
 def edit_product(request, slug):

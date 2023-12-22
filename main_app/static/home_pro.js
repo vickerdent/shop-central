@@ -20,8 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("isWhole").checked = false;
             document.getElementById("isWhole").disabled = true;
 
-            const successful = document.getElementById("toastSuccess")
-            const successfulerToast = bootstrap.Toast.getOrCreateInstance(successful)
+            // const successful = document.getElementById("toastSuccess")
+            // const successfulerToast = bootstrap.Toast.getOrCreateInstance(successful)
             const unSuccess = document.getElementById("toastError")
             const failToast = bootstrap.Toast.getOrCreateInstance(unSuccess)
 
@@ -79,9 +79,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 document.getElementById("prodName").textContent = `${brand_name} ${product_name}: ${size}`
                 
-                // Check if product is in any customer's list and display appropriate warning
-
-                
                 // Display price of selected sale type in bold font, with retail price being default
                 const priceHold = document.getElementById("prodPrice")
                 
@@ -103,6 +100,42 @@ document.addEventListener("DOMContentLoaded", () => {
                     halfButton.disabled = true;
                     quartButton.disabled = true;
                 }
+
+                // Fetch cart data from Django
+                fetch("/open_staff_carts")
+                .then((response) => {
+                    if (!response.ok) {
+                        failToast.show();
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json()})
+                .then(data => {
+                    const dataList = document.getElementById("cartList");
+                    data.carts.forEach(element => {
+                        const option = document.createElement("option");
+                        option.value = element;
+                        dataList.appendChild(option);
+                    });
+                })
+
+                // Check if product is in any customer's list and display appropriate warning
+                const sluger = document.getElementById("priceCall").dataset.slug;
+                fetch(`/check_product_cart/${sluger}`)
+                .then((response) => {
+                    if (!response.ok) {
+                        failToast.show();
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json()})
+                .then(data => {
+                    const result = data.result
+                    console.log(result)
+                    const cartWarning = document.getElementById("prodExists");
+                    const alert = bootstrap.Alert.getOrCreateInstance(cartWarning)
+                    if (result === false) {
+                        alert.close()
+                    }
+                })
 
                 // place buttons for singles (retail and wholesale) in div,
                 // with the other bulk and carton buttons in a separate div together
@@ -316,23 +349,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     quantLeft.textContent = `${totalQuantity} available`;
                 }
-
-                // Fetch cart data from Django
-                fetch("/open_staff_carts")
-                .then((response) => {
-                    if (!response.ok) {
-                        failToast.show();
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json()})
-                .then(data => {
-                    const dataList = document.getElementById("cartList");
-                    data.carts.forEach(element => {
-                        const option = document.createElement("option");
-                        option.value = element;
-                        dataList.appendChild(option);
-                    });
-                })
             })
             .catch(error => {
                 // failToast.show();
@@ -357,7 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 isWhole.checked = false;
                 document.getElementById("plus_button").disabled = false;
                 quantity.disabled = false;
-                console.log(`Before change: ${document.getElementById("priceHold").value}`);
+                // console.log(`Before change: ${document.getElementById("priceHold").value}`);
 
                 // Disable quantity buttons if not feasible, set quantity to value: 1
                 if (element.dataset.divisibility == "false") {
@@ -425,7 +441,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const priceHold = document.getElementById("prodPrice");
                 priceHold.textContent = `₦${editPrice(element.dataset.price)}`;
                 document.getElementById("priceHold").value = element.dataset.price;
-                console.log(`After change: ${document.getElementById("priceHold").value}`);
+                // console.log(`After change: ${document.getElementById("priceHold").value}`);
 
                 const quantLeft = document.getElementById("quantityLeft");
                 if (element.id == "cartButton") {
@@ -1171,9 +1187,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
             } else if (element.id == "addToCart") {
-                const successful = document.getElementById("toastSuccess")
+                const successful = document.getElementById("toastSuccess");
                 const successfulerToast = bootstrap.Toast.getOrCreateInstance(successful)
-                const unSuccess = document.getElementById("toastError")
+                const updateful = document.getElementById("toastUpdate");
+                const updateToast = bootstrap.Toast.getOrCreateInstance(updateful)
+                const unSuccess = document.getElementById("toastError");
                 const failToast = bootstrap.Toast.getOrCreateInstance(unSuccess)
                 // button is the add to cart button that adds item to customer's cart
                 document.getElementById("addToCart").disabled = true;
@@ -1216,9 +1234,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     return response.json()})
                 .then(data => {
                     const result = data.result
-                    if (result) {
-                        const productModal = bootstrap.Modal.getInstance(document.getElementById('productInfoModal'))
+                    const productModal = bootstrap.Modal.getInstance(document.getElementById('productInfoModal'))
+                    const alert = bootstrap.Alert.getOrCreateInstance('#prodExists')
+                    if (result === true) {
                         successfulerToast.show()
+                        alert.close()
+                        productModal.hide()
+                    } else if (result === 1) {
+                        updateToast.show()
+                        alert.close()
                         productModal.hide()
                     } else {
                         failToast.show();
@@ -1272,12 +1296,18 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Get variables needed here for toast
-        const successfulToast = document.getElementById("toastSuccess")
+        const successfulToast = document.getElementById("toastSuccess");
         successfulToast.addEventListener("show.bs.toast", () => {
             var productName = document.querySelector('.modal-title').textContent;
             var customerName = document.querySelector("#openCart").value;
             document.getElementById("prodID").textContent = productName;
             document.getElementById("custID").textContent = customerName;
+        })
+
+        const updatefulToast = document.getElementById("toastUpdate");
+        updatefulToast.addEventListener("show.bs.toast", () => {
+            var customerName = document.querySelector("#openCart").value;
+            document.getElementById("customID").textContent = customerName;
         })
 
         // Acts similarly with plus and minus buttons
@@ -1535,6 +1565,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector("#openCart").value = "";
             document.querySelector("#totalQuantity").textContent = 1;
             document.querySelector("#quantleft").value = "";
+            // document.getElementById("prodExists").style.display = "none";
         })
     }
 });

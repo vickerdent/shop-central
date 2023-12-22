@@ -15,7 +15,7 @@
             <div class="modal-header">
               <h1 class="modal-title fs-5 text-light d-none d-lg-block d-xl-block d-xxl-block" id="productInfoModalLabel"></h1>
               <div class="float-end">
-                <button style="margin-right: 5px;" class="btn btn-light" id="priceCall" data-bs-target="#prodPriceModal" data-bs-toggle="modal">Update Prices</button>
+                <button type="button" class="btn btn-light" id="priceCall" data-bs-target="#prodPriceModal" data-bs-toggle="modal">Update Prices</button>
                 <a href="#" class="btn btn-light" id="editCall">Edit Product</a>
               </div>
             </div>
@@ -28,6 +28,14 @@
                   <h6 class="fs-6 text-light d-flex justify-content-center" id="prodName"></h6>
                   <h3 class="fs-3 text-light d-flex justify-content-center" id="prodPrice"></h3>
                   <input type="hidden" name="priced" id="priceHold">
+                  <!-- Alert should be created using java script, using this design -->
+                  <div class="alert alert-warning d-flex align-items-center alert-dismissible" role="alert" id="prodExists">
+                    <svg class="bi flex-shrink-0 me-2" width="16" height="16" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+                    <div>
+                      This product is already in a customer's Cart.
+                      Attempting to add it again will update/replace it in the customer's cart.
+                    </div>
+                  </div>
                   <div id="saleID">
                     <div class="d-flex justify-content-start">
                       <h4 class="me-2 text-light">Sale Type:</h4>
@@ -49,7 +57,7 @@
                     <div class="row g-2 align-items-center" id="quantHold">
                       <div class="col-auto"><button type="button" class="btn btn-light" id="minus_button" >-</button></div>
                       <div class="col-2">
-                        <input type="number" class="form-control" name="quantity" id="prodquantity" value="1" style="text-align: center;" onclick="this.select()">
+                        <input type="number" class="form-control" name="quantity" id="prodquantity" value="1" onclick="this.select()">
                         <!-- Make this into check buttons instead (not radio) -->
                       </div>
                       <div class="col-auto"><button type="button" class="btn btn-light" id="plus_button">+</button></div>
@@ -114,6 +122,21 @@
       </div>
     </div>
 
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+      <!-- Update Successful -->
+      <div class="toast text-bg-success" role="alert" aria-live="assertive" aria-atomic="true" id="toastUpdate">
+        <div class="toast-header">
+          <!-- <img src="..." class="rounded me-2" alt="..."> -->
+          <strong class="me-auto">Jovimifah Destiny Store</strong>
+          <small class="text-body-secondary">Just now</small>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body text-light">
+          Product updated in <span id="customID"></span>'s cart successfully.
+        </div>
+      </div>
+    </div>
+
     <!-- Price modal -->
     <div class="modal fade" id="prodPriceModal" aria-hidden="true" aria-labelledby="prodPriceModalLabel2" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-theme="dark">
       <div class="modal-dialog modal-dialog-centered">
@@ -165,10 +188,10 @@
         {% for item in inventory %}
             {% if item.singles_stock > 0 %}
                 <a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-bs-toggle="modal" data-bs-target="#productInfoModal" data-slug="{{ item.slug }}">
-                    <div style="width: 168px;" class="me-3 mb-3">
+                    <div class="me-3 mb-3" id="oneProduct">
                         <div class="card h-100">
                             <img src="{{ item.product_image.0 }}" class="card-img-top" alt="Product's Image" width="50">
-                            <div class="card-body" style="font-size: 14px;">
+                            <div class="card-body">
                                 {{ item.name|truncatechars:20 }} <br>
                                 <strong>₦{{ item.retail_price|intcomma }}</strong>
                             </div>
@@ -184,10 +207,10 @@
         {% for item in inventory %}
             {% if item.singles_stock == 0 %}
                 <a href="#" role="button">
-                  <div style="width: 168px;" class="me-3 mb-3">
+                  <div class="me-3 mb-3" id="nonProduct">
                     <div class="card h-100">
                         <img src="{{ item.product_image.0}}" class="card-img-top" alt="Product's Image" width="50">
-                        <div class="card-body" style="font-size: 14px;">
+                        <div class="card-body">
                             {{ item.name|truncatechars:20 }} <br>
                             <strong>₦{{ item.retail_price|intcomma }}</strong> <br>
                             Needs replacing.
