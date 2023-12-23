@@ -9,7 +9,7 @@ for item in product["all_of"]:
 
 
 # allof = {inst : product["all_of"][inst] for inst in product["all_of"] if inst.startswith("animal")}
-# print(allof)
+# print(allof) addedS
 
 price = int(1000)
 quantity = 2.5
