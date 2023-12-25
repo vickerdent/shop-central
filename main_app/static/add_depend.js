@@ -1,7 +1,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    formal = document.getElementById("super_form");
+    const formal = document.getElementById("super_form");
 
     formal.addEventListener("submit", submission);
 

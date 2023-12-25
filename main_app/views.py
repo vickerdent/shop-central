@@ -40,6 +40,10 @@ def home(request):
                        product["is_carton_bag_divisible"])
         inventory.append(item)
 
+    # Also get all carts for user
+    all_carts = list(staff_carts_collection.find({"staff_id": request.user.email}))
+    noOfCarts = len(all_carts)
+
     # check that user is registered
     # then check if user is staff or admin
     curr_user = user_collection.find_one({"email": request.user.email})
@@ -55,9 +59,10 @@ def home(request):
             return redirect("confirm_code")
         
         if a_user.is_admin:
-            return render(request, "main_app/home.html", {"is_admin": True, "is_staff": True, "inventory": inventory})
+            return render(request, "main_app/home.html", {"is_admin": True, "is_staff": True, 
+                                                          "inventory": inventory, "noOfCarts": noOfCarts})
         elif a_user.is_staff:
-            return render(request, "main_app/home.html", {"is_staff": True, "inventory": inventory})
+            return render(request, "main_app/home.html", {"is_staff": True, "inventory": inventory, "carts": noOfCarts})
         else:
             return render(request, "main_app/home.html", {"inventory": inventory})
         
@@ -245,14 +250,16 @@ def username(request):
             return redirect("username")
         
         context = {"curr_user": a_user, "image_form": image_form, "name_form": name_form}
+        all_carts = list(staff_carts_collection.find({"staff_id": a_user.email}))
+        noOfCarts = len(all_carts)
 
         if a_user.is_admin:
-            context = {"curr_user": a_user, "image_form": image_form,
-                       "name_form": name_form, "is_admin": True, "is_staff": True}
+            context = {"curr_user": a_user, "image_form": image_form, "name_form": name_form,
+                       "noOfCarts": noOfCarts, "is_admin": True, "is_staff": True}
             return render(request, "main_app/user_profile.html", context)
         elif a_user.is_staff:
             context = {"curr_user": a_user, "image_form": image_form,
-                       "name_form": name_form, "is_staff": True}
+                       "name_form": name_form, "noOfCarts": noOfCarts, "is_staff": True}
             return render(request, "main_app/user_profile.html", context)
 
         return render(request, "main_app/user_profile.html", context)
@@ -270,6 +277,9 @@ def add_product(request):
                          curr_user["username"], curr_user["gender"], curr_user["phone_no"],
                          curr_user["address"], curr_user["state"], curr_user["image"],
                          curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+        
+        all_carts = list(staff_carts_collection.find({"staff_id": a_user.email}))
+        noOfCarts = len(all_carts)
 
         form = AddProductForm(request.POST or None, request.FILES or None)
 
@@ -312,10 +322,11 @@ def add_product(request):
                 BULK_CHOICES = ("Dozen", "Pack", "Packet", "Roll")
 
                 if a_user.is_admin:
-                    context = {"form": form, "is_admin": True, "is_staff": True, "bulk": BULK_CHOICES}
+                    context = {"form": form, "is_admin": True, "is_staff": True,
+                               "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
                     return render(request, "main_app/add_product.html", context)
                 elif a_user.is_staff:
-                    context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES}
+                    context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
                     return render(request, "main_app/add_product.html", context)
 
             i = 1
@@ -338,10 +349,11 @@ def add_product(request):
                         BULK_CHOICES = ("Dozen", "Pack", "Packet", "Roll")
 
                         if a_user.is_admin:
-                            context = {"form": form, "is_admin": True, "is_staff": True, "bulk": BULK_CHOICES}
+                            context = {"form": form, "is_admin": True, "is_staff": True,
+                                       "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
                             return render(request, "main_app/add_product.html", context)
                         elif a_user.is_staff:
-                            context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES}
+                            context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
                             return render(request, "main_app/add_product.html", context)
                     else:
                         bulk_types[bulk_type] = request.POST.get(bulk_type)
@@ -375,18 +387,20 @@ def add_product(request):
 
                     # Bulk_price
                     if request.POST.get(bulk_price) in bulk_prices.values():
-                        messages.warning(request, "You can't have duplicate bulk types!")
+                        messages.warning(request, "You can't have duplicate bulk prices!")
             
                         BULK_CHOICES = ("Dozen", "Pack", "Packet", "Roll")
 
                         if a_user.is_admin:
-                            context = {"form": form, "is_admin": True, "is_staff": True, "bulk": BULK_CHOICES}
+                            context = {"form": form, "is_admin": True, "is_staff": True,
+                                       "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
                             return render(request, "main_app/add_product.html", context)
                         elif a_user.is_staff:
-                            context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES}
+                            context = {"form": form, "is_staff": True,
+                                       "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
                             return render(request, "main_app/add_product.html", context)
                     else:
-                        bulk_prices[bulk_price] = request.POST.get(bulk_price)
+                        bulk_prices[bulk_price] = float(request.POST.get(bulk_price))
 
                     bulk_price = "bulk_price_" + str(i)
 
@@ -475,19 +489,21 @@ def add_product(request):
             BULK_CHOICES = ("Dozen", "Pack", "Packet", "Roll")
 
             if a_user.is_admin:
-                context = {"form": form, "is_admin": True, "is_staff": True, "bulk": BULK_CHOICES}
+                context = {"form": form, "is_admin": True, "is_staff": True,
+                           "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
                 return render(request, "main_app/add_product.html", context)
             elif a_user.is_staff:
-                context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES}
+                context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
                 return render(request, "main_app/add_product.html", context)
         
         BULK_CHOICES = ("Dozen", "Pack", "Packet", "Roll")
 
         if a_user.is_admin:
-            context = {"form": form, "is_admin": True, "is_staff": True, "bulk": BULK_CHOICES}
+            context = {"form": form, "is_admin": True, "is_staff": True,
+                       "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
             return render(request, "main_app/add_product.html", context)
         elif a_user.is_staff:
-            context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES}
+            context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
             return render(request, "main_app/add_product.html", context)
         else:
             messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
@@ -507,6 +523,8 @@ def change_carousel(request):
                          curr_user["username"], curr_user["gender"], curr_user["phone_no"],
                          curr_user["address"], curr_user["state"], curr_user["image"],
                          curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+        all_carts = list(staff_carts_collection.find({"staff_id": a_user.email}))
+        noOfCarts = len(all_carts)
 
         form = CarouselForm(request.POST or None, request.FILES or None)
 
@@ -514,17 +532,17 @@ def change_carousel(request):
             pass
         else:
             if a_user.is_admin:
-                context = {"form": form, "is_admin": True, "is_staff": True}
+                context = {"form": form, "is_admin": True, "is_staff": True, "noOfCarts": noOfCarts}
                 return render(request, "main_app/change_carousel.html", context)
             elif a_user.is_staff:
-                context = {"form": form, "is_staff": True}
+                context = {"form": form, "is_staff": True, "noOfCarts": noOfCarts}
                 return render(request, "main_app/change_carousel.html", context)
         
         if a_user.is_admin:
-            context = {"form": form, "is_admin": True, "is_staff": True}
+            context = {"form": form, "is_admin": True, "is_staff": True, "noOfCarts": noOfCarts}
             return render(request, "main_app/change_carousel.html", context)
         elif a_user.is_staff:
-            context = {"form": form, "is_staff": True}
+            context = {"form": form, "is_staff": True, "noOfCarts": noOfCarts}
             return render(request, "main_app/change_carousel.html", context)
         else:
             messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
@@ -575,10 +593,14 @@ def privacy_policy(request):
                          curr_user["address"], curr_user["state"], curr_user["image"],
                          curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
         
+        all_carts = list(staff_carts_collection.find({"staff_id": a_user.email}))
+        noOfCarts = len(all_carts)
+
         if a_user.is_admin:
-            return render(request, "main_app/privacy.html", {"is_admin": True, "is_staff": True})
+            return render(request, "main_app/privacy.html", {"is_admin": True,
+                                                             "is_staff": True, "noOfCarts": noOfCarts})
         elif a_user.is_staff:
-            return render(request, "main_app/privacy.html", {"is_staff": True})
+            return render(request, "main_app/privacy.html", {"is_staff": True, "noOfCarts": noOfCarts})
     return render(request, "main_app/privacy.html", {})
 
 def find_product(request, slug):
@@ -605,72 +627,57 @@ def find_staff_cart(request):
 
         cartName = postData.get("cartName")
         prodName = postData.get("prodName")
-        saleType = postData.get("saleType")
+        saleType = postData.get("saleType").strip()
         prodPrice = postData.get("prodPrice")
         prodImage = postData.get("prodImage")
         prodQuantity = postData.get("prodQuantity")
         prodSlug = postData.get("prodSlug")
+        subTotal = float(prodPrice) * float(prodQuantity)
 
         # Check for cart name from mongodb
         the_cart = staff_carts_collection.find_one({"name_of_buyer": cartName})
 
         if the_cart:
+            # Such a cart already exists
             total_amount = the_cart["total_amount"]
             # Ensure item isn't in cart list already
             for product in the_cart["items"]:
                 if prodSlug in product.values():
                     # product is among items in cart
-                    product_slugs = []
-                    # Get all slugs by running through item list
-                    for prod in product.keys():
-                        if prod.startswith("product_slug"):
-                            product_slugs.append(prod)
-                    
                     # Check which slug has the info we need
-                    for slug in product_slugs:
-                        print(slug)
-                        for item in the_cart["items"]:
-                            if item[slug] == prodSlug:
-                                # Found the slug
-                                # Get the appended item num and current price
-                                zehNum = slug.split("_")[2]
-                                zehPrice = int(item["product_price_" + str(zehNum)])
-                                priceDiff = int(int(prodPrice) * float(prodQuantity) - zehPrice * float(prodQuantity))
-                                # Update each related info of dictionary, mongo tho
-                                # item["sale_type_" + str(zehNum)] = saleType
-                                # item["product_price_" + str(zehNum)] = int(prodPrice)
-                                # item["product_quantity_" + str(zehNum)] = float(prodQuantity)
-                                updateResult = staff_carts_collection.update_one({"name_of_buyer": cartName}, 
-                                                                  {"$inc": {"total_amount": priceDiff},
-                                                                   "$set": {"items.$[elem].sale_type_" + str(zehNum): saleType,
-                                                                            "items.$[elem].product_price_" + str(zehNum): int(prodPrice),
-                                                                            "items.$[elem].product_quantity_" + str(zehNum): float(prodQuantity),
-                                                                            "amount_owed": total_amount + priceDiff},
-                                                                    },
-                                                                  array_filters=[{"elem." + slug: prodSlug}])
-                                
-                                if updateResult.modified_count == 1:
-                                    return JsonResponse(data={"result": 1})
-                                else:
-                                    return JsonResponse(data={"result": False})
-
-            # Find out the number of items in the items dictionary
-            product_names = []
-            for item in the_cart["items"]:
-                for name in item.keys():
-                    if name.startswith("product_name"):
-                        product_names.append(name)
-            
-            # Get last product from list
-            curr_num = int(product_names[-1].split("_")[2])
+                    for item in the_cart["items"]:
+                        if item.get("product_slug") == prodSlug:
+                            # Found the slug
+                            # Get the appended item num and current price
+                            zehPrice = float(item["product_price"])
+                            zehQuantity = float(item["product_quantity"])
+                            priceDiff = subTotal - zehPrice * zehQuantity
+                            # Update each related info of dictionary, mongo tho
+                            # item["sale_type_" + str(zehNum)] = saleType
+                            # item["product_price_" + str(zehNum)] = int(prodPrice)
+                            # item["product_quantity_" + str(zehNum)] = float(prodQuantity)
+                            updateResult = staff_carts_collection.update_one({"name_of_buyer": cartName}, 
+                                                                {"$inc": {"total_amount": priceDiff},
+                                                                "$set": {"items.$[elem].sale_type": saleType,
+                                                                        "items.$[elem].product_price": float(prodPrice),
+                                                                        "items.$[elem].product_quantity": float(prodQuantity),
+                                                                        "amount_owed": total_amount + priceDiff},
+                                                                },
+                                                                array_filters=[{"elem.product_slug": prodSlug}])
+                            
+                            if updateResult.modified_count == 1:
+                                return JsonResponse(data={"result": 1})
+                            else:
+                                return JsonResponse(data={"result": False})
 
             # Create dictionary for new item
-            new_item = SON([("product_name_" + str(curr_num + 1), prodName),
-                            ("sale_type_" + str(curr_num + 1), saleType),
-                            ("product_price_" + str(curr_num + 1), int(prodPrice)),
-                            ("product_image_" + str(curr_num + 1), prodImage),
-                            ("product_quantity_" + str(curr_num + 1), float(prodQuantity)),
-                            ("product_slug_" + str(curr_num + 1), prodSlug)])
+            new_item = SON([("product_name", prodName),
+                            ("sale_type", saleType),
+                            ("product_price", int(prodPrice)),
+                            ("product_image", prodImage),
+                            ("product_quantity", float(prodQuantity)),
+                            ("subTotal", subTotal),
+                            ("product_slug", prodSlug)])
 
             # new_item = {"product_name_" + str(curr_num + 1): prodName,
             #             "sale_type_" + str(curr_num + 1): saleType,
@@ -682,21 +689,22 @@ def find_staff_cart(request):
             # Add dictionary to list of items: {"product_name": prodName, "sale_type": saleType}
             staff_carts_collection.update_one({"name_of_buyer": cartName},
                                             {"$push": {"items": new_item},
-                                            "$inc": {"total_amount": int(int(prodPrice) * float(prodQuantity))},
-                                            "$set": {"amount_owed": total_amount + int(int(prodPrice) * float(prodQuantity))}})
+                                            "$inc": {"total_amount": subTotal},
+                                            "$set": {"amount_owed": total_amount + subTotal}})
             
             return JsonResponse(data={"result": True})
         else:
             # It's a new cart
             # Create dictionary for new item
-            new_item = SON([("product_name_1", prodName),
-                            ("sale_type_1", saleType),
-                            ("product_price_1", int(prodPrice)),
-                            ("product_image_1", prodImage),
-                            ("product_quantity_1", float(prodQuantity)),
-                            ("product_slug_1", prodSlug)])
+            new_item = SON([("product_name", prodName),
+                            ("sale_type", saleType),
+                            ("product_price", int(prodPrice)),
+                            ("product_image", prodImage),
+                            ("product_quantity", float(prodQuantity)),
+                            ("subTotal", subTotal),
+                            ("product_slug", prodSlug)])
             
-            whole_cart = StaffCart(cartName, request.user.email, [new_item], int(int(prodPrice) * float(prodQuantity)), 0)
+            whole_cart = StaffCart(cartName, request.user.email, [new_item], subTotal, 0)
 
             staff_carts_collection.insert_one(whole_cart.to_dict())
 
@@ -713,12 +721,36 @@ def check_product_in_cart(request, slug):
         for item in cart["items"]:
             if slug in item.values():
                 # Given product is already in cart
-                print("2nd", slug)
                 return JsonResponse(data={"result": True})
-            else:
-                # It isn't
-                return JsonResponse(data={"result": False})
 
+    return JsonResponse(data={"result": False})
+
+@login_required
+def staff_carts(request):
+    # Check if user is admin or staff
+    curr_user = user_collection.find_one({"email": request.user.email})
+
+    if curr_user:
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["email"],
+                         curr_user["username"], curr_user["gender"], curr_user["phone_no"],
+                         curr_user["address"], curr_user["state"], curr_user["image"],
+                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+        
+        all_carts = list(staff_carts_collection.find({"staff_id": a_user.email}))
+        noOfCarts = len(all_carts)
+        
+        if a_user.is_admin:
+            context = {"is_admin": True, "is_staff": True, "carts": all_carts, "noOfCarts": noOfCarts}
+            return render(request, "main_app/staff_carts.html", context)
+        elif a_user.is_staff:
+            context = {"is_staff": True, "carts": all_carts}
+            return render(request, "main_app/staff_carts.html", context)
+        else:
+            messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
+            return render(request, "main_app/400.html", {})
+    else:
+        messages.error(request, "An internal error occurred. Please try again later.")
+        return render(request, "main_app/404.html", {})
 
 @login_required
 def edit_product(request, slug):

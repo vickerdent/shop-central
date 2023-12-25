@@ -9,12 +9,12 @@ for item in product["all_of"]:
 
 
 # allof = {inst : product["all_of"][inst] for inst in product["all_of"] if inst.startswith("animal")}
-# print(allof) addedS
+# print(allof)
+        
+variable = "vaseline-blue-seal-pure-petroleum-jelly-450ml"
+against = "vaseline-blue-seal-pure-petroleum-jelly-450ml"
 
-price = int(1000)
-quantity = 2.5
-total = int(price * quantity)
-print(total)
+print(variable == against)
 
 # price_str = str(price)
 # rev_price = price_str[::-1]

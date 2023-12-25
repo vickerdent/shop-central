@@ -1,0 +1,124 @@
+{% extends "main_app/base.html" %}
+
+{% block title %} Carts {% endblock %}
+
+{% block content %}
+{% load static %}
+{% load humanize %}
+
+  <script src="{% static 'staff_cart.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'staff_cart.css' %}">
+
+  <div class="modal fade" id="productInfoModal" tabindex="-1" aria-labelledby="productInfoModalLabel" aria-hidden="true" data-bs-theme="dark">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5 text-light d-none d-lg-block d-xl-block d-xxl-block" id="productInfoModalLabel"></h1>
+            <div class="float-end">
+              <button type="button" class="btn btn-light" id="priceCall" data-bs-target="#prodPriceModal" data-bs-toggle="modal">Update Prices</button>
+              <a href="#" class="btn btn-light" id="editCall">Edit Product</a>
+            </div>
+          </div>
+          <div class="modal-body">
+            {% csrf_token %}
+            <div class="container-fluid">
+              <div class="d-flex justify-content-center" id="picHold">
+              </div>
+              <div id="productHold">
+                <h6 class="fs-6 text-light d-flex justify-content-center" id="prodName"></h6>
+                <h3 class="fs-3 text-light d-flex justify-content-center" id="prodPrice"></h3>
+                <input type="hidden" name="priced" id="priceHold">
+                <!-- Alert should be created using java script, using this design -->
+                <div id="prodExists"></div>
+                <div id="saleID">
+                  <div class="d-flex justify-content-start">
+                    <h4 class="me-2 text-light">Sale Type:</h4>
+                    <h4 class="text-light" id="saleType"></h4>
+                  </div>
+                </div>
+                <div class="d-flex flex-wrap" id="buttonHolder">
+                </div> <br>
+                <div class="d-flex justify-content-start">
+                  <h4 class="me-2 text-light">Quantity:</h4>
+                  <h4 class="text-light" id="totalQuantity">1</h4>
+                  <input type="hidden" name="quant" id="quantleft">
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" role="switch" id="isWhole">
+                  <label class="form-check-label text-light" for="isWhole">Customer only wants Half/Quarter</label>
+                </div>
+                <div class="container text-center">
+                  <div class="row g-2 align-items-center" id="quantHold">
+                    <div class="col-auto"><button type="button" class="btn btn-light" id="minus_button" >-</button></div>
+                    <div class="col-2">
+                      <input type="number" class="form-control" name="quantity" id="prodquantity" value="1" onclick="this.select()">
+                      <!-- Make this into check buttons instead (not radio) -->
+                    </div>
+                    <div class="col-auto"><button type="button" class="btn btn-light" id="plus_button">+</button></div>
+                    <div class="col-auto">
+                      <input type="checkbox" class="btn-check" id="half_button" autocomplete="off" name="oquantity" value="0.5">
+                      <label class="btn btn-outline-light" for="half_button">Half (½)</label>
+                    </div>
+                    <div class="col-auto">
+                      <input type="checkbox" class="btn-check" id="quart_button" autocomplete="off" name="oquantity" value="0.25">
+                      <label class="btn btn-outline-light" for="quart_button">Quarter (¼)</label>
+                    </div>
+                    <div class="col-auto">
+                      <span id="quantityLeft" class="form-text">
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <div class="d-flex flex-row">
+              <div class="me-2 ms-2"><input autocomplete="off" placeholder="Type to select/add Cart" id="openCart" list="cartList" class="form-control"></div>
+              <div><button type="button" class="btn btn-light" id="addToCart">Add To Cart</button></div>
+              <datalist id="cartList">
+              </datalist>
+            </div>              
+          </div>
+        </div>
+      </div>
+  </div>
+  
+  <div class="col-md-6 offset-md-3">
+    {% for cart in carts %}
+      <div class="card">
+        <h5 class="card-header">{{ cart.name_of_buyer}}'s Cart</h5>
+        <div class="card-body">
+          {% for item in cart.items %}
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex align-items-center ">
+                  <div class="flex-shrink-0">
+                    <img src="{{ item.product_image }}" alt="Product's Image" width="80">
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    {{ item.product_name }} <br>
+                    <strong>Sale Type:</strong> {{ item.sale_type }}  Quantity: {{ item.product_quantity }} <br>
+                    <strong>₦{{ item.product_price|intcomma }}</strong>
+                    <input type="hidden" name="slug" value="{{ item.product_slug }}">
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer text-end">
+                Subtotal = {{ item.product_price * item.product_quantity }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="card-footer text-body-secondary text-end">
+          <h5>{{ cart.total_amount|intcomma }}</h5>
+          <a href="#" class="btn btn-primary">Pay Order</a>
+        </div>
+      </div>
+    {% empty %}
+        <div><p id="exception">No customer is being attended to. Add a product to see it here.</p></div>
+    {% endfor %}
+  </div>
+
+{% endblock %}

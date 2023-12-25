@@ -8,7 +8,7 @@
 
     <script src="{% static 'home_pro.js' %}"></script>
     <link rel="stylesheet" href="{% static 'home_pro.css' %}">
-
+    <input type="hidden" name="noOfCust" id="noOfCustomers">
     <div class="modal fade" id="productInfoModal" tabindex="-1" aria-labelledby="productInfoModalLabel" aria-hidden="true" data-bs-theme="dark">
         <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content">
@@ -29,13 +29,7 @@
                   <h3 class="fs-3 text-light d-flex justify-content-center" id="prodPrice"></h3>
                   <input type="hidden" name="priced" id="priceHold">
                   <!-- Alert should be created using java script, using this design -->
-                  <div class="alert alert-warning d-flex align-items-center alert-dismissible" role="alert" id="prodExists">
-                    <svg class="bi flex-shrink-0 me-2" width="16" height="16" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg>
-                    <div>
-                      This product is already in a customer's Cart.
-                      Attempting to add it again will update/replace it in the customer's cart.
-                    </div>
-                  </div>
+                  <div id="prodExists"></div>
                   <div id="saleID">
                     <div class="d-flex justify-content-start">
                       <h4 class="me-2 text-light">Sale Type:</h4>
@@ -187,17 +181,17 @@
         <!-- Available items (Items in stock) -->
         {% for item in inventory %}
             {% if item.singles_stock > 0 %}
+              <div class="me-3 mb-3 oneProduct">
                 <a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-bs-toggle="modal" data-bs-target="#productInfoModal" data-slug="{{ item.slug }}">
-                    <div class="me-3 mb-3" id="oneProduct">
-                        <div class="card h-100">
-                            <img src="{{ item.product_image.0 }}" class="card-img-top" alt="Product's Image" width="50">
-                            <div class="card-body">
-                                {{ item.name|truncatechars:20 }} <br>
-                                <strong>₦{{ item.retail_price|intcomma }}</strong>
-                            </div>
-                        </div>
-                    </div>
+                  <div class="card h-100">
+                      <img src="{{ item.product_image.0 }}" class="card-img-top" alt="Product's Image" width="50">
+                      <div class="card-body">
+                          {{ item.name|truncatechars:32 }} <br>
+                          <strong>₦{{ item.retail_price|intcomma }}</strong>
+                      </div>
+                  </div>
                 </a>
+              </div>
             {% endif %}
         {% empty %}
             <div><p>No item found in inventory. Contact the site administrator for help.</p></div>
@@ -207,7 +201,7 @@
         {% for item in inventory %}
             {% if item.singles_stock == 0 %}
                 <a href="#" role="button">
-                  <div class="me-3 mb-3" id="nonProduct">
+                  <div class="me-3 mb-3 nonProduct">
                     <div class="card h-100">
                         <img src="{{ item.product_image.0}}" class="card-img-top" alt="Product's Image" width="50">
                         <div class="card-body">

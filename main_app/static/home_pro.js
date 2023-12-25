@@ -110,6 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                     return response.json()})
                 .then(data => {
+                    document.getElementById("noOfCustomers").value = data.carts.length
                     const dataList = document.getElementById("cartList");
                     data.carts.forEach(element => {
                         const option = document.createElement("option");
@@ -129,11 +130,24 @@ document.addEventListener("DOMContentLoaded", () => {
                     return response.json()})
                 .then(data => {
                     const result = data.result
-                    console.log(result)
+                    // Create alert
                     const cartWarning = document.getElementById("prodExists");
-                    const alert = bootstrap.Alert.getOrCreateInstance(cartWarning)
-                    if (result === false) {
-                        alert.close()
+                    const wrapper = document.createElement("div");
+                    wrapper.id = "alertNotice";
+
+                    wrapper.innerHTML = [
+                        '<div class="alert alert-warning d-flex align-items-center alert-dismissible" role="alert">',
+                        '   <svg class="bi flex-shrink-0 me-2" width="16" height="16" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg>',
+                        '   <div>',
+                        '       This product is already in a customer\'s cart.',
+                        '       \nAttempting to add it again will update/replace it in the customer\'s cart.',
+                        '   </div>',
+                        '</div>'
+                      ].join('')
+
+                    console.log(result)
+                    if (result === true) {
+                        cartWarning.append(wrapper)
                     }
                 })
 
@@ -1235,14 +1249,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 .then(data => {
                     const result = data.result
                     const productModal = bootstrap.Modal.getInstance(document.getElementById('productInfoModal'))
-                    const alert = bootstrap.Alert.getOrCreateInstance('#prodExists')
                     if (result === true) {
+                        const noOfCarts = document.getElementById("noOfCarts");
+                        if (!noOfCarts) {
+                            const badge = document.createElement("span");
+                            badge.className = "badge text-bg-secondary";
+                            badge.innerHTML = "1";
+                            badge.id = "noOfCarts";
+                            document.querySelector("#theStaffCart").append(badge);
+                        } else {
+                            noOfCarts.innerHTML = parseInt(document.querySelector("#noOfCustomers").value) + 1
+                        }
                         successfulerToast.show()
-                        alert.close()
                         productModal.hide()
                     } else if (result === 1) {
                         updateToast.show()
-                        alert.close()
                         productModal.hide()
                     } else {
                         failToast.show();
@@ -1565,7 +1586,17 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector("#openCart").value = "";
             document.querySelector("#totalQuantity").textContent = 1;
             document.querySelector("#quantleft").value = "";
-            // document.getElementById("prodExists").style.display = "none";
+            const prodAlert = document.getElementById("alertNotice");
+            if (prodAlert) {
+                prodAlert.remove();
+            }
+            const dataList = document.querySelector("#cartList");
+            for (const key in dataList.options) {
+                if (Object.hasOwnProperty.call(dataList.options, key)) {
+                    const element = dataList.options[key];
+                    dataList.removeChild(element)
+                }
+            }
         })
     }
 });
