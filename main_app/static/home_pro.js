@@ -1594,7 +1594,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 prodAlert.remove();
             }
             const dataList = document.querySelector("#cartList");
-            dataList.options.length = 0;
+            if (dataList) {
+                dataList.remove();
+            }
         })
     }
 });

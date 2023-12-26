@@ -27,13 +27,13 @@
               {% if user.is_authenticated and is_staff %}
               <li class="nav-item">
                 <a class="nav-link active" aria-current="page" href="{% url 'staff_carts' %}" id="theStaffCart">Carts
-                  {% if noOfCarts %}<span class="badge text-bg-secondary" id="noOfCarts">{{ noOfCarts }}</span>{% endif %}</a>
+                  {% if noOfCarts %}<span class="badge text-bg-light" id="noOfCarts">{{ noOfCarts }}</span>{% endif %}</a>
               </li>
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   Activity
                 </a>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menu dropdown-menu-dark">
                   <li><a class="dropdown-item" href="{% url 'add_product' %}">Add Product</a></li>
                   {% if is_admin %}
                   <li><a class="dropdown-item" href="#">Add Staff</a></li>
@@ -44,7 +44,7 @@
                 <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   History
                 </a>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menu dropdown-menu-dark">
                   <li><a class="dropdown-item" href="#">Transactions</a></li>
                   <li><a class="dropdown-item" href="#">Purchase History</a></li>
                   <li><a class="dropdown-item" href="#">Debtors</a></li>

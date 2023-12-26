@@ -8,90 +8,31 @@
 
   <script src="{% static 'staff_cart.js' %}"></script>
   <link rel="stylesheet" href="{% static 'staff_cart.css' %}">
+  <input type="hidden" name="noOfCust" id="noOfCustomers">
 
-  <div class="modal fade" id="productInfoModal" tabindex="-1" aria-labelledby="productInfoModalLabel" aria-hidden="true" data-bs-theme="dark">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5 text-light d-none d-lg-block d-xl-block d-xxl-block" id="productInfoModalLabel"></h1>
-            <div class="float-end">
-              <button type="button" class="btn btn-light" id="priceCall" data-bs-target="#prodPriceModal" data-bs-toggle="modal">Update Prices</button>
-              <a href="#" class="btn btn-light" id="editCall">Edit Product</a>
-            </div>
-          </div>
-          <div class="modal-body">
-            {% csrf_token %}
-            <div class="container-fluid">
-              <div class="d-flex justify-content-center" id="picHold">
-              </div>
-              <div id="productHold">
-                <h6 class="fs-6 text-light d-flex justify-content-center" id="prodName"></h6>
-                <h3 class="fs-3 text-light d-flex justify-content-center" id="prodPrice"></h3>
-                <input type="hidden" name="priced" id="priceHold">
-                <!-- Alert should be created using java script, using this design -->
-                <div id="prodExists"></div>
-                <div id="saleID">
-                  <div class="d-flex justify-content-start">
-                    <h4 class="me-2 text-light">Sale Type:</h4>
-                    <h4 class="text-light" id="saleType"></h4>
-                  </div>
-                </div>
-                <div class="d-flex flex-wrap" id="buttonHolder">
-                </div> <br>
-                <div class="d-flex justify-content-start">
-                  <h4 class="me-2 text-light">Quantity:</h4>
-                  <h4 class="text-light" id="totalQuantity">1</h4>
-                  <input type="hidden" name="quant" id="quantleft">
-                </div>
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" role="switch" id="isWhole">
-                  <label class="form-check-label text-light" for="isWhole">Customer only wants Half/Quarter</label>
-                </div>
-                <div class="container text-center">
-                  <div class="row g-2 align-items-center" id="quantHold">
-                    <div class="col-auto"><button type="button" class="btn btn-light" id="minus_button" >-</button></div>
-                    <div class="col-2">
-                      <input type="number" class="form-control" name="quantity" id="prodquantity" value="1" onclick="this.select()">
-                      <!-- Make this into check buttons instead (not radio) -->
-                    </div>
-                    <div class="col-auto"><button type="button" class="btn btn-light" id="plus_button">+</button></div>
-                    <div class="col-auto">
-                      <input type="checkbox" class="btn-check" id="half_button" autocomplete="off" name="oquantity" value="0.5">
-                      <label class="btn btn-outline-light" for="half_button">Half (½)</label>
-                    </div>
-                    <div class="col-auto">
-                      <input type="checkbox" class="btn-check" id="quart_button" autocomplete="off" name="oquantity" value="0.25">
-                      <label class="btn btn-outline-light" for="quart_button">Quarter (¼)</label>
-                    </div>
-                    <div class="col-auto">
-                      <span id="quantityLeft" class="form-text">
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <div class="d-flex flex-row">
-              <div class="me-2 ms-2"><input autocomplete="off" placeholder="Type to select/add Cart" id="openCart" list="cartList" class="form-control"></div>
-              <div><button type="button" class="btn btn-light" id="addToCart">Add To Cart</button></div>
-              <datalist id="cartList">
-              </datalist>
-            </div>              
-          </div>
-        </div>
+  <div class="toast-container position-fixed top-0 end-0 p-3">
+    <!-- Failed -->
+    <div class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true" id="toastError" data-bs-delay="10000">
+      <div class="toast-header">
+        <!-- <img src="..." class="rounded me-2" alt="..."> -->
+        <strong class="me-auto">Jovimifah Destiny Store</strong>
+        <small class="text-body-secondary">just now</small>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
       </div>
+      <div class="toast-body text-light">
+        Request failed. Try again at a later time, or refresh this page.
+      </div>
+    </div>
   </div>
-  
+
   <div class="col-md-6 offset-md-3">
+    <input type="hidden" id="currNum">
     {% for cart in carts %}
-      <div class="card parent-card mb-3">
+      <div class="card parent-card mb-3" data-bs-theme="dark">
         <h5 class="card-header">{{ cart.name_of_buyer}}'s Cart</h5>
         <div class="card-body">
           {% for item in cart.items %}
-            <div class="card mb-2">
+            <div class="card mb-2" data-bs-theme="light">
               <div class="card-body">
                 <div class="d-flex align-items-center ">
                   <div class="flex-shrink-0">
@@ -105,15 +46,25 @@
                   </div>
                 </div>
               </div>
-              <div class="card-footer text-end">
-                Subtotal = {{ item.subTotal|intcomma }}
+              <div class="card-footer text-end text-bg-secondary">
+                Sub-total = ₦{{ item.subTotal|intcomma }}
               </div>
             </div>
           {% endfor %}
         </div>
-        <div class="card-footer text-body-secondary text-end">
-          <h5>{{ cart.total_amount|intcomma }}</h5>
-          <a href="#" class="btn btn-primary">Pay Order</a>
+        <div class="card-footer text-bg-secondary text-end">
+          <h5>Total Amount Due: ₦{{ cart.total_amount|intcomma }}</h5>
+          <input type="hidden" id="totalAmount_{{ forloop.counter }}" value="{{ cart.total_amount }}">
+          <h5>Total Amount Owed: <span class="owable" >₦<span id="owed_{{ forloop.counter }}">{{ cart.amount_owed|intcomma }}</span></span></h5>
+          <input type="hidden" id="amountOwed_{{ forloop.counter }}" value="{{ cart.amount_owed }}">
+          <div class="d-flex justify-content-end mb-2">
+            <h5 class="me-2">Amount Paid:</h5>
+            <div class="input-group input-group-sm payable">
+              <span class="input-group-text" id="inputGroup-sizing-sm">₦</span>
+              <input type="number" class="form-control" name="amoutPaid_{{ forloop.counter }}" id="amountPaid_{{ forloop.counter }}">
+            </div>
+          </div>
+          <button type="button" id="purchaseOrder_{{ forloop.counter }}" class="btn btn-primary purchases" data-bs-toggle="modal" data-bs-target="#confirmPurchase">Pay Order</button>
         </div>
       </div>
     {% empty %}
