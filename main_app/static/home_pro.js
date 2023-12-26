@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
             btnPrice.setAttribute('data-slug', recipient);
 
             document.getElementById("minus_button").disabled = true;
+            document.getElementById("plus_button").disabled = false;
             document.querySelector("#addToCart").disabled = true;
             document.getElementById("isWhole").checked = false;
             document.getElementById("isWhole").disabled = true;
@@ -111,12 +112,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     return response.json()})
                 .then(data => {
                     document.getElementById("noOfCustomers").value = data.carts.length
-                    const dataList = document.getElementById("cartList");
+                    const dataList = document.createElement("datalist");
+                    dataList.id = "cartList";
                     data.carts.forEach(element => {
+                        // Compare with current options and skip if possible
                         const option = document.createElement("option");
                         option.value = element;
                         dataList.appendChild(option);
                     });
+                    document.getElementById("custInfo").appendChild(dataList)
                 })
 
                 // Check if product is in any customer's list and display appropriate warning
@@ -145,7 +149,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         '</div>'
                       ].join('')
 
-                    console.log(result)
                     if (result === true) {
                         cartWarning.append(wrapper)
                     }
@@ -1591,18 +1594,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 prodAlert.remove();
             }
             const dataList = document.querySelector("#cartList");
-            for (const key in dataList.options) {
-                if (Object.hasOwnProperty.call(dataList.options, key)) {
-                    const element = dataList.options[key];
-                    dataList.removeChild(element)
-                }
-            }
+            dataList.options.length = 0;
         })
     }
 });
 
 function editPrice(dPrice) {
-    var strPrice  = dPrice.toString();
+    var point = dPrice.indexOf(".")
+    if (point) {
+        var strPrice  = dPrice.slice(0, point);
+    } else {
+        var strPrice  = dPrice.toString();
+    }
+    var decimalFig = dPrice.slice(-3)
     var revStrPrice = strPrice.split("").reverse().join("");
     var humPrice = "";
     if (revStrPrice.length > 3) {
@@ -1615,8 +1619,8 @@ function editPrice(dPrice) {
         }
         strPrice = humPrice.split("").reverse().join("");
     } else {
-        return strPrice;
+        return strPrice + decimalFig;
     }
-    return strPrice;
+    return strPrice + decimalFig;
 }
 

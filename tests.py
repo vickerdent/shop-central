@@ -3,18 +3,13 @@ product = {"name_of": "Victor",
             "animal_1": "Dog", "animal_3": "Donkey", "animal_4": "Lion"}, 
             {"human_7": "Loise", "human_10": "Queen", "animal_17": "Zebra", "animal_23": "Giraffe"}]}
 
-for item in product["all_of"]:
-    if "Donkey" in item.values():
-        print("You already got this nah")
-
 
 # allof = {inst : product["all_of"][inst] for inst in product["all_of"] if inst.startswith("animal")}
 # print(allof)
-        
-variable = "vaseline-blue-seal-pure-petroleum-jelly-450ml"
-against = "vaseline-blue-seal-pure-petroleum-jelly-450ml"
-
-print(variable == against)
+from bson.decimal128 import Decimal128, create_decimal128_context
+from decimal import Decimal
+value = Decimal("23200.349") * Decimal("2.5")
+print(value.quantize(Decimal("1.00")))
 
 # price_str = str(price)
 # rev_price = price_str[::-1]

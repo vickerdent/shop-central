@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 
 # Create your models here.
 class Human:
@@ -106,6 +107,9 @@ class Product:
 
     Bulk here means either roll, or dozen, 
     depending on how the product is produced
+
+    Note that price-related variables accept strings
+    to convert to their decimals
     """
     __slot__ = ("brand_name", "product_name", "size", "product_image", "tags", "retail_price", "wholesale_price",
                 "is_discount", "discount_retail_price", "has_bulk", "bulk_prices", "bulk_types", "nos_in_bulk", "bulk_images",
@@ -113,9 +117,9 @@ class Product:
                 "singles_stock", "carton_bag_stock", "description", "slug", "is_divisible", "is_carton_bag_divisible")
     
     def __init__(self, brand_name: str, product_name: str, size: str, product_image: list, tags: list,
-                 retail_price: float, wholesale_price: float, is_discount: bool, discount_retail_price: float, has_bulk: bool,
+                 retail_price: str, wholesale_price: str, is_discount: bool, discount_retail_price: str, has_bulk: bool,
                  bulk_prices: dict, bulk_types: dict, nos_in_bulk: dict, bulk_images: dict, is_carton_bag: str,
-                 carton_bag_price: float, no_in_carton_bag: int, carton_bag_image: list, price_modified_date: datetime,
+                 carton_bag_price: str, no_in_carton_bag: int, carton_bag_image: list, price_modified_date: datetime,
                  singles_stock: int, carton_bag_stock: int, description: str, slug: str, is_divisible: bool,
                  is_carton_bag_divisible: bool) -> None:
         self.brand_name = brand_name
@@ -123,10 +127,10 @@ class Product:
         self.size = size
         self.product_image = product_image
         self.tags = tags
-        self.retail_price = float(retail_price)
-        self.wholesale_price = float(wholesale_price)
+        self.retail_price = Decimal(str(retail_price)) + Decimal("0.00")
+        self.wholesale_price = Decimal(str(wholesale_price)) + Decimal("0.00")
         self.is_discount = is_discount
-        self.discount_retail_price = float(discount_retail_price)
+        self.discount_retail_price = Decimal(str(discount_retail_price)) + Decimal("0.00")
         self.is_divisible = is_divisible
         self.has_bulk = has_bulk
         self.bulk_prices = bulk_prices
@@ -134,7 +138,7 @@ class Product:
         self.nos_in_bulk = nos_in_bulk
         self.bulk_images = bulk_images
         self.is_carton_bag = is_carton_bag # Does Product come in Cartons or Bags?
-        self.carton_bag_price = float(carton_bag_price)
+        self.carton_bag_price = Decimal(str(carton_bag_price)) + Decimal("0.00")
         self.no_in_carton_bag = no_in_carton_bag
         self.carton_bag_image = carton_bag_image
         self.price_modified_date = price_modified_date
@@ -156,15 +160,15 @@ class Product:
             "size": self.size,
             "product_image": self.product_image,
             "tags": self.tags,
-            "retail_price": self.retail_price,
-            "wholesale_price": self.wholesale_price,
+            "retail_price": str(self.retail_price),
+            "wholesale_price": str(self.wholesale_price),
             "is_discount": self.is_discount,
-            "discount_retail_price": self.discount_retail_price,
+            "discount_retail_price": str(self.discount_retail_price),
             "is_divisible": self.is_divisible,
             "has_bulk": self.has_bulk,
             "bulk": {**self.bulk_types, **self.bulk_prices, **self.nos_in_bulk, **self.bulk_images},
             "is_carton_bag": self.is_carton_bag,
-            "carton_bag_price": self.carton_bag_price,
+            "carton_bag_price": str(self.carton_bag_price),
             "no_in_carton_bag": self.no_in_carton_bag,
             "carton_bag_image": self.carton_bag_image,
             "is_carton_bag_divisible": self.is_carton_bag_divisible,
@@ -193,18 +197,21 @@ class StaffCart:
     """
     Class definition for carts containing
     items to be bought.
+
+    Note that price-related variables accept strings
+    to convert to their decimals
     """
     __slot__ = ("name_of_buyer", "staff_id", "items", "total_amount", "checkout_date",
                 "amount_paid", "created_date")
     
-    def __init__(self, name_of_buyer: str, staff_id: str, items: list, total_amount: float,
-                 amount_paid: float, created_date = datetime.now(), checkout_date = datetime.now()) -> None:
+    def __init__(self, name_of_buyer: str, staff_id: str, items: list, total_amount: str,
+                 amount_paid: str, created_date = datetime.now(), checkout_date = datetime.now()) -> None:
         self.name_of_buyer = name_of_buyer
         self.staff_id = staff_id
         self.items = items
-        self.total_amount = float(total_amount)
+        self.total_amount = Decimal(str(total_amount))
         self.checkout_date = checkout_date
-        self.amount_paid = float(amount_paid)
+        self.amount_paid = Decimal(str(amount_paid)) + Decimal("0.00")
         # Note that amount owed can be negative, which will translate to giving customer change
         self.amount_owed = self.total_amount - self.amount_paid
         self.created_date = created_date
@@ -218,9 +225,9 @@ class StaffCart:
             "name_of_buyer": self.name_of_buyer,
             "staff_id": self.staff_id,
             "items": self.items,
-            "total_amount": self.total_amount,
-            "amount_paid": self.amount_paid,
-            "amount_owed": self.amount_owed,
+            "total_amount": str(self.total_amount),
+            "amount_paid": str(self.amount_paid),
+            "amount_owed": str(self.amount_owed),
             "created_date": self.created_date,
             "checkout_date": self.checkout_date
         }

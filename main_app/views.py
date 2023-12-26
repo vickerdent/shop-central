@@ -9,6 +9,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from bson.son import SON
 import pymongo, json
+from decimal import Decimal
 
 from .o_functions import humans
 from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, \
@@ -400,12 +401,12 @@ def add_product(request):
                                        "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
                             return render(request, "main_app/add_product.html", context)
                     else:
-                        bulk_prices[bulk_price] = float(request.POST.get(bulk_price))
+                        bulk_prices[bulk_price] = Decimal(request.POST.get(bulk_price)) + Decimal("0.00")
 
                     bulk_price = "bulk_price_" + str(i)
 
                     # No in bulk
-                    nos_in_bulk[no_in_bulk] = request.POST.get(no_in_bulk)
+                    nos_in_bulk[no_in_bulk] = int(request.POST.get(no_in_bulk))
                     no_in_bulk = "no_in_bulk_" + str(i)
     
             # Process product image as well
@@ -632,14 +633,14 @@ def find_staff_cart(request):
         prodImage = postData.get("prodImage")
         prodQuantity = postData.get("prodQuantity")
         prodSlug = postData.get("prodSlug")
-        subTotal = float(prodPrice) * float(prodQuantity)
-
+        subTotal = Decimal(prodPrice) * Decimal(prodQuantity) + Decimal("0.00")
+        finSub = subTotal.quantize(Decimal("1.00"))
         # Check for cart name from mongodb
         the_cart = staff_carts_collection.find_one({"name_of_buyer": cartName})
 
         if the_cart:
             # Such a cart already exists
-            total_amount = the_cart["total_amount"]
+            total_amount = Decimal(the_cart["total_amount"])
             # Ensure item isn't in cart list already
             for product in the_cart["items"]:
                 if prodSlug in product.values():
@@ -649,19 +650,20 @@ def find_staff_cart(request):
                         if item.get("product_slug") == prodSlug:
                             # Found the slug
                             # Get the appended item num and current price
-                            zehPrice = float(item["product_price"])
-                            zehQuantity = float(item["product_quantity"])
-                            priceDiff = subTotal - zehPrice * zehQuantity
+                            zehPrice = Decimal(item["product_price"])
+                            zehQuantity = Decimal(item["product_quantity"])
+                            priceDiff = finSub - zehPrice * zehQuantity
                             # Update each related info of dictionary, mongo tho
                             # item["sale_type_" + str(zehNum)] = saleType
                             # item["product_price_" + str(zehNum)] = int(prodPrice)
                             # item["product_quantity_" + str(zehNum)] = float(prodQuantity)
                             updateResult = staff_carts_collection.update_one({"name_of_buyer": cartName}, 
-                                                                {"$inc": {"total_amount": priceDiff},
-                                                                "$set": {"items.$[elem].sale_type": saleType,
-                                                                        "items.$[elem].product_price": float(prodPrice),
-                                                                        "items.$[elem].product_quantity": float(prodQuantity),
-                                                                        "amount_owed": total_amount + priceDiff},
+                                                                {"$set": {"items.$[elem].sale_type": saleType,
+                                                                          "items.$[elem].product_price": str(prodPrice),
+                                                                          "items.$[elem].product_quantity": str(prodQuantity),
+                                                                          "items.$[elem].subTotal": str(finSub),
+                                                                          "amount_owed": str(total_amount + priceDiff),
+                                                                          "total_amount": str(total_amount + priceDiff)},
                                                                 },
                                                                 array_filters=[{"elem.product_slug": prodSlug}])
                             
@@ -673,10 +675,10 @@ def find_staff_cart(request):
             # Create dictionary for new item
             new_item = SON([("product_name", prodName),
                             ("sale_type", saleType),
-                            ("product_price", int(prodPrice)),
+                            ("product_price", str(prodPrice)),
                             ("product_image", prodImage),
-                            ("product_quantity", float(prodQuantity)),
-                            ("subTotal", subTotal),
+                            ("product_quantity", str(prodQuantity)),
+                            ("subTotal", str(finSub)),
                             ("product_slug", prodSlug)])
 
             # new_item = {"product_name_" + str(curr_num + 1): prodName,
@@ -689,8 +691,8 @@ def find_staff_cart(request):
             # Add dictionary to list of items: {"product_name": prodName, "sale_type": saleType}
             staff_carts_collection.update_one({"name_of_buyer": cartName},
                                             {"$push": {"items": new_item},
-                                            "$inc": {"total_amount": subTotal},
-                                            "$set": {"amount_owed": total_amount + subTotal}})
+                                            "$set": {"amount_owed": str(total_amount + finSub),
+                                                     "total_amount": str(total_amount + finSub)}})
             
             return JsonResponse(data={"result": True})
         else:
@@ -698,13 +700,13 @@ def find_staff_cart(request):
             # Create dictionary for new item
             new_item = SON([("product_name", prodName),
                             ("sale_type", saleType),
-                            ("product_price", int(prodPrice)),
+                            ("product_price", str(prodPrice)),
                             ("product_image", prodImage),
-                            ("product_quantity", float(prodQuantity)),
-                            ("subTotal", subTotal),
+                            ("product_quantity", str(prodQuantity)),
+                            ("subTotal", str(finSub)),
                             ("product_slug", prodSlug)])
             
-            whole_cart = StaffCart(cartName, request.user.email, [new_item], subTotal, 0)
+            whole_cart = StaffCart(cartName, request.user.email, [new_item], finSub, 0)
 
             staff_carts_collection.insert_one(whole_cart.to_dict())
 

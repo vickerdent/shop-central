@@ -87,11 +87,11 @@
   
   <div class="col-md-6 offset-md-3">
     {% for cart in carts %}
-      <div class="card">
+      <div class="card parent-card mb-3">
         <h5 class="card-header">{{ cart.name_of_buyer}}'s Cart</h5>
         <div class="card-body">
           {% for item in cart.items %}
-            <div class="card">
+            <div class="card mb-2">
               <div class="card-body">
                 <div class="d-flex align-items-center ">
                   <div class="flex-shrink-0">
@@ -106,7 +106,7 @@
                 </div>
               </div>
               <div class="card-footer text-end">
-                Subtotal = {{ item.product_price * item.product_quantity }}
+                Subtotal = {{ item.subTotal|intcomma }}
               </div>
             </div>
           {% endfor %}
@@ -117,7 +117,7 @@
         </div>
       </div>
     {% empty %}
-        <div><p id="exception">No customer is being attended to. Add a product to see it here.</p></div>
+        <div><p id="exception">No customer is being attended to. Add a <a href="{% url 'home' %}">product</a> to see it here.</p></div>
     {% endfor %}
   </div>
 
