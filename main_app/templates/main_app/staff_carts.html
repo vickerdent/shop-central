@@ -10,6 +10,26 @@
   <link rel="stylesheet" href="{% static 'staff_cart.css' %}">
   <input type="hidden" name="noOfCust" id="noOfCustomers">
 
+  <!-- Modal -->
+  <div class="modal fade" id="confirmPurchase" tabindex="-1" aria-labelledby="confirmPurchaseLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <!-- Probably don't need header -->
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="toast-container position-fixed top-0 end-0 p-3">
     <!-- Failed -->
     <div class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true" id="toastError" data-bs-delay="10000">
