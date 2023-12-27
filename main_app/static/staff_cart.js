@@ -1,3 +1,4 @@
+let idNum = 2
 
 document.addEventListener("DOMContentLoaded", () => {
     const unSuccess = document.getElementById("toastError")
@@ -25,29 +26,28 @@ document.addEventListener("DOMContentLoaded", () => {
         element.disabled = true;
     }
 
-    var idNum = document.getElementById("currNum").value
     document.addEventListener("click", event => {
         const element = event.target;
         // If element.id starts with
         if (element.id.startsWith("amountPaid")) {
             const currID = element.id;
-            document.getElementById("currNum").value = parseInt(currID.split("_")[1])
-            idNum = document.getElementById("currNum").value
+            idNum = parseInt(currID.split("_")[1])
         }
         console.log(`The Loop counter is: ${idNum}`)
     })
 
-    document.querySelector(`#amountPaid_${idNum}`).onkeyup = () => {
-        if (document.querySelector(`#amountPaid_${idNum}`).value.length > 0 && !(document.querySelector(`#amountPaid_${idNum}`).value.startsWith("0"))) {
-            document.querySelector(`#purchaseOrder_${idNum}`).disabled = false;
-            var moneyBrought = parseFloat(document.querySelector(`#amountPaid_${idNum}`).value);
+    document.getElementById(`amountPaid_${idNum}`).onkeyup = () => {
+        console.log(`The num is: ${idNum}`)
+        if (document.getElementById(`amountPaid_${idNum}`).value.length > 0 && !(document.getElementById(`amountPaid_${idNum}`).value.startsWith("0"))) {
+            document.getElementById(`purchaseOrder_${idNum}`).disabled = false;
+            var moneyBrought = parseFloat(document.getElementById(`amountPaid_${idNum}`).value);
             var amountOwed = parseFloat(document.getElementById(`totalAmount_${idNum}`).value) - moneyBrought
             document.getElementById(`amountOwed_${idNum}`).value = amountOwed.toFixed(2)
             var strAmount = amountOwed.toFixed(2)
             document.getElementById(`owed_${idNum}`).innerHTML = editPrice(strAmount)
             console.log(editPrice(strAmount));
         } else {
-            document.querySelector(`#purchaseOrder_${idNum}`).disabled = true;
+            document.getElementById(`purchaseOrder_${idNum}`).disabled = true;
             var moneyBrought = parseFloat(0);
             var amountOwed = parseFloat(document.getElementById(`totalAmount_${idNum}`).value) - moneyBrought
             console.log(amountOwed);
