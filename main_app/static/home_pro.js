@@ -1257,11 +1257,11 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (!noOfCarts) {
                             const badge = document.createElement("span");
                             badge.className = "badge text-bg-secondary";
-                            badge.innerHTML = "1";
+                            badge.textContent = "1";
                             badge.id = "noOfCarts";
                             document.querySelector("#theStaffCart").append(badge);
                         } else {
-                            noOfCarts.innerHTML = parseInt(document.querySelector("#noOfCustomers").value) + 1
+                            noOfCarts.textContent = parseInt(document.querySelector("#noOfCustomers").value) + 1
                         }
                         successfulerToast.show()
                         productModal.hide()

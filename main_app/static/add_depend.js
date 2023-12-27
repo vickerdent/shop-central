@@ -256,7 +256,7 @@ function add_bulk() {
 
     const naira_hold = document.createElement("span");
     naira_hold.className = "input-group-text";
-    naira_hold.innerHTML = "₦";
+    naira_hold.textContent = "₦";
 
     const special_hold_2 = document.createElement("div");
     special_hold_2.className = "input-group mb-3";

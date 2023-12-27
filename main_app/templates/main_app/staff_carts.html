@@ -11,20 +11,18 @@
   <input type="hidden" name="noOfCust" id="noOfCustomers">
 
   <!-- Modal -->
-  <div class="modal fade" id="confirmPurchase" tabindex="-1" aria-labelledby="confirmPurchaseLabel" aria-hidden="true">
+  <div class="modal fade" id="confirmPurchaseModal" tabindex="-1" aria-labelledby="confirmPurchaseLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-theme="dark">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <!-- Probably don't need header -->
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
         <div class="modal-body">
-          ...
+          <div id="infoLand">
+            <h4 id="custName"></h4>
+          </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           <button type="button" class="btn btn-primary">Save changes</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
       </div>
     </div>
@@ -49,7 +47,7 @@
     <input type="hidden" id="currNum">
     {% for cart in carts %}
       <div class="card parent-card mb-3" data-bs-theme="dark">
-        <h5 class="card-header">{{ cart.name_of_buyer}}'s Cart</h5>
+        <h5 class="card-header">{{ cart.name_of_buyer }}'s Cart</h5>
         <div class="card-body">
           {% for item in cart.items %}
             <div class="card mb-2" data-bs-theme="light">
@@ -84,7 +82,7 @@
               <input type="number" class="form-control" name="amoutPaid_{{ forloop.counter }}" id="amountPaid_{{ forloop.counter }}">
             </div>
           </div>
-          <button type="button" id="purchaseOrder_{{ forloop.counter }}" class="btn btn-primary purchases" data-bs-toggle="modal" data-bs-target="#confirmPurchase">Pay Order</button>
+          <button type="button" id="purchaseOrder_{{ forloop.counter }}" class="btn btn-primary purchases" data-bs-toggle="modal" data-bs-target="#confirmPurchaseModal" data-customer="{{ cart.name_of_buyer }}">Pay Order</button>
         </div>
       </div>
     {% empty %}

@@ -33,30 +33,45 @@ document.addEventListener("DOMContentLoaded", () => {
             const currID = element.id;
             idNum = parseInt(currID.split("_")[1])
         }
-        console.log(`The Loop counter is: ${idNum}`)
-    })
+        console.log(`The Loop counter is: ${idNum}`);
 
-    document.getElementById(`amountPaid_${idNum}`).onkeyup = () => {
-        console.log(`The num is: ${idNum}`)
-        if (document.getElementById(`amountPaid_${idNum}`).value.length > 0 && !(document.getElementById(`amountPaid_${idNum}`).value.startsWith("0"))) {
-            document.getElementById(`purchaseOrder_${idNum}`).disabled = false;
-            var moneyBrought = parseFloat(document.getElementById(`amountPaid_${idNum}`).value);
-            var amountOwed = parseFloat(document.getElementById(`totalAmount_${idNum}`).value) - moneyBrought
-            document.getElementById(`amountOwed_${idNum}`).value = amountOwed.toFixed(2)
-            var strAmount = amountOwed.toFixed(2)
-            document.getElementById(`owed_${idNum}`).innerHTML = editPrice(strAmount)
-            console.log(editPrice(strAmount));
-        } else {
-            document.getElementById(`purchaseOrder_${idNum}`).disabled = true;
-            var moneyBrought = parseFloat(0);
-            var amountOwed = parseFloat(document.getElementById(`totalAmount_${idNum}`).value) - moneyBrought
-            console.log(amountOwed);
-            document.getElementById(`amountOwed_${idNum}`).value = amountOwed.toFixed(2)
-            var strAmount = amountOwed.toFixed(2)
-            document.getElementById(`owed_${idNum}`).innerHTML = editPrice(strAmount)
+        document.getElementById(`amountPaid_${idNum}`).onkeyup = () => {
+            console.log(`The num is: ${idNum}`)
+            if (document.getElementById(`amountPaid_${idNum}`).value.length > 0 && !(document.getElementById(`amountPaid_${idNum}`).value.startsWith("0"))) {
+                document.getElementById(`purchaseOrder_${idNum}`).disabled = false;
+                var moneyBrought = parseFloat(document.getElementById(`amountPaid_${idNum}`).value);
+                var amountOwed = parseFloat(document.getElementById(`totalAmount_${idNum}`).value) - moneyBrought
+                document.getElementById(`amountOwed_${idNum}`).value = amountOwed.toFixed(2)
+                var strAmount = amountOwed.toFixed(2)
+                document.getElementById(`owed_${idNum}`).textContent = editPrice(strAmount)
+                console.log(editPrice(strAmount));
+            } else {
+                document.getElementById(`purchaseOrder_${idNum}`).disabled = true;
+                var moneyBrought = parseFloat(0);
+                var amountOwed = parseFloat(document.getElementById(`totalAmount_${idNum}`).value) - moneyBrought
+                console.log(amountOwed);
+                document.getElementById(`amountOwed_${idNum}`).value = amountOwed.toFixed(2)
+                var strAmount = amountOwed.toFixed(2)
+                document.getElementById(`owed_${idNum}`).textContent = editPrice(strAmount)
+            }
         }
-    }
+    })
     
+    const confirmPurchaseModal = document.getElementById('confirmPurchaseModal')
+    if (confirmPurchaseModal) {
+        confirmPurchaseModal.addEventListener('show.bs.modal', event => {
+            // Button that triggered the modal
+            const button = event.relatedTarget
+            // Extract info from data-bs-* attributes
+            const recipient = button.getAttribute('data-customer')
+            // If necessary, you could initiate an Ajax request here
+            // and then do the updating in a callback.
+
+            // Update the modal's content.
+            const custName = document.getElementById("custName");
+            custName.textContent = recipient
+        })
+    }
 });
 
 function editPrice(dPrice) {
