@@ -1,4 +1,3 @@
-let idNum = 1
 
 document.addEventListener("DOMContentLoaded", () => {
     const unSuccess = document.getElementById("toastError")
@@ -15,16 +14,13 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("noOfCustomers").value = data.carts.length
     })
 
-    var newArray = [];
-    for (let index = 1; index <= document.getElementById("noOfCustomers").value; index++) {
-        newArray.push(index)
-    }
-
     const links = document.getElementsByClassName("purchases");
     for (let index = 0; index < links.length; index++) {
         const element = links[index];
         element.disabled = true;
     }
+
+    let idNum = 1
 
     document.addEventListener("click", event => {
         const element = event.target;
