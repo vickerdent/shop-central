@@ -68,8 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Update the modal's content.
             const custName = document.getElementById("custName");
-            custName.textContent = recipient
-            console.log(recipient)
+            custName.textContent = `Customer's Name: ${recipient}`
         })
     }
 });

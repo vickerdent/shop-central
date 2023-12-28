@@ -16,9 +16,14 @@
       <div class="modal-content text-light">
         <!-- Probably don't need header -->
         <div class="modal-body">
-          <img src="{% static 'app_media/info.png' %}" class="rounded-circle" alt="Profile Image" width="200px">
+          <br>
+          <div class="d-flex justify-content-center">
+            <img src="{% static 'app_media/info.png' %}" class="rounded-circle" alt="Profile Image" width="75px">
+          </div>
+          <br>
           <div id="infoLand">
-            <h4 id="custName"></h4>
+            <h3 class="d-flex justify-content-center">Order Purchase Summary</h3>
+            <h5 id="custName" class="d-flex justify-content-center"></h5>
           </div>
         </div>
         <div class="modal-footer">
