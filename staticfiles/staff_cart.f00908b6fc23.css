@@ -1,0 +1,12 @@
+#exception {
+    text-align: center;
+}
+
+.payable {
+    width: 150px;
+    height: 7px;
+}
+
+.owable {
+    color: red;
+}

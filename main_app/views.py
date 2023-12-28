@@ -174,12 +174,15 @@ def change_password(request):
                             curr_user["username"], curr_user["gender"], curr_user["phone_no"],
                             curr_user["address"], curr_user["state"], curr_user["image"],
                             curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+
+            all_carts = list(staff_carts_collection.find({"staff_id": a_user.email}))
+            noOfCarts = len(all_carts)
             
             if a_user.is_admin:
                 return render(request, "main_app/change_password.html", {"form": form, "is_admin": True, 
-                                                              "is_staff": True})
+                                                              "is_staff": True, "noOfCarts": noOfCarts})
             elif a_user.is_staff:
-                return render(request, "main_app/change_password.html", {"form": form, "is_staff": True})
+                return render(request, "main_app/change_password.html", {"form": form, "is_staff": True, "noOfCarts": noOfCarts})
             
         return render(request, "main_app/change_password.html", {"form": form})
     
@@ -524,6 +527,7 @@ def change_carousel(request):
                          curr_user["username"], curr_user["gender"], curr_user["phone_no"],
                          curr_user["address"], curr_user["state"], curr_user["image"],
                          curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+
         all_carts = list(staff_carts_collection.find({"staff_id": a_user.email}))
         noOfCarts = len(all_carts)
 
@@ -783,3 +787,4 @@ def edit_product(request, slug):
     else:
         messages.error(request, "An internal error occurred. Please try again later.")
         return render(request, "main_app/404.html", {})
+
