@@ -62,13 +62,28 @@ document.addEventListener("DOMContentLoaded", () => {
             const button = event.relatedTarget
             // Extract info from data-* attributes
 
-            const recipient = button.getAttribute('data-customer')
+            const recipient = button.getAttribute("data-customer")
+            const totalAmount = button.getAttribute("data-amount")
+            const identity = button.getAttribute("data-identify")
             // If necessary, you could initiate an Ajax request here
             // and then do the updating in a callback.
 
             // Update the modal's content.
             const custName = document.getElementById("custName");
             custName.textContent = `Customer's Name: ${recipient}`
+
+            const orderTotal = document.getElementById("orderTotal");
+            orderTotal.textContent = editPrice(totalAmount)
+
+            const idNum = parseInt(identity.split("_")[1])
+            const amountBrought = document.getElementById(`amountPaid_${idNum}`).value
+            if (parseFloat(totalAmount) === parseFloat(amountBrought)) {
+                document.getElementById("quest").textContent = `${recipient} owes nothing`
+            } else if (parseFloat(totalAmount) > parseFloat(amountBrought)) {
+                document.getElementById("quest").textContent = `${recipient} is a debtor`
+            } else {
+                document.getElementById("quest").textContent = `${recipient} is to collect change`
+            }
         })
     }
 });

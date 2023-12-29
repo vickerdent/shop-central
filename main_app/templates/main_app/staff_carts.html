@@ -23,7 +23,12 @@
           <br>
           <div id="infoLand">
             <h3 class="d-flex justify-content-center">Order Purchase Summary</h3>
-            <h5 id="custName" class="d-flex justify-content-center"></h5>
+            <br>
+            <p id="custName" class="mb-0 d-flex justify-content-center fs-5"></p>
+            <p class="fs-5 d-flex justify-content-center">Total Cost of Order: ₦<span class="fs-5" id="orderTotal"></span></p>
+          </div>
+          <div id="actionLand">
+            <h4 id="quest"></h4>
           </div>
         </div>
         <div class="modal-footer">
@@ -88,7 +93,11 @@
               <input type="number" class="form-control" name="amoutPaid_{{ forloop.counter }}" id="amountPaid_{{ forloop.counter }}">
             </div>
           </div>
-          <button type="button" id="purchaseOrder_{{ forloop.counter }}" class="btn btn-primary purchases" data-bs-toggle="modal" data-bs-target="#confirmPurchaseModal" data-customer="{{ cart.name_of_buyer }}">Pay Order</button>
+          <button type="button" id="purchaseOrder_{{ forloop.counter }}" class="btn btn-primary purchases" 
+            data-bs-toggle="modal" data-bs-target="#confirmPurchaseModal" data-customer="{{ cart.name_of_buyer }}" data-amount="{{ cart.total_amount }}"
+            data-identify="purchaseOrder_{{ forloop.counter }}">
+            Pay Order
+          </button>
         </div>
       </div>
     {% empty %}
