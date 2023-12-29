@@ -79,6 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const amountBrought = document.getElementById(`amountPaid_${idNum}`).value
             if (parseFloat(totalAmount) === parseFloat(amountBrought)) {
                 document.getElementById("quest").textContent = `${recipient} owes nothing`
+                document.getElementById("payInfo").textContent = `${recipient}`
             } else if (parseFloat(totalAmount) > parseFloat(amountBrought)) {
                 document.getElementById("quest").textContent = `${recipient} is a debtor`
             } else {
