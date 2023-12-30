@@ -69,8 +69,8 @@ class Buyer(Human):
     __slot__ = ("date_modified", "amount_owed", "description", "image")
 
     def __init__(self, first_name: str, last_name: str, email: str, username: str, gender: str, phone_no: str,
-                 address: str, state: str, date_modified: datetime, amount_owed: int,
-                 description: str, image: list) -> None:
+                 address: str, state: str, date_modified: datetime, amount_owed: str,
+                 description: str, image: list = []) -> None:
         super().__init__(first_name, last_name, email, username, gender, phone_no, address, state)
         self.description = description
         self.date_modified = date_modified

@@ -1603,26 +1603,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function editPrice(dPrice) {
     var point = dPrice.indexOf(".")
-    if (point) {
+    if (point != -1) {
         var strPrice  = dPrice.slice(0, point);
+        var revStrPrice = strPrice.split("").reverse().join("");
+        var humPrice = "";
+        var decimalFig = dPrice.slice(-3)
+        if (revStrPrice.length > 3) {
+            for (let index = 0; index < revStrPrice.length; index++) {
+                const element = revStrPrice[index];
+                humPrice += element;
+                if ((index + 1) % 3 == 0 && index != revStrPrice.length - 1) {
+                    humPrice += ",";
+                }
+            }
+            strPrice = humPrice.split("").reverse().join("");
+            return strPrice + decimalFig;
+        } else {
+            return strPrice + decimalFig;
+        }
     } else {
         var strPrice  = dPrice.toString();
-    }
-    var decimalFig = dPrice.slice(-3)
-    var revStrPrice = strPrice.split("").reverse().join("");
-    var humPrice = "";
-    if (revStrPrice.length > 3) {
-        for (let index = 0; index < revStrPrice.length; index++) {
-            const element = revStrPrice[index];
-            humPrice += element;
-            if ((index + 1) % 3 == 0 && index != revStrPrice.length - 1) {
-                humPrice += ",";
+        var revStrPrice = strPrice.split("").reverse().join("");
+        var humPrice = "";
+        if (revStrPrice.length > 3) {
+            for (let index = 0; index < revStrPrice.length; index++) {
+                const element = revStrPrice[index];
+                humPrice += element;
+                if ((index + 1) % 3 == 0 && index != revStrPrice.length - 1) {
+                    humPrice += ",";
+                }
             }
+            strPrice = humPrice.split("").reverse().join("");
+            return strPrice + ".00";
+        } else {
+            return strPrice + ".00";
         }
-        strPrice = humPrice.split("").reverse().join("");
-    } else {
-        return strPrice + decimalFig;
     }
-    return strPrice + decimalFig;
 }
 

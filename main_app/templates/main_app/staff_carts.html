@@ -18,23 +18,52 @@
         <div class="modal-body">
           <br>
           <div class="d-flex justify-content-center">
-            <img src="{% static 'app_media/info.png' %}" class="rounded-circle" alt="Profile Image" width="75px">
+            <img src="{% static 'app_media/info.png' %}" alt="Info Image" width="75px" height="75px">
           </div>
           <br>
           <div id="infoLand">
-            <h3 class="d-flex justify-content-center">Order Purchase Summary</h3>
+            <h3 class="d-flex justify-content-center ms-5 me-5">Order Purchase Summary</h3>
             <br>
             <p id="custName" class="mb-0 d-flex justify-content-center fs-5"></p>
-            <p class="fs-5 d-flex justify-content-center">Total Cost of Order: ₦<span class="fs-5" id="orderTotal"></span></p>
+            <input type="hidden" id="hiddenCustName">
+            <p class="fs-5 d-flex justify-content-center">Total Cost of Order: ₦<span class="fs-5 fw-bold" id="orderTotal"></span></p>
+            <input type="hidden" id="hiddenAmtDebt">
           </div>
+          <br>
           <div id="actionLand">
-            <h4 id="quest"></h4>
-            Proceed to pay order?
+            <input type="hidden" id="custType">
+            <div class="d-flex justify-content-center">
+              <div class="card" style="width: 20rem;" id="arrange">
+                <div class="mt-1 mb-2 d-flex justify-content-center">
+                  <img src="{% static 'app_media/warning.png' %}" class="" alt="Warning Image" width="25px" height="25px">
+                </div>
+                <p id="quest" class="mt-0 me-1 fs-5 mb-0 d-flex justify-content-center"></p>
+                <p id="addInfo" class="fs-5 d-flex justify-content-center"></p>
+              </div>
+            </div>
+            <br>
+            <h4 class="d-flex justify-content-center">Proceed to pay order?</h4>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-light">OK</button>
+          <button type="button" class="btn btn-light" id="confirmPay">OK</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Debtor modal -->
+  <div class="modal fade" id="updateDebtorModal" aria-hidden="true" aria-labelledby="updateDebtorModalLabel" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-theme="dark">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content text-light">
+        <div class="modal-body">
+          Customer owes money and must be updated accordingly.
+          <!-- buttons for existing and new debtors -->
+        </div>
+        <div class="modal-footer">
+            <a class="btn btn-light">Update</a>
+            <button type="button" class="btn btn-secondary" data-bs-target="#confirmPurchaseModal" data-bs-toggle="modal" id="cancelDebt">Cancel</button>
         </div>
       </div>
     </div>
@@ -64,9 +93,9 @@
           {% for item in cart.items %}
             <div class="card mb-2" data-bs-theme="light">
               <div class="card-body">
-                <div class="d-flex align-items-center ">
+                <div class="d-flex align-items-center">
                   <div class="flex-shrink-0">
-                    <img src="{{ item.product_image }}" alt="Product's Image" width="80">
+                    <img src="{{ item.product_image }}" alt="Product's Image" width="80" height="80">
                   </div>
                   <div class="flex-grow-1 ms-3">
                     {{ item.product_name }} <br>
