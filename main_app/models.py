@@ -9,7 +9,7 @@ class Human:
     __slot__ = ("first_name", "last_name", "email", "username",  "gender", "phone_no", "address", "state")
 
     def __init__(self, first_name: str, last_name: str, email: str, username: str, gender: str,
-                 phone_no: str, address: str, state: str) -> None:
+                 phone_no: list, address: str, state: str) -> None:
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
@@ -27,7 +27,7 @@ class TheUser(Human):
     """
     __slot__ = ("registered", "is_staff", "is_admin", "image")
 
-    def __init__(self, first_name: str, last_name: str, email: str, username: str, gender: str, phone_no: str,
+    def __init__(self, first_name: str, last_name: str, email: str, username: str, gender: str, phone_no: list,
                  address: str, state: str, image: list, registered: bool = False, 
                  is_staff: bool = False, is_admin: bool = False) -> None:
         super().__init__(first_name, last_name, email, username, gender, phone_no, address, state)
@@ -68,9 +68,9 @@ class Buyer(Human):
     """
     __slot__ = ("date_modified", "amount_owed", "description", "image")
 
-    def __init__(self, first_name: str, last_name: str, email: str, username: str, gender: str, phone_no: str,
+    def __init__(self, first_name: str, last_name: str, email: str, username: str, gender: str, phone_no: list,
                  address: str, state: str, date_modified: datetime, amount_owed: str,
-                 description: str, image: list = []) -> None:
+                 description: str, image: list) -> None:
         super().__init__(first_name, last_name, email, username, gender, phone_no, address, state)
         self.description = description
         self.date_modified = date_modified
@@ -86,18 +86,19 @@ class Buyer(Human):
         writing to MongoDB
         """
         return {
-            "full_name": self.full_name,
-            "username": self.username,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
             "email": self.email,
-            "phone_no": self.phone_no,
+            "username": self.username,
             "gender": self.gender,
+            "phone_no": self.phone_no,
             "address": self.address,
             "state": self.state,
-            "image": self.image,
-            "description": self.description,
             "date_modified": self.date_modified,
             "amount_owed": self.amount_owed,
-            "image": self.image
+            "description": self.description,
+            "image": self.image,
+            "slug": self.username + "_" + self.phone_no[0]
         }
 
 # Add discount and proper bulk and carton/bag variables
@@ -232,3 +233,47 @@ class StaffCart:
             "checkout_date": self.checkout_date
         }
     
+class Transaction:
+    """
+    Class definition for transactions created
+    from a typical cart.
+
+    Note that price-related variables accept strings
+    to convert to their decimals.
+    buyer_id should be phone numbers, only necessary
+    if buyer is owing money
+    """
+    __slot__ = ("txn_type", "name_of_buyer", "staff_id", "items", "total_amount", "checkout_date",
+                "amount_paid", "reference_no", "buyer_id")
+    
+    def __init__(self, txn_type, name_of_buyer, staff_id, items, checkout_date: datetime, total_amount,
+                 amount_paid, reference_no, buyer_id = "") -> None:
+        self.txn_type = txn_type
+        self.name_of_buyer = name_of_buyer
+        self.staff_id = staff_id
+        self.items = items
+        self.checkout_date = checkout_date
+        self.total_amount = Decimal(str(total_amount))
+        self.amount_paid = Decimal(str(amount_paid)) + Decimal("0.00")
+        # Note that amount owed can be negative, which will translate to giving customer change
+        self.amount_owed = self.total_amount - self.amount_paid
+        self.reference_no = reference_no
+        self.buyer_id = buyer_id
+
+    def to_dict(self):
+        """
+        Returns dictionary containing info for
+        writing to MongoDB
+        """
+        return {
+            "txn_type": self.txn_type,
+            "name_of_buyer": self.name_of_buyer,
+            "buyer_id": self.buyer_id,
+            "staff_id": self.staff_id,
+            "items": self.items,
+            "total_amount": str(self.total_amount),
+            "amount_paid": str(self.amount_paid),
+            "amount_owed": str(self.amount_owed),
+            "checkout_date": self.checkout_date,
+            "reference_no": self.reference_no
+        }

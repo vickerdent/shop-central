@@ -69,6 +69,30 @@
     </div>
   </div>
 
+  <!-- TXN-Successful modal -->
+  <div class="modal fade" id="txnSuccessfulModal" aria-hidden="true" aria-labelledby="txnSuccessfulModalLabel" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-theme="dark">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content text-light">
+        <div class="modal-body">
+          <br>
+          <div class="d-flex justify-content-center">
+            <video autoplay muted width="85" height="85" src="{% static 'app_media/verified1.mp4' %}">
+              Checked icon
+            </video>
+          </div>
+          <br>
+          <h3 class="d-flex justify-content-center ms-5 me-5">Transaction Successful</h3>
+          <p class="fs-5 d-flex justify-content-center">Tran ID: <span id="txnInfo"></span></p>
+          <p class="fs-5 d-flex justify-content-center">Ref. No.: <span id="refNo"></span></p>
+          <p class="fs-5 d-flex justify-content-center">You can give the customer his/her goods</p>
+        </div>
+        <div class="modal-footer">
+            <a class="btn btn-light">OK</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="toast-container position-fixed top-0 end-0 p-3">
     <!-- Failed -->
     <div class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true" id="toastError" data-bs-delay="10000">

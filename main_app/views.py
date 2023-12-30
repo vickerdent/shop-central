@@ -14,12 +14,12 @@ from decimal import Decimal
 from .o_functions import humans
 from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, \
     EditProfileImageForm, EditNameForm, AddProductForm, CarouselForm, EditProductForm
-from .models import TheUser, Buyer, Product, StaffCart, Carousel
+from .models import TheUser, Buyer, Product, StaffCart, Carousel, Transaction
 from .custom_storage import handle_user_image, default_user_image, compress_image, \
     change_image_name, delete_image, default_bulk_image, default_carton_image, \
         handle_product_image
 from utils import user_collection, send_email_code, new_accounts_collection, products_collection, \
-      staff_carts_collection
+      staff_carts_collection, transactions_collection, debtors_collection
 
 # Create your views here.
 @login_required
@@ -135,7 +135,9 @@ def sign_up(request):
                     messages.error(request, "An internal Server error occurred. Please try again later.")
                     return redirect("sign_up")
                 
-                new_user = TheUser(first_name, last_name, email, username, gender, phone_number, address,
+                all_phones = [phone_number]
+                
+                new_user = TheUser(first_name, last_name, email, username, gender, all_phones, address,
                                    state, [image_url, image_path])
 
                 user_collection.insert_one(new_user.to_dict())
@@ -787,4 +789,60 @@ def edit_product(request, slug):
     else:
         messages.error(request, "An internal error occurred. Please try again later.")
         return render(request, "main_app/404.html", {})
+
+@login_required
+def debtors(request):
+    # Get all debtors/buyers from DB
+    all_debtors = list(debtors_collection.find().sort("date_modified", pymongo.DESCENDING))
+    full_list = []
+    for debtor in all_debtors:
+        item = Buyer(debtor["first_name"], debtor["last_name"], debtor["email"], debtor["username"],
+                    debtor["gender"], debtor["phone_no"], debtor["address"], debtor["state"],
+                    debtor["date_modified"], debtor["amount_owed"], debtor["description"],
+                    debtor["image"])
+        full_list.append(item)
+
+    # Also get all carts for user
+    all_carts = list(staff_carts_collection.find({"staff_id": request.user.email}))
+    noOfCarts = len(all_carts)
+
+    # check that user is registered
+    # then check if user is staff or admin
+    curr_user = user_collection.find_one({"email": request.user.email})
+
+    if curr_user:
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["email"],
+                         curr_user["username"], curr_user["gender"], curr_user["phone_no"],
+                         curr_user["address"], curr_user["state"], curr_user["image"],
+                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+        
+        if not a_user.registered:
+            messages.error(request, "Please confirm your email address.")
+            return redirect("confirm_code")
+        
+        if a_user.is_admin:
+            return render(request, "main_app/debtors.html", {"is_admin": True, "is_staff": True, 
+                                                          "debtors": full_list, "noOfCarts": noOfCarts})
+        elif a_user.is_staff:
+            return render(request, "main_app/debtors.html", {"is_staff": True, "debtors": full_list, "carts": noOfCarts})
+        else:
+            messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
+            return render(request, "main_app/400.html", {})
+    else:
+        messages.error(request, "An internal error occurred. Please try again later.")
+        return render(request, "main_app/404.html", {})
+
+@login_required
+def add_debtor(request):
+    # then check if user is staff or admin
+    curr_user = user_collection.find_one({"email": request.user.email})
+
+    if curr_user:
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["email"],
+                         curr_user["username"], curr_user["gender"], curr_user["phone_no"],
+                         curr_user["address"], curr_user["state"], curr_user["image"],
+                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+        
+        if request.method == "POST":
+            postData = json.loads(request.body.decode("utf-8"))
 

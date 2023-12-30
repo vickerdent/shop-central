@@ -3,7 +3,7 @@ from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
 # from datetime import datetime, timedelta
 from email.message import EmailMessage
-from main_app.models import TheUser
+from main_app.models import Transaction
 from infisical import InfisicalClient
 load_dotenv()
 
@@ -19,6 +19,8 @@ user_collection = database["the_users"]
 new_accounts_collection = database["new_accounts"]
 products_collection = database["products"]
 staff_carts_collection = database["staff_carts"]
+transactions_collection = database["transactions"]
+debtors_collection = database["debtors"]
 
 # human TheUser("Victor Abuka", "vickerdent@gmail.com", "vickerdent", "Male", "08080360932",
 #                 "No. 42, Winners' Way, Dawaki, Abuja", "F.C.T.", [], True, True, True)
@@ -27,7 +29,8 @@ staff_carts_collection = database["staff_carts"]
 # print(first.inserted_id, first.acknowledged)
 
 # Create index
-# what = products_collection.create_index([("slug", pymongo.ASCENDING)], unique=True)
+# what = transactions_collection.create_index([("reference_no", pymongo.ASCENDING)], unique=True)
+# what2 = debtors_collection.create_index([("phone_no", pymongo.ASCENDING)], unique=True)
 # print(what)
 
 def code_generator():

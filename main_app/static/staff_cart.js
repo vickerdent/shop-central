@@ -68,9 +68,10 @@ document.addEventListener("DOMContentLoaded", () => {
             // and then do the updating in a callback.
 
             // Update the modal's content.
+            document.getElementById("confirmPay").disabled = false;
             const custName = document.getElementById("custName");
-            custName.textContent = `Customer's Name: ${recipient}`
-            document.getElementById("hiddenCustName").value = recipient
+            custName.textContent = `Customer's Name: ${recipient}`;
+            document.getElementById("hiddenCustName").value = recipient;
 
             const orderTotal = document.getElementById("orderTotal");
             orderTotal.textContent = `${editPrice(totalAmount)}`
@@ -89,9 +90,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (parseFloat(totalAmount).toFixed(2) === parseFloat(amountBrought).toFixed(2)) {
                 // Customer brought exact amount
-                document.getElementById("custType").value = "change"
+                document.getElementById("custType").value = "ok"
                 document.getElementById("quest").textContent = `${recipient} brought ₦${editPrice(amountBrought)},`
                 document.getElementById("addInfo").textContent = `which is equal to the total cost.`;
+                payElement.setAttribute("data-bs-target", "#txnSuccessfulModal")
+                payElement.setAttribute("data-bs-toggle", "modal")
+                payElement.setAttribute("data-customer", recipient)
+                payElement.setAttribute("data-amount", totalAmount)
+                payElement.setAttribute("data-identify", identity)
             } else if (parseFloat(totalAmount) > parseFloat(amountBrought)) {
                 // Customer is a debtor
                 var debt = parseFloat(totalAmount) - parseFloat(amountBrought)
@@ -114,22 +120,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("addInfo").textContent = `which is more than the total cost.`;
                 payInfo.textContent = `Customer's change is ₦${editPrice(change.toFixed(2))}.`;
                 infoHold.appendChild(payInfo);
+                payElement.setAttribute("data-bs-target", "#updateDebtorModal")
+                payElement.setAttribute("data-bs-toggle", "modal")
+                payElement.setAttribute("data-customer", recipient)
+                payElement.setAttribute("data-amount", totalAmount)
+                payElement.setAttribute("data-identify", identity)
+                payElement.setAttribute("data-owed", editPrice(change.toFixed(2)))
             }
         })
 
-        // document.addEventListener("click", event => {
-        //     const element = event.target;
+        document.addEventListener("click", event => {
+            const element = event.target;
 
-        //     if (element.id == "confirmPay") {
-        //         const paymentType = document.getElementById("custType")
-        //         if (paymentType.value == "debtor") {
-        //             // Customer is owing money
+            if (element.id == "confirmPay") {
+                document.getElementById("confirmPay").disabled = true;
+                const custType = document.getElementById("custType")
+                if (custType.value === "ok") {
                     
-                    
-        //         }
-        //     }
+                }
+            }
 
-        // })
+        })
 
         // Remove info on close
         confirmPurchaseModal.addEventListener("hidden.bs.modal", () => {
