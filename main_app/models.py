@@ -8,12 +8,12 @@ class Human:
     """
     __slot__ = ("first_name", "last_name", "email", "username",  "gender", "phone_no", "address", "state")
 
-    def __init__(self, first_name: str, last_name: str, email: str, username: str, gender: str,
+    def __init__(self, first_name: str, last_name: str, username: str, email: str, gender: str,
                  phone_no: list, address: str, state: str) -> None:
         self.first_name = first_name
         self.last_name = last_name
-        self.email = email
         self.username = username
+        self.email = email
         self.gender = gender
         self.phone_no = phone_no
         self.address = address
@@ -27,10 +27,10 @@ class TheUser(Human):
     """
     __slot__ = ("registered", "is_staff", "is_admin", "image")
 
-    def __init__(self, first_name: str, last_name: str, email: str, username: str, gender: str, phone_no: list,
+    def __init__(self, first_name: str, last_name: str, username: str, email: str, gender: str, phone_no: list,
                  address: str, state: str, image: list, registered: bool = False, 
                  is_staff: bool = False, is_admin: bool = False) -> None:
-        super().__init__(first_name, last_name, email, username, gender, phone_no, address, state)
+        super().__init__(first_name, last_name, username, email, gender, phone_no, address, state)
         self.image = image
         self.is_staff = is_staff
         self.is_admin = is_admin
@@ -68,14 +68,16 @@ class Buyer(Human):
     """
     __slot__ = ("date_modified", "amount_owed", "description", "image")
 
-    def __init__(self, first_name: str, last_name: str, email: str, username: str, gender: str, phone_no: list,
+    def __init__(self, first_name: str, last_name: str, username: str, email: str, gender: str, phone_no: list,
                  address: str, state: str, date_modified: datetime, amount_owed: str,
                  description: str, image: list) -> None:
-        super().__init__(first_name, last_name, email, username, gender, phone_no, address, state)
+        super().__init__(first_name, last_name, username, email, gender, phone_no, address, state)
         self.description = description
         self.date_modified = date_modified
         self.amount_owed = amount_owed
         self.image = image
+        self.name = self.first_name + " " + self.last_name
+        self.slug = self.username + "_" + self.phone_no[0]["dialing_code"] + self.phone_no[0]["phone_number"]
 
     def __str__(self) -> str:
         return f"{self.first_name} {self.last_name}"
@@ -88,8 +90,8 @@ class Buyer(Human):
         return {
             "first_name": self.first_name,
             "last_name": self.last_name,
-            "email": self.email,
             "username": self.username,
+            "email": self.email,
             "gender": self.gender,
             "phone_no": self.phone_no,
             "address": self.address,
@@ -98,7 +100,7 @@ class Buyer(Human):
             "amount_owed": self.amount_owed,
             "description": self.description,
             "image": self.image,
-            "slug": self.username + "_" + self.phone_no[0]
+            "slug": self.slug
         }
 
 # Add discount and proper bulk and carton/bag variables

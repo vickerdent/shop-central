@@ -13,6 +13,8 @@ security_guard = InfisicalClient(token=os.getenv("INFISICAL_URI"))
 uri = security_guard.get_secret("MONGODB_URI").secret_value
 
 client = pymongo.MongoClient(uri, server_api=ServerApi('1'))
+wc_majority = pymongo.WriteConcern("majority", wtimeout=1000)
+
 database = client["JDS"]
 
 user_collection = database["the_users"]
@@ -30,11 +32,12 @@ debtors_collection = database["debtors"]
 
 # Create index
 # what = transactions_collection.create_index([("reference_no", pymongo.ASCENDING)], unique=True)
-# what2 = debtors_collection.create_index([("phone_no", pymongo.ASCENDING)], unique=True)
+# what2 = debtors_collection.create_index([("phone_no.phone_number", pymongo.ASCENDING)], unique=True)
 # print(what)
 
+
 def code_generator():
-    """Generate random code to send via email to new user"""
+    """Generate random code"""
     alpha_num_list = (
         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'
         'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'

@@ -144,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         '   <svg class="bi flex-shrink-0 me-2" width="16" height="16" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg>',
                         '   <div>',
                         '       This product is already in a customer\'s cart.',
-                        '       \nAttempting to add it again will update/replace it in the customer\'s cart.',
+                        '       <br> Attempting to add it again will update/replace it in the customer\'s cart.',
                         '   </div>',
                         '</div>'
                       ].join('')
@@ -215,6 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     retailButton.dataset.price = retail_price;
                     retailButton.value = "Pieces (Retail)";
                     retailButton.dataset.image = product_image[0];
+                    retailButton.dataset.number = "1"
                     retailButton.dataset.divisibility = is_divisible.toString();
 
                     // Create label for retail button
@@ -237,6 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     wholesaleButton.dataset.price = wholesale_price;
                     wholesaleButton.value = "Pieces (Wholesale)";
                     wholesaleButton.dataset.image = product_image[0];
+                    wholesaleButton.dataset.number = "1"
                     wholesaleButton.dataset.divisibility = is_divisible.toString();
 
                     // Create label for wholesale button
@@ -1228,10 +1230,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 const sluger = document.getElementById("priceCall").dataset.slug;
                 const productPrice = document.getElementById("priceHold").value;
                 const productName = document.querySelector('.modal-title').textContent;
+                var totalProdQuant = parseFloat(currSaleType.dataset.number) * finQuantity
 
                 const cartData = {cartName: custName.value, prodName: productName,
                 saleType: currSaleType.value, prodPrice: productPrice, prodImage: productImage,
-                prodQuantity: finQuantity, prodSlug: sluger};
+                prodQuantity: finQuantity, totalProdQuantity: totalProdQuant, prodSlug: sluger};
 
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 

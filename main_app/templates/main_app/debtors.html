@@ -1,13 +1,13 @@
 {% extends "main_app/base.html" %}
 
-{% block title %} Home {% endblock %}
+{% block title %} Debtors {% endblock %}
 
 {% block content %}
 {% load static %}
 {% load humanize %}
 
-    <script src="{% static 'home_pro.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'home_pro.css' %}">
+    <script src="{% static 'debtor_pro.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'debtor_pro.css' %}">
     <input type="hidden" name="noOfCust" id="noOfCustomers">
 
     <!-- Toasts -->
@@ -45,58 +45,96 @@
     <div class="modal fade" id="addDebtorModal" aria-hidden="true" aria-labelledby="addDebtorModalLabel2" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-theme="dark">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5 text-light" id="addDebtorModalLabel2">Add Debtor</h1>
-          </div>
-          <div class="modal-body text-light">
-            Debtor Information
-          </div>
-          <div class="modal-footer">
-              <a class="btn btn-light" data-bs-target="#productInfoModal" data-bs-toggle="modal">Update</a>
-              <button type="button" class="btn btn-secondary"  data-bs-dismiss="modal">Cancel</button>
-          </div>
+          <form action="" method="post" id="addDebtorForm">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5 text-light" id="addDebtorModalLabel2">Add Debtor</h1>
+            </div>
+            <div class="modal-body text-light">
+              {% csrf_token %}
+              {% for field in form %}
+                {% if "amount" in field.html_name %}
+                <div class="input-group mb-3">
+                  <span class="input-group-text">₦</span>
+                  <div class="form-floating">
+                      {{ field }}
+                      {{ field.label_tag }}
+                  </div>
+              </div>
+                {% elif "dialing" in field.html_name %}
+                  <div class="input-group mb-3">
+                    <div class="form-floating mb-3">
+                      {{ field }}
+                      {{ field.label_tag }}
+                    </div>
+                    <div class="form-floating mb-3">
+                      {{ form.phone_number }}
+                      {{ form.phone_number.label_tag }}
+                    </div>
+                  </div>
+                {% else %}
+                  {% if "phone" not in field.html_name %}
+                    <div class="form-floating mb-3">
+                        {{ field }}
+                        {{ field.label_tag }}
+                        {% if field.help_text %}
+                            <span class="help">{{ field.help_text|safe }}</span>
+                        {% endif %}
+                    </div>
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light" id="addDebtor" type="submit">Add Debtor</button>
+                <button type="button" class="btn btn-secondary"  data-bs-dismiss="modal">Cancel</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
 
-    <!-- Edit Debtor modal -->
+    <!-- Modify Debtor's Debt modal -->
     <div class="modal fade" id="editDebtorModal" aria-hidden="true" aria-labelledby="editDebtorModalLabel2" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-theme="dark">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h1 class="modal-title fs-5 text-light" id="editDebtorModalLabel2">Edit Debtor</h1>
+            <h1 class="modal-title fs-5 text-light" id="editDebtorModalLabel2">Update Debtor</h1>
+            <a class="btn btn-light text-nowrap">Edit Debtor</a>
+            <a class="btn btn-light text-nowrap">Show All Transactions</a>
           </div>
           <div class="modal-body text-light">
+            {% csrf_token %}
             Debtor Information
           </div>
           <div class="modal-footer">
-              <a class="btn btn-light" data-bs-target="#productInfoModal" data-bs-toggle="modal">Update</a>
+              <a class="btn btn-light">Update</a>
               <button type="button" class="btn btn-secondary"  data-bs-dismiss="modal">Cancel</button>
           </div>
         </div>
       </div>
     </div>
 
-    <a href="" class="btn btn-dark" role="button" data-bs-toggle="modal" data-bs-target="#addDebtorModal">Add Debtor</a>
-   
-    <div class="d-flex flex-wrap justify-content-center">
-        <!-- Available items (Items in stock) -->
-        {% for debtor in debtors %}
-            {% if debtor.singles_stock > 0 %}
-              <div class="me-3 mb-3 oneProduct">
-                <a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-bs-toggle="modal" data-bs-target="#editDebtorModal" data-slug="{{ debtor.slug }}">
-                  <div class="card h-100">
-                      <img src="{{ debtor.image.0 }}" class="card-img-top" alt="Product's Image" width="50">
-                      <div class="card-body">
-                          {{ debtor.name|truncatechars:32 }} <br>
-                          <strong>₦{{ debtor.retail_price|intcomma }}</strong>
-                      </div>
+    <div class="container">
+      <a href="" class="btn btn-dark" role="button" data-bs-toggle="modal" data-bs-target="#addDebtorModal">Add Debtor</a>
+    </div>
+    <br>
+    <div class="d-flex flex-wrap justify-content-start">
+      <!-- Available items (Items in stock) -->
+      {% for debtor in debtors %}
+          <div class="me-3 mb-3 oneProduct">
+            <a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-bs-toggle="modal" data-bs-target="#editDebtorModal" data-slug="{{ debtor.slug }}">
+              <div class="card h-100">
+                  <img src="{{ debtor.image.0 }}" class="card-img-top" alt="Product's Image" width="70" height="70">
+                  <div class="card-body">
+                      {{ debtor.name|truncatechars:32 }} <br>
+                      <strong>₦{{ debtor.amount_owed|intcomma }}</strong>
                   </div>
-                </a>
               </div>
-            {% endif %}
-        {% empty %}
-            <div><p>No debtor found. Contact the site administrator for help.</p></div>
-        {% endfor %}
+            </a>
+          </div>
+      {% empty %}
+        <div><p>No debtor found. Contact the site administrator for help.</p></div>
+      {% endfor %}
+    </div>
 
 {% endblock %}

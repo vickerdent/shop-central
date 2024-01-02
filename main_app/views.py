@@ -11,15 +11,15 @@ from bson.son import SON
 import pymongo, json
 from decimal import Decimal
 
-from .o_functions import humans
+from .o_functions import humans, payment_callback
 from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, \
-    EditProfileImageForm, EditNameForm, AddProductForm, CarouselForm, EditProductForm
+    EditProfileImageForm, EditNameForm, AddProductForm, CarouselForm, EditProductForm, AddDebtorForm
 from .models import TheUser, Buyer, Product, StaffCart, Carousel, Transaction
 from .custom_storage import handle_user_image, default_user_image, compress_image, \
     change_image_name, delete_image, default_bulk_image, default_carton_image, \
         handle_product_image
 from utils import user_collection, send_email_code, new_accounts_collection, products_collection, \
-      staff_carts_collection, transactions_collection, debtors_collection
+      staff_carts_collection, transactions_collection, debtors_collection, code_generator, client
 
 # Create your views here.
 @login_required
@@ -50,8 +50,8 @@ def home(request):
     curr_user = user_collection.find_one({"email": request.user.email})
 
     if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["email"],
-                         curr_user["username"], curr_user["gender"], curr_user["phone_no"],
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
                          curr_user["address"], curr_user["state"], curr_user["image"],
                          curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
         
@@ -124,6 +124,7 @@ def sign_up(request):
             first_name = form.cleaned_data.get("first_name")
             last_name = form.cleaned_data.get("last_name")
             gender = form.cleaned_data.get("gender")
+            dialing_code = form.cleaned_data.get("dialing_code")
             phone_number = form.cleaned_data.get("phone_number")
             address = form.cleaned_data.get("address")
             state = form.cleaned_data.get("state")
@@ -135,9 +136,9 @@ def sign_up(request):
                     messages.error(request, "An internal Server error occurred. Please try again later.")
                     return redirect("sign_up")
                 
-                all_phones = [phone_number]
+                complete_phone = [{"dialing_code": dialing_code, "phone_number": phone_number}]
                 
-                new_user = TheUser(first_name, last_name, email, username, gender, all_phones, address,
+                new_user = TheUser(first_name, last_name, username, email, gender, complete_phone, address,
                                    state, [image_url, image_path])
 
                 user_collection.insert_one(new_user.to_dict())
@@ -172,10 +173,10 @@ def change_password(request):
         curr_user = user_collection.find_one({"email": request.user.email})
 
         if curr_user:
-            a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["email"],
-                            curr_user["username"], curr_user["gender"], curr_user["phone_no"],
-                            curr_user["address"], curr_user["state"], curr_user["image"],
-                            curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+            a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
+                         curr_user["address"], curr_user["state"], curr_user["image"],
+                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
 
             all_carts = list(staff_carts_collection.find({"staff_id": a_user.email}))
             noOfCarts = len(all_carts)
@@ -206,14 +207,14 @@ def password_reset_complete(request):
     return render(request, "main_app/password-reset/password_reset_complete.html", {})
 
 @login_required
-def username(request):
+def user_profile(request):
     # check that user is logged in
     # then get user's details from mongodb
     curr_user = user_collection.find_one({"email": request.user.email})
 
     if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["email"],
-                         curr_user["username"], curr_user["gender"], curr_user["phone_no"],
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
                          curr_user["address"], curr_user["state"], curr_user["image"],
                          curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
         if not a_user.registered:
@@ -279,8 +280,8 @@ def add_product(request):
     curr_user = user_collection.find_one({"email": request.user.email})
 
     if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["email"],
-                         curr_user["username"], curr_user["gender"], curr_user["phone_no"],
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
                          curr_user["address"], curr_user["state"], curr_user["image"],
                          curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
         
@@ -525,8 +526,8 @@ def change_carousel(request):
     curr_user = user_collection.find_one({"email": request.user.email})
 
     if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["email"],
-                         curr_user["username"], curr_user["gender"], curr_user["phone_no"],
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
                          curr_user["address"], curr_user["state"], curr_user["image"],
                          curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
 
@@ -592,23 +593,25 @@ def resend_code(request):
 
 def privacy_policy(request):
     # Check if user is admin or staff
-    curr_user = user_collection.find_one({"email": request.user.email})
+    if request.user.is_authenticated:
+        curr_user = user_collection.find_one({"email": request.user.email})
 
-    if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["email"],
-                         curr_user["username"], curr_user["gender"], curr_user["phone_no"],
+        if curr_user:
+            a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
                          curr_user["address"], curr_user["state"], curr_user["image"],
                          curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
-        
-        all_carts = list(staff_carts_collection.find({"staff_id": a_user.email}))
-        noOfCarts = len(all_carts)
+            
+            all_carts = list(staff_carts_collection.find({"staff_id": a_user.email}))
+            noOfCarts = len(all_carts)
 
-        if a_user.is_admin:
-            return render(request, "main_app/privacy.html", {"is_admin": True,
-                                                             "is_staff": True, "noOfCarts": noOfCarts})
-        elif a_user.is_staff:
-            return render(request, "main_app/privacy.html", {"is_staff": True, "noOfCarts": noOfCarts})
-    return render(request, "main_app/privacy.html", {})
+            if a_user.is_admin:
+                return render(request, "main_app/privacy.html", {"is_admin": True,
+                                                                "is_staff": True, "noOfCarts": noOfCarts})
+            elif a_user.is_staff:
+                return render(request, "main_app/privacy.html", {"is_staff": True, "noOfCarts": noOfCarts})
+    else:
+        return render(request, "main_app/privacy.html", {})
 
 def find_product(request, slug):
     # Find product from mongodb
@@ -638,6 +641,7 @@ def find_staff_cart(request):
         prodPrice = postData.get("prodPrice")
         prodImage = postData.get("prodImage")
         prodQuantity = postData.get("prodQuantity")
+        totalProdQuantity = postData.get("totalProdQuantity")
         prodSlug = postData.get("prodSlug")
         subTotal = Decimal(prodPrice) * Decimal(prodQuantity) + Decimal("0.00")
         finSub = subTotal.quantize(Decimal("1.00"))
@@ -667,7 +671,8 @@ def find_staff_cart(request):
                                                                 {"$set": {"items.$[elem].sale_type": saleType,
                                                                           "items.$[elem].product_price": str(prodPrice),
                                                                           "items.$[elem].product_quantity": str(prodQuantity),
-                                                                          "items.$[elem].subTotal": str(finSub),
+                                                                          "items.$[elem].total_product_quantity": str(totalProdQuantity),
+                                                                          "items.$[elem].sub_total": str(finSub),
                                                                           "amount_owed": str(total_amount + priceDiff),
                                                                           "total_amount": str(total_amount + priceDiff)},
                                                                 },
@@ -684,7 +689,8 @@ def find_staff_cart(request):
                             ("product_price", str(prodPrice)),
                             ("product_image", prodImage),
                             ("product_quantity", str(prodQuantity)),
-                            ("subTotal", str(finSub)),
+                            ("total_product_quantity", str(totalProdQuantity)),
+                            ("sub_total", str(finSub)),
                             ("product_slug", prodSlug)])
 
             # new_item = {"product_name_" + str(curr_num + 1): prodName,
@@ -709,7 +715,8 @@ def find_staff_cart(request):
                             ("product_price", str(prodPrice)),
                             ("product_image", prodImage),
                             ("product_quantity", str(prodQuantity)),
-                            ("subTotal", str(finSub)),
+                            ("total_product_quantity", str(totalProdQuantity)),
+                            ("sub_total", str(finSub)),
                             ("product_slug", prodSlug)])
             
             whole_cart = StaffCart(cartName, request.user.email, [new_item], finSub, 0)
@@ -739,8 +746,8 @@ def staff_carts(request):
     curr_user = user_collection.find_one({"email": request.user.email})
 
     if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["email"],
-                         curr_user["username"], curr_user["gender"], curr_user["phone_no"],
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
                          curr_user["address"], curr_user["state"], curr_user["image"],
                          curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
         
@@ -766,8 +773,8 @@ def edit_product(request, slug):
     curr_user = user_collection.find_one({"email": request.user.email})
 
     if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["email"],
-                         curr_user["username"], curr_user["gender"], curr_user["phone_no"],
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
                          curr_user["address"], curr_user["state"], curr_user["image"],
                          curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
         
@@ -796,7 +803,7 @@ def debtors(request):
     all_debtors = list(debtors_collection.find().sort("date_modified", pymongo.DESCENDING))
     full_list = []
     for debtor in all_debtors:
-        item = Buyer(debtor["first_name"], debtor["last_name"], debtor["email"], debtor["username"],
+        item = Buyer(debtor["first_name"], debtor["last_name"], debtor["username"], debtor["email"],
                     debtor["gender"], debtor["phone_no"], debtor["address"], debtor["state"],
                     debtor["date_modified"], debtor["amount_owed"], debtor["description"],
                     debtor["image"])
@@ -811,20 +818,51 @@ def debtors(request):
     curr_user = user_collection.find_one({"email": request.user.email})
 
     if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["email"],
-                         curr_user["username"], curr_user["gender"], curr_user["phone_no"],
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
                          curr_user["address"], curr_user["state"], curr_user["image"],
                          curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+        
+        form = AddDebtorForm(request.POST or None)
+
+        if form.is_valid():
+            first_name = form.cleaned_data["first_name"]
+            last_name = form.cleaned_data["last_name"]
+            email = form.cleaned_data["email"]
+            gender = form.cleaned_data["gender"]
+            dialing_code = form.cleaned_data["dialing_code"]
+            phone_number = form.cleaned_data["phone_number"]
+            address = form.cleaned_data["address"]
+            state = form.cleaned_data["state"]
+            amount_owed = Decimal(str(form.cleaned_data["amount_owed"])) + Decimal("0.00")
+            description = form.cleaned_data["description"]
+
+            complete_phone = [{"dialing_code": dialing_code, "phone_number": phone_number}]
+
+            if default_user_image:
+                image_url, image_path = default_user_image()
+            else:
+                messages.error(request, "An internal Server error occurred. Please try again later.")
+                return redirect("debtors")
+
+            new_debtor = Buyer(first_name, last_name, first_name+last_name, email, gender, complete_phone, address,
+                               state, datetime.now(), str(amount_owed), description, [image_url, image_path])
+            
+            debtors_collection.insert_one(new_debtor.to_dict())
+
+            messages.success(request, "Debtor has been added successfully.")
+            return redirect("debtors")
         
         if not a_user.registered:
             messages.error(request, "Please confirm your email address.")
             return redirect("confirm_code")
         
         if a_user.is_admin:
-            return render(request, "main_app/debtors.html", {"is_admin": True, "is_staff": True, 
+            return render(request, "main_app/debtors.html", {"is_admin": True, "is_staff": True, "form": form, 
                                                           "debtors": full_list, "noOfCarts": noOfCarts})
         elif a_user.is_staff:
-            return render(request, "main_app/debtors.html", {"is_staff": True, "debtors": full_list, "carts": noOfCarts})
+            return render(request, "main_app/debtors.html", {"is_staff": True, "debtors": full_list,
+                                                             "form": form, "carts": noOfCarts})
         else:
             messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
             return render(request, "main_app/400.html", {})
@@ -838,11 +876,116 @@ def add_debtor(request):
     curr_user = user_collection.find_one({"email": request.user.email})
 
     if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["email"],
-                         curr_user["username"], curr_user["gender"], curr_user["phone_no"],
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
                          curr_user["address"], curr_user["state"], curr_user["image"],
                          curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
         
-        if request.method == "POST":
-            postData = json.loads(request.body.decode("utf-8"))
+        if a_user.is_admin or a_user.is_staff:
+            if request.method == "POST":
+                postData = json.loads(request.body.decode("utf-8"))
+
+                debtor_name = postData.get("debtorName")
+
+@login_required
+def get_debtors(request):
+    # then check if user is staff or admin
+    curr_user = user_collection.find_one({"email": request.user.email})
+
+    if curr_user:
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
+                         curr_user["address"], curr_user["state"], curr_user["image"],
+                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+        
+        if a_user.is_admin or a_user.is_staff:
+            all_debtors = list(debtors_collection.find({}, {"_id": 0}))
+            return JsonResponse(data={"result": True, "debtors": all_debtors})
+        else:
+            return JsonResponse(data={"result": False})
+
+@login_required
+def make_payment(request):
+    # then check if user is staff or admin
+    curr_user = user_collection.find_one({"email": request.user.email})
+
+    if curr_user:
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
+                         curr_user["address"], curr_user["state"], curr_user["image"],
+                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+        
+        if a_user.is_admin or a_user.is_staff:
+            if request.method == "POST":
+                postData = json.loads(request.body.decode("utf-8"))
+
+                customer_name = postData.get("customerName")
+                amount_paid = postData.get("amountPaid")
+                reference_no = str(datetime.now() + code_generator())
+                new_transaction = Transaction("Staff", customer_name, a_user.email, curr_customer["items"],
+                                                  datetime.now(), curr_customer["total_amount"], amount_paid,
+                                                  reference_no)
+
+                curr_customer = staff_carts_collection.find_one({"name_of_buyer": customer_name})
+
+                if curr_customer and Decimal(str(amount_paid)) == Decimal(curr_customer["total_amount"]):
+                    # Customer neither owes nor is owed
+                    product_slugs = []
+                    product_quantities = []
+                    for item in curr_customer["items"]:
+                        product_slugs.append(item["product_slug"])
+                        product_quantities.append(item["total_product_quantity"])
+                    
+                    # Proceed to call the call_back function
+                    with client.start_session() as session:
+                        session.with_transaction(lambda s: payment_callback(s, customer_name,
+                                                                            new_transaction.to_dict(),
+                                                                            product_slugs,
+                                                                            product_quantities))
+
+                    # Check if products have negative stock quantities and address
+                    for slug in product_slugs:
+                        product = products_collection.find_one({"slug": slug})
+                        if product and int(product["singles_stock"]) <= 0:
+                            products_collection.update_one({"slug": slug},
+                                                           {"$inc": {"carton_bag_stock": -1,
+                                                                     "singles_stock": int(product["no_in_carton_bag"])}})
+                            
+                    new_txn = transactions_collection.find_one({"reference_no": reference_no})
+                            
+                    return JsonResponse(data={"result": "Exact", "txn_id": str(new_txn["_id"]), "ref_no": reference_no})
+                
+                elif curr_customer and Decimal(str(amount_paid)) > Decimal(curr_customer["total_amount"]):
+                    # Customer is owed change
+                    product_slugs = []
+                    product_quantities = []
+                    for item in curr_customer["items"]:
+                        product_slugs.append(item["product_slug"])
+                        product_quantities.append(item["total_product_quantity"])
+                    
+                    # Proceed to call the call_back function
+                    with client.start_session() as session:
+                        session.with_transaction(lambda s: payment_callback(s, customer_name,
+                                                                            new_transaction.to_dict(),
+                                                                            product_slugs,
+                                                                            product_quantities))
+
+                    # Check if products have negative stock quantities and address
+                    for slug in product_slugs:
+                        product = products_collection.find_one({"slug": slug})
+                        if product and int(product["singles_stock"]) <= 0:
+                            products_collection.update_one({"slug": slug},
+                                                           {"$inc": {"carton_bag_stock": -1,
+                                                                     "singles_stock": int(product["no_in_carton_bag"])}})
+                            
+                    new_txn = transactions_collection.find_one({"reference_no": reference_no})
+                    la_change = Decimal(str(amount_paid)) - Decimal(curr_customer["total_amount"])
+                    return JsonResponse(data={"result": "Change", "txn_id": str(new_txn["_id"]),
+                                              "ref_no": reference_no, "change": str(la_change)})
+                
+                elif curr_customer and Decimal(str(amount_paid)) < Decimal(curr_customer["total_amount"]):
+                    # Customer is owing shop (a debtor)
+                    pass
+                    
+
 

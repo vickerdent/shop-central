@@ -40,28 +40,39 @@ class SignUpForm(UserCreationForm):
         ("Female", "Female"),
     ]
 
+    COUNTRY_CODE = [
+        ("+234", "+234 (Nigeria)"),
+        ("+233", "+233 (Ghana)"),
+        ("+1", "+1 (USA)"),
+        ("+44", "+44 (UK)"),
+    ]
+
     email = forms.CharField(label="E-mail Address", required=True, widget=forms.EmailInput(
-        attrs={"name": "email", "class": "form-control", "placeholder":"sample@email.com"}), label_suffix="")
+        attrs={"name": "email", "class": "form-control", "placeholder":"sample@email.com",
+               "autocomplete": "off"}), label_suffix="")
     first_name = forms.CharField(label="First Name", required=True, max_length=150, widget=forms.widgets.TextInput(
         attrs={"name": "first_name", "class": "form-control", "autofocus": "true", 
-               "placeholder":"Your First Name"}), label_suffix="")
+               "placeholder":"Your First Name", "autocomplete": "off"}), label_suffix="")
     last_name = forms.CharField(label="Last Name", required=True, max_length=150, widget=forms.widgets.TextInput(
         attrs={"name": "last_name", "class": "form-control", 
-               "placeholder":"Your Last Name"}), label_suffix="")
+               "placeholder":"Your Last Name", "autocomplete": "off"}), label_suffix="")
     gender = forms.ChoiceField(required=True, choices=MALE_FEMALE_CHOICES, widget=forms.widgets.Select(
         attrs={"placeholder":"choose", "class":"form-select", "name": "gender"}), label="Gender")
+    dialing_code = forms.ChoiceField(required=True, choices=COUNTRY_CODE, widget=forms.widgets.Select(
+        attrs={"placeholder":"choose", "class":"form-select", "name": "dialing_code"}), label="Country Code")
     phone_number = forms.CharField(label="Phone Number", required=True, max_length=11, widget=forms.widgets.TextInput(
-        attrs={"name": "phone_number", "class": "form-control", "placeholder":"08058482381"}),
+        attrs={"name": "phone_number", "class": "form-control", "placeholder":"08058482381", "autocomplete": "off"}),
         label_suffix="")
     address = forms.CharField(label="Address", required=True, max_length=1000, widget=forms.widgets.TextInput(
-        attrs={"name": "address", "class": "form-control", "placeholder":"No. 23, Super Way"}),
+        attrs={"name": "address", "class": "form-control", "placeholder":"No. 23, Super Way", "autocomplete": "off"}),
         label_suffix="")
     state = forms.CharField(label="State", required=True, max_length=100, widget=forms.widgets.TextInput(
-        attrs={"name": "state", "class": "form-control", "placeholder":"Port Harcourt"}), label_suffix="")
+        attrs={"name": "state", "class": "form-control", "placeholder":"Port Harcourt", "autocomplete": "off"}),
+        label_suffix="")
                              
     class Meta:
         model = User
-        fields = ("first_name", "last_name", "username", "email", "gender", "phone_number",
+        fields = ("first_name", "last_name", "username", "email", "gender", "dialing_code", "phone_number",
                    "address", "state", "password1", "password2")
 
     def __init__(self, *args: Any, **kwargs: Any):
@@ -69,18 +80,21 @@ class SignUpForm(UserCreationForm):
 
         self.fields['username'].widget.attrs['class'] = 'form-control'
         self.fields['username'].widget.attrs['placeholder'] = 'username'
+        self.fields['username'].widget.attrs['autocomplete'] = 'off'
         self.fields['username'].label = 'Username'
         self.fields['username'].label_suffix = ""
         self.fields['username'].help_text = '<span class="form-text text-muted"><small>150 characters or fewer. Letters, digits and @, ., +, - or _ only.</small></span>'
 
         self.fields['password1'].widget.attrs['class'] = 'form-control'
         self.fields['password1'].widget.attrs['placeholder'] = 'Password'
+        self.fields['password1'].widget.attrs['autocomplete'] = 'off'
         self.fields['password1'].label = 'Password'
         self.fields['password1'].label_suffix = ""
         self.fields['password1'].help_text = '<span class="form-text text-muted"><small>Enter a unique password made up of at least 8 characters: Letters, digits and special characters.</small></span>'
 
         self.fields['password2'].widget.attrs['class'] = 'form-control'
         self.fields['password2'].widget.attrs['placeholder'] = 'Confirm Password'
+        self.fields['password2'].widget.attrs['autocomplete'] = 'off'
         self.fields['password2'].label = 'Confirm Password'
         self.fields['password2'].label_suffix = ""
         self.fields['password2'].help_text = '<span class="form-text text-muted"><small>Enter the same password as before, for verification.</small></span>'	
@@ -722,10 +736,59 @@ class EditProductForm(forms.Form):
         "required": False, "cols": 30, "rows": 10
     }))
 
-class StaffCartForm:
+class AddDebtorForm(forms.Form):
     """
-    Form handling cart processing for sellers within the app
+    Form handling the adding of debtors
+    within the application
     """
+
+    MALE_FEMALE_CHOICES = [
+        ("", "--Select one--"),
+        ("Male", "Male"),
+        ("Female", "Female"),
+    ]
+
+    COUNTRY_CODE = [
+        ("+234", "+234 (Nigeria)"),
+        ("+233", "+233 (Ghana)"),
+        ("+1", "+1 (USA)"),
+        ("+44", "+44 (UK)"),
+    ]
+
+    first_name = forms.CharField(label="First Name", required=True, max_length=150, widget=forms.widgets.TextInput(
+        attrs={"name": "first_name", "class": "form-control", "autofocus": "true", 
+               "placeholder":"Your First Name", "autocomplete": "off"}), label_suffix="")
+    
+    last_name = forms.CharField(label="Last Name", required=True, max_length=150, widget=forms.widgets.TextInput(
+        attrs={"name": "last_name", "class": "form-control", 
+               "placeholder":"Your Last Name", "autocomplete": "off"}), label_suffix="")
+    
+    email = forms.CharField(label="E-mail Address", required=True, widget=forms.EmailInput(
+        attrs={"name": "email", "class": "form-control", "placeholder":"sample@email.com",
+               "autocomplete": "off"}), label_suffix="")
+    
+    gender = forms.ChoiceField(required=True, choices=MALE_FEMALE_CHOICES, widget=forms.widgets.Select(
+        attrs={"placeholder":"choose", "class":"form-select", "name": "gender"}), label="Gender")
+    
+    dialing_code = forms.ChoiceField(required=True, choices=COUNTRY_CODE, widget=forms.widgets.Select(
+        attrs={"placeholder":"choose", "class":"form-select", "name": "dialing_code"}), label="Country Code")
+    phone_number = forms.CharField(label="Phone Number", required=True, max_length=11, widget=forms.widgets.TextInput(
+        attrs={"name": "phone_number", "class": "form-control", "placeholder":"08058482381", "autocomplete": "off"}),
+        label_suffix="")
+    address = forms.CharField(label="Address", required=True, max_length=1000, widget=forms.widgets.TextInput(
+        attrs={"name": "address", "class": "form-control", "placeholder":"No. 23, Super Way", "autocomplete": "off"}),
+        label_suffix="")
+    state = forms.CharField(label="State", required=True, max_length=100, widget=forms.widgets.TextInput(
+        attrs={"name": "state", "class": "form-control", "placeholder":"Port Harcourt",
+               "autocomplete": "off"}), label_suffix="")
+
+    amount_owed = forms.IntegerField(label="Amount Owed", required=True, widget=forms.widgets.NumberInput(
+        attrs={"name": "amount_owed", "class": "form-control",
+               "placeholder": "The Retail Price", "autocomplete": "off"}), label_suffix="")
+    
+    description = forms.CharField(label="Description", required=True, max_length=100, widget=forms.widgets.TextInput(
+        attrs={"name": "description", "class": "form-control", "placeholder":"Port Harcourt",
+               "autocomplete": "off"}), label_suffix="")
     
     
 

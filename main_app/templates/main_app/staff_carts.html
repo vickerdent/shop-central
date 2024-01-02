@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="{% static 'staff_cart.css' %}">
   <input type="hidden" name="noOfCust" id="noOfCustomers">
 
-  <!-- Modal -->
+  <!-- Purchase Summary Modal -->
   <div class="modal fade" id="confirmPurchaseModal" tabindex="-1" aria-labelledby="confirmPurchaseLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-theme="dark">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content text-light">
@@ -58,12 +58,90 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content text-light">
         <div class="modal-body">
-          Customer owes money and must be updated accordingly.
+          <div class="d-flex justify-content-center">
+            <div class="card" style="width: 29rem; background-color: darkred;">
+              <div class="mt-1 mb-2 d-flex justify-content-center">
+                <img src="{% static 'app_media/warning.png' %}" class="" alt="Warning Image" width="25px" height="25px">
+              </div>
+              <p class="mt-0 mb-0 d-flex justify-content-center">Additional Customer information is required.</p>
+              <p class="d-flex justify-content-center">Customer owes money and must be updated accordingly.</p>
+            </div>
+          </div>
+          <br>
           <!-- buttons for existing and new debtors -->
+          <div class="mb-3">
+            <input type="radio" class="btn-check" name="debtor_type" id="add_debtor" autocomplete="off" checked>
+            <label class="btn btn-outline-light" for="add_debtor">Add New Debtor</label>
+
+            <input type="radio" class="btn-check" name="debtor_type" id="update_debtor" autocomplete="off">
+            <label class="btn btn-outline-light" for="update_debtor">Update Existing Debtor</label>
+          </div>
+
+          <div id="new_debtor_form">
+            {% csrf_token %}
+            <div class="input-group mb-3">
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="first_name" placeholder="name">
+                <label for="first_name">First Name</label>
+              </div>
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="last_name" placeholder="name">
+                <label for="last_name">Last Name</label>
+              </div>
+            </div>
+            <div class="form-floating mb-3">
+              <input type="email" class="form-control" id="email" placeholder="name@example.com">
+              <label for="email">Email address</label>
+            </div>
+            <div class="form-floating mb-3">
+              <select class="form-select" id="gender" aria-label="Gender label select">
+                <option selected>--Select one--</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+              <label for="gender">Gender</label>
+            </div>
+            <div class="input-group mb-3">
+              <div class="form-floating mb-3">
+                <select class="form-select" id="dialing_code" aria-label="Dialing Code label select">
+                  <option selected value="+234">+234 (Nigeria)</option>
+                  <option value="+233">+233 (Ghana)</option>
+                  <option value="+1">+1 (USA)</option>
+                  <option value="+44">+44 (UK)</option>
+                </select>
+                <label for="dialing_code">Country Code</label>
+              </div>
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="phone_number" placeholder="name">
+                <label for="phone_number">Phone Number</label>
+              </div>
+            </div>
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" id="address" placeholder="No. 12, Super way">
+              <label for="address">Address</label>
+            </div>
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" id="state" placeholder="FCT">
+              <label for="state">State</label>
+            </div>
+            <div class="form-floating mb-3">
+              <input type="text" readonly class="form-control-plaintext" id="amount_owed" placeholder="" value="">
+              <label for="amount_owed">Amount Owed</label>
+            </div>
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" id="description" placeholder="FCT">
+              <label for="description">Description</label>
+            </div>
+          </div>
+          <div id="update_debtor_div">
+            <input type="text" class="form-control" name="search_debtor" id="search_debtor" autocomplete="off" placeholder="Search debtors">
+            <ul class="list-group" id="debtor_list">
+            </ul>
+          </div>
         </div>
         <div class="modal-footer">
-            <a class="btn btn-light">Update</a>
-            <button type="button" class="btn btn-secondary" data-bs-target="#confirmPurchaseModal" data-bs-toggle="modal" id="cancelDebt">Cancel</button>
+            <button type="button" class="btn btn-light" id="submitDebt">Submit</button>
+            <button type="button" class="btn btn-secondary" data-bs-target="#confirmPurchaseModal" data-bs-toggle="modal" id="cancelDebtButton">Cancel</button>
         </div>
       </div>
     </div>
@@ -76,15 +154,15 @@
         <div class="modal-body">
           <br>
           <div class="d-flex justify-content-center">
-            <video autoplay muted width="85" height="85" src="{% static 'app_media/verified1.mp4' %}">
+            <video muted width="150" height="150" src="{% static 'app_media/verified1.mp4' %}" id="checkVideo">
               Checked icon
             </video>
           </div>
           <br>
           <h3 class="d-flex justify-content-center ms-5 me-5">Transaction Successful</h3>
-          <p class="fs-5 d-flex justify-content-center">Tran ID: <span id="txnInfo"></span></p>
-          <p class="fs-5 d-flex justify-content-center">Ref. No.: <span id="refNo"></span></p>
-          <p class="fs-5 d-flex justify-content-center">You can give the customer his/her goods</p>
+          <p class="fs-5 d-flex justify-content-center">Tran. ID: <span id="txnInfo"></span></p>
+          <p class="fs-5 d-flex justify-content-center">Ref. No.: <span id="refNo"></span></p> <br>
+          <p class="fs-5 d-flex justify-content-center">You can give the customer his/her goods<span id="change"></span>.</p>
         </div>
         <div class="modal-footer">
             <a class="btn btn-light">OK</a>
@@ -130,7 +208,7 @@
                 </div>
               </div>
               <div class="card-footer text-end text-bg-secondary">
-                Sub-total = ₦{{ item.subTotal|intcomma }}
+                Sub-total = ₦{{ item.sub_total|intcomma }}
               </div>
             </div>
           {% endfor %}

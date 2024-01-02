@@ -2,6 +2,14 @@
     text-align: center;
 }
 
+#change {
+    display: none;
+}
+
+#update_debtor_div {
+    display: none;
+}
+
 .payable {
     width: 150px;
     height: 7px;

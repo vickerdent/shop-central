@@ -5,6 +5,38 @@ from dotenv import load_dotenv
 load_dotenv()
 from utils import security_guard
 
+# Define the callback that specifies the sequence of operations to perform inside the transactions.
+# customer_name, amount_paid, reference_no
+def payment_callback(session, customer_name, transaction_doc, slugs_list, quants_list):
+    """
+    Callback function that specifies the sequence of 
+    operations to perform inside a transaction
+    affecting multiple documents and/or collections.
+    """
+    # Get reference to staff carts collection
+    staff_carts_collection = session.client.JDS.staff_carts
+
+    # Get reference to transactions collection
+    transactions_collection = session.client.JDS.transactions
+
+    # Get reference to products collection
+    products_collection = session.client.JDS.products
+
+    # Update all products respectively in cart at checkout
+    for index, slug in enumerate(slugs_list):
+        products_collection.update_one({"slug": slug},
+                                       {"$inc": {"singles_stock": -int(quants_list[index])}},
+                                       session=session)
+    
+    # Delete cart from collection
+    staff_carts_collection.delete_one({"name_of_buyer": customer_name}, session=session)
+
+    # Add new transaction to transactions collection
+    transactions_collection.insert_one(transaction_doc, session=session)
+
+    return
+
+
 def correct_id(name) -> str:
     """ Used to introduce correct
         IDs for books and other content"""

@@ -15,7 +15,7 @@ urlpatterns = [
         success_url=reverse_lazy("password_reset_complete")
     ), name="confirm_reset_password"),
     path("auth/password_reset_complete/", views.password_reset_complete, name="password_reset_complete"),
-    path("profile/", views.username, name="username"),
+    path("profile/", views.user_profile, name="username"),
     path('auth/confirm_code/', views.confirm_code, name='confirm_code'),
     path('auth/resend_code/', views.resend_code, name='resend_code'),
     path('add_product/', views.add_product, name='add_product'),
@@ -27,4 +27,6 @@ urlpatterns = [
     path('edit_product/<str:slug>', views.edit_product, name='edit_product'),
     path('staff_carts/', views.staff_carts, name='staff_carts'),
     path('debtors/', views.debtors, name='debtors'),
+    path('get_debtors/', views.get_debtors, name='get_debtors'),
+    path('transactions/make_payment/', views.make_payment, name='make_payment'),
 ]
