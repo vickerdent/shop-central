@@ -305,7 +305,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else if (element.id == "update_debtor") {
                 // console.log("Updating");
                 document.getElementById("new_debtor_form").style.display = "none";
-                document.getElementById("update_debtor_div").style.display = "";
+                document.getElementById("update_debtor_div").style.display = "block";
             } else if (element.className == "debtor-button") {
                 console.log(element.className)
             }
