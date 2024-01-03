@@ -261,7 +261,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     data.debtors.forEach(element => {
                         const li = document.createElement("li");
                         li.className = "list-group-item";
-                        // Obtains the first phone number belonging to each debtor
+                        // Obtains the first phone number belonging to each debtor, maybe add dialing code,
+                        // and also place value of phone number in hidden input field (for aesthetics)
                         li.innerHTML = [
                             `<a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-phone="${element.phone_no[0].number}"`,
                             `   data-name="${element.first_name} ${element.last_name}" data-descrip="${element.description}" data-oldamount="${element.amount_owed}"`,
