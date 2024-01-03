@@ -267,8 +267,9 @@ document.addEventListener("DOMContentLoaded", () => {
                             `<a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-phone="${element.phone_no[0].number}"`,
                             `   data-name="${element.first_name} ${element.last_name}" data-descrip="${element.description}" data-oldamount="${element.amount_owed}"`,
                             `   data-newamount="${debtAmt}" data-totalamount="${parseFloat(element.amount_owed) + parseFloat(debtAmt)}" data-btntype="debtor-button"`,
-                            `   data-address="${element.address}, ${element.state}">`,
+                            `   data-address="${element.address}, ${element.state}" data-dial="${element.phone_no[0].dialing_code}">`,
                             `   <span class="fw-bold">Name:</span> ${element.first_name} ${element.last_name}<br>`,
+                            `   <span class="fw-bold">Address:</span> ${element.address}<br>`,
                             `   <span class="fw-bold">Description:</span> ${element.description}<br>`,
                             `   <span class="fw-bold">Amount Owed:</span> ₦${editPrice(element.amount_owed)}<br>`,
                             '</a>'
@@ -319,12 +320,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("update_debtor_div").style.display = "none";
 
                 document.getElementById("upd_full_name").value = element.dataset.name;
-                document.getElementById("upd_phone").value = element.dataset.phone;
+                document.getElementById("upd_phone").value = `${element.dataset.phone}${element.dataset.phone}`;
+                document.getElementById("upd_act_phone").value = element.dataset.phone;
                 document.getElementById("upd_description").value = element.dataset.descrip;
                 document.getElementById("upd_address").value = element.dataset.address;
                 document.getElementById("upd_old_amount").value = `₦${editPrice(element.dataset.oldamount)}`;
                 document.getElementById("upd_new_amount").value = `₦${editPrice(element.dataset.newamount)}`;
                 document.getElementById("upd_total_debt").value = `₦${editPrice(element.dataset.totalamount)}`;
+                document.getElementById("upd_act_phone").value = element.dataset.phone;
+                document.getElementById("upd_act_new_amount").value = element.dataset.phone;
+                document.getElementById("upd_act_total_debt").value = element.dataset.phone;
                 // Bring entire form into view
                 document.getElementById("update_debtor_form").style.display = "block";
             }
