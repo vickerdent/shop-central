@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 payElement.setAttribute("data-amount", totalAmount)
                 payElement.setAttribute("data-amtbrought", amountBrought)
                 payElement.setAttribute("data-identify", identity)
-                payElement.setAttribute("data-owed", editPrice(debt.toFixed(2)))
+                payElement.setAttribute("data-owed", debt)
             } else {
                 // Customer needs change
                 document.getElementById("custType").value = "change"
@@ -263,9 +263,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         li.className = "list-group-item";
                         // Obtains the first phone number belonging to each debtor
                         li.innerHTML = [
-                            `<a class="debtor-button link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-phone="${element.phone_no.phone_number}"`,
+                            `<a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-phone="${element.phone_no[0].number}"`,
                             `   data-name="${element.first_name} ${element.last_name}" data-descrip="${element.description}" data-oldamount="${element.amount_owed}"`,
-                            `   data-newamount="${debtAmt}" data-totalamount="${parseFloat(element.amount_owed) + parseFloat(debtAmt)}">`,
+                            `   data-newamount="${debtAmt}" data-totalamount="${parseFloat(element.amount_owed) + parseFloat(debtAmt)}" data-btntype="debtor-button"`,
+                            `   data-address="${element.address}, ${element.state}">`,
                             `   <span class="fw-bold">Name:</span> ${element.first_name} ${element.last_name}<br>`,
                             `   <span class="fw-bold">Description:</span> ${element.description}<br>`,
                             `   <span class="fw-bold">Amount Owed:</span> ₦${editPrice(element.amount_owed)}<br>`,
@@ -279,13 +280,14 @@ document.addEventListener("DOMContentLoaded", () => {
             })
 
             // Update the modal's content.
-            document.getElementById("amount_owed").value = `₦${debtAmt}`
+            document.getElementById("amount_owed").value = `₦${editPrice(debtAmt)}`
             document.getElementById("first_name").value = recipient
             document.getElementById("add_debtor").checked = true;
             document.getElementById("update_debtor").checked = false;
-            document.getElementById("new_debtor_form").style.display = "";
+            document.getElementById("new_debtor_form").style.display = "block";
             document.getElementById("update_debtor_div").style.display = "none";
-
+            document.getElementById("update_debtor_form").style.display = "none";
+            document.getElementById("hold_update_button").style.visibility = "visible";
 
             const cancelDebt = document.getElementById("cancelDebtButton")
             cancelDebt.setAttribute("data-customer", recipient)
@@ -297,18 +299,49 @@ document.addEventListener("DOMContentLoaded", () => {
             const element = event.target;
 
             if (element.id == "submitDebt") {
+                const debt_type = document.querySelector("input[name=debtor_type]:checked");
+                console.log(debt_type.value);
                 
             } else if (element.id == "add_debtor") {
                 // console.log("Adding");
-                document.getElementById("new_debtor_form").style.display = "";
+                document.getElementById("new_debtor_form").style.display = "block";
                 document.getElementById("update_debtor_div").style.display = "none";
+                document.getElementById("update_debtor_form").style.display = "none";
+                document.getElementById("hold_update_button").style.visibility = "visible";
             } else if (element.id == "update_debtor") {
                 // console.log("Updating");
                 document.getElementById("new_debtor_form").style.display = "none";
                 document.getElementById("update_debtor_div").style.display = "block";
-            } else if (element.className == "debtor-button") {
-                console.log(element.className)
+            } else if (element.dataset.btntype == "debtor-button") {
+                // Works. Update data in update form div, while hiding respective divs
+                document.getElementById("hold_update_button").style.visibility = "hidden";
+                document.getElementById("update_debtor_div").style.display = "none";
+
+                document.getElementById("upd_full_name").value = element.dataset.name;
+                document.getElementById("upd_phone").value = element.dataset.phone;
+                document.getElementById("upd_description").value = element.dataset.descrip;
+                document.getElementById("upd_address").value = element.dataset.address;
+                document.getElementById("upd_old_amount").value = `₦${editPrice(element.dataset.oldamount)}`;
+                document.getElementById("upd_new_amount").value = `₦${editPrice(element.dataset.newamount)}`;
+                document.getElementById("upd_total_debt").value = `₦${editPrice(element.dataset.totalamount)}`;
+                // Bring entire form into view
+                document.getElementById("update_debtor_form").style.display = "block";
             }
+        });
+
+        document.getElementById("search_debtor").addEventListener("input", function(event) {
+            const search_term = event.target.value.toLowerCase();
+            const list_items = document.querySelectorAll("#debtor_list li");
+
+            list_items.forEach(element => {
+                const item_text = element.textContent.toLowerCase();
+
+                if (item_text.includes(search_term)) {
+                    element.style.display = "block";
+                } else {
+                    element.style.display = "none";
+                }
+            });
         })
 
         // Remove info on close

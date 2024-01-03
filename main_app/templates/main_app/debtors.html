@@ -43,7 +43,7 @@
 
     <!-- Add Debtor modal -->
     <div class="modal fade" id="addDebtorModal" aria-hidden="true" aria-labelledby="addDebtorModalLabel2" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-theme="dark">
-      <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
           <form action="" method="post" id="addDebtorForm">
             <div class="modal-header">
@@ -121,7 +121,7 @@
     <div class="d-flex flex-wrap justify-content-start">
       <!-- Available items (Items in stock) -->
       {% for debtor in debtors %}
-          <div class="me-3 mb-3 oneProduct">
+          <div class="me-3 mb-3 oneDebtor">
             <a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-bs-toggle="modal" data-bs-target="#editDebtorModal" data-slug="{{ debtor.slug }}">
               <div class="card h-100">
                   <img src="{{ debtor.image.0 }}" class="card-img-top" alt="Product's Image" width="70" height="70">

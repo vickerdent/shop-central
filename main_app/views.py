@@ -837,15 +837,17 @@ def debtors(request):
             amount_owed = Decimal(str(form.cleaned_data["amount_owed"])) + Decimal("0.00")
             description = form.cleaned_data["description"]
 
-            complete_phone = [{"dialing_code": dialing_code, "phone_number": phone_number}]
+            complete_phone = [{"dialing_code": dialing_code, "number": phone_number}]
 
             if default_user_image:
                 image_url, image_path = default_user_image()
             else:
                 messages.error(request, "An internal Server error occurred. Please try again later.")
                 return redirect("debtors")
+            
+            username = slugify(first_name + last_name)
 
-            new_debtor = Buyer(first_name, last_name, first_name+last_name, email, gender, complete_phone, address,
+            new_debtor = Buyer(first_name, last_name, username, email, gender, complete_phone, address,
                                state, datetime.now(), str(amount_owed), description, [image_url, image_path])
             
             debtors_collection.insert_one(new_debtor.to_dict())
