@@ -78,11 +78,11 @@
             </span>
           </div>
 
-          <div id="new_debtor_form">
+          <div class="needs-validation" id="new_debtor_form" novalidate>
             {% csrf_token %}
             <div class="input-group mb-3">
               <div class="form-floating">
-                <input type="text" class="form-control" id="first_name" placeholder="name">
+                <input type="text" class="form-control" id="first_name" placeholder="name" required>
                 <label for="first_name">First Name</label>
               </div>
               <div class="form-floating">
@@ -96,7 +96,7 @@
             </div>
             <div class="form-floating mb-3">
               <select class="form-select" id="gender" aria-label="Gender label select">
-                <option selected>--Select one--</option>
+                <option selected disabled value="">--Select one--</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
               </select>
@@ -134,6 +134,7 @@
               <label for="description">Description</label>
             </div>
           </div>
+
           <div id="update_debtor_div">
             <input type="text" class="form-control" name="search_debtor" id="search_debtor" autocomplete="off" placeholder="Search debtors">
             <br>

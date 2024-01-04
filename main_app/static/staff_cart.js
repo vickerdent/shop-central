@@ -303,7 +303,53 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (element.id == "submitDebt") {
                 const debt_type = document.querySelector("input[name=debtor_type]:checked");
-                console.log(debt_type.value);
+                if (debt_type.value == "new_debtor") {
+                    // Debtor is new and needs to be added to the database
+                    if (document.getElementById("first_name").value.trim().length < 2) {
+                        return;
+                    }
+
+                    if (document.getElementById("last_name").value.trim().length < 2) {
+                        return;
+                    }
+
+                    if (document.getElementById("phone_number").value.trim().length < 2) {
+                        return;
+                    }
+
+                    if (document.getElementById("address").value.trim().length < 2) {
+                        return;
+                    }
+
+                    if (document.getElementById("description").value.trim().length < 2) {
+                        return;
+                    }
+
+                    if (document.getElementById("first_name").value.trim().length < 2) {
+                        return;
+                    }
+
+                    (() => {
+                        'use strict'
+                      
+                        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                        const forms = document.querySelectorAll('.needs-validation')
+                      
+                        // Loop over them and prevent submission
+                        Array.from(forms).forEach(form => {
+                          form.addEventListener('submit', event => {
+                            if (!form.checkValidity()) {
+                              event.preventDefault()
+                              event.stopPropagation()
+                            }
+                      
+                            form.classList.add('was-validated')
+                          }, false)
+                        })
+                      })
+                } else if (debt_type.value == "old_debtor") {
+                    // Debtor is old and only needs to be modified
+                }
                 
             } else if (element.id == "add_debtor") {
                 // console.log("Adding");
