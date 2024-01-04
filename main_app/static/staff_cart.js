@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         document.getElementById(`amountPaid_${idNum}`).onkeyup = () => {
-            if (document.getElementById(`amountPaid_${idNum}`).value.length > 0 && !(document.getElementById(`amountPaid_${idNum}`).value.startsWith("0"))) {
+            if (document.getElementById(`amountPaid_${idNum}`).value.length > 0 && !(document.getElementById(`amountPaid_${idNum}`).value.startsWith("0")) && parseFloat(document.getElementById(`amountPaid_${idNum}`).value) > 0) {
                 document.getElementById(`purchaseOrder_${idNum}`).disabled = false;
                 var moneyBrought = parseFloat(document.getElementById(`amountPaid_${idNum}`).value);
                 var amountOwed = parseFloat(document.getElementById(`totalAmount_${idNum}`).value) - moneyBrought
@@ -286,6 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("first_name").value = recipient
             document.getElementById("add_debtor").checked = true;
             document.getElementById("update_debtor").checked = false;
+            document.getElementById("submitDebt").disabled = true;
             document.getElementById("new_debtor_form").style.display = "block";
             document.getElementById("update_debtor_div").style.display = "none";
             document.getElementById("update_debtor_form").style.display = "none";
@@ -310,28 +311,31 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("update_debtor_div").style.display = "none";
                 document.getElementById("update_debtor_form").style.display = "none";
                 document.getElementById("hold_update_button").style.visibility = "visible";
+                document.getElementById("submitDebt").disabled = true;
             } else if (element.id == "update_debtor") {
                 // console.log("Updating");
                 document.getElementById("new_debtor_form").style.display = "none";
                 document.getElementById("update_debtor_div").style.display = "block";
+                document.getElementById("submitDebt").disabled = true;
             } else if (element.dataset.btntype == "debtor-button") {
                 // Works. Update data in update form div, while hiding respective divs
                 document.getElementById("hold_update_button").style.visibility = "hidden";
                 document.getElementById("update_debtor_div").style.display = "none";
 
                 document.getElementById("upd_full_name").value = element.dataset.name;
-                document.getElementById("upd_phone").value = `${element.dataset.phone}${element.dataset.phone}`;
+                document.getElementById("upd_phone").value = `${element.dataset.dial}${element.dataset.phone}`;
                 document.getElementById("upd_act_phone").value = element.dataset.phone;
                 document.getElementById("upd_description").value = element.dataset.descrip;
                 document.getElementById("upd_address").value = element.dataset.address;
                 document.getElementById("upd_old_amount").value = `₦${editPrice(element.dataset.oldamount)}`;
                 document.getElementById("upd_new_amount").value = `₦${editPrice(element.dataset.newamount)}`;
                 document.getElementById("upd_total_debt").value = `₦${editPrice(element.dataset.totalamount)}`;
-                document.getElementById("upd_act_phone").value = element.dataset.phone;
-                document.getElementById("upd_act_new_amount").value = element.dataset.phone;
-                document.getElementById("upd_act_total_debt").value = element.dataset.phone;
+                document.getElementById("upd_act_old_amount").value = element.dataset.oldamount;
+                document.getElementById("upd_act_new_amount").value = element.dataset.newamount;
+                document.getElementById("upd_act_total_debt").value = element.dataset.totalamount;
                 // Bring entire form into view
                 document.getElementById("update_debtor_form").style.display = "block";
+                document.getElementById("submitDebt").disabled = false;
             }
         });
 
