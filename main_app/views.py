@@ -914,6 +914,31 @@ def add_debtor(request):
                 new_debtor = Buyer(first_name, last_name, username, email, gender, complete_phone, address,
                                    state, datetime.now(), str(amount_owed), description, [image_url, image_path])
 
+                # Adjust name of customer. Need linting here
+                curr_customer = staff_carts_collection.find_one({"name_of_buyer": customer_name})
+                
+                product_slugs = []
+                product_quantities = []
+                for item in curr_customer["items"]:
+                    product_slugs.append(item["product_slug"])
+                    product_quantities.append(item["total_product_quantity"])
+                
+                # Proceed to call the call_back function. Adjust variables to include buyer info
+                with client.start_session() as session:
+                    session.with_transaction(lambda s: payment_callback(s, customer_name,
+                                                                        new_transaction.to_dict(),
+                                                                        product_slugs,
+                                                                        product_quantities))
+
+                # Check if products have negative stock quantities and address
+                for slug in product_slugs:
+                    product = products_collection.find_one({"slug": slug})
+                    if product and int(product["singles_stock"]) <= 0:
+                        products_collection.update_one({"slug": slug},
+                                                        {"$inc": {"carton_bag_stock": -1,
+                                                                    "singles_stock": int(product["no_in_carton_bag"])}})
+                        
+                new_txn = transactions_collection.find_one({"reference_no": reference_no})
 
 
 @login_required
@@ -934,7 +959,7 @@ def get_debtors(request):
             return JsonResponse(data={"result": False})
 
 @login_required
-def make_payment(request, name_of_customer=None, amount_by_customer=None, cust_phone_no=None, buyer=None):
+def make_payment(request):
     # then check if user is staff or admin
     curr_user = user_collection.find_one({"email": request.user.email})
 
