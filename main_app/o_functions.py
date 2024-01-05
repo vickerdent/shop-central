@@ -7,7 +7,7 @@ from utils import security_guard
 
 # Define the callback that specifies the sequence of operations to perform inside the transactions.
 # customer_name, amount_paid, reference_no
-def payment_callback(session, customer_name, transaction_doc, slugs_list, quants_list):
+def payment_callback(session, customer_name, transaction_doc, slugs_list, quants_list, debtor_doc=None):
     """
     Callback function that specifies the sequence of 
     operations to perform inside a transaction
@@ -30,6 +30,12 @@ def payment_callback(session, customer_name, transaction_doc, slugs_list, quants
     
     # Delete cart from collection
     staff_carts_collection.delete_one({"name_of_buyer": customer_name}, session=session)
+
+    # Get reference to debtor collection, if variable is supplied and apply operation
+    if debtor_doc:
+        debtors_collection = session.client.JDS.debtors
+        debtors_collection.update_one({"phone_no.number": debtor_doc["phone_no"][0]["number"]},
+                                      {},upsert=True)
 
     # Add new transaction to transactions collection
     transactions_collection.insert_one(transaction_doc, session=session)

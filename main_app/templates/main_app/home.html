@@ -178,6 +178,7 @@
     <div class="d-flex flex-wrap justify-content-center">
         <!-- Available items (Items in stock) -->
         {% for item in inventory %}
+          {% if staff %}
             {% if item.singles_stock > 0 %}
               <div class="me-3 mb-3 oneProduct">
                 <a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-bs-toggle="modal" data-bs-target="#productInfoModal" data-slug="{{ item.slug }}">
@@ -191,6 +192,7 @@
                 </a>
               </div>
             {% endif %}
+          {% endif %}
         {% empty %}
             <div><p>No item found in inventory. Contact the site administrator for help.</p></div>
         {% endfor %}

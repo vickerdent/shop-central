@@ -77,7 +77,7 @@ class Buyer(Human):
         self.amount_owed = amount_owed
         self.image = image
         self.name = self.first_name + " " + self.last_name
-        self.slug = self.username + "_" + self.phone_no[0]["dialing_code"] + self.phone_no[0]["phone_number"]
+        self.slug = self.username + "_" + self.phone_no[0]["dialing_code"] + self.phone_no[0]["number"]
 
     def __str__(self) -> str:
         return f"{self.first_name} {self.last_name}"

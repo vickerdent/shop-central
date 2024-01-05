@@ -78,7 +78,7 @@
             </span>
           </div>
 
-          <div class="needs-validation" id="new_debtor_form" novalidate>
+          <div class="needs-validation" id="new_debtor_form">
             {% csrf_token %}
             <div class="input-group mb-3">
               <div class="form-floating">
@@ -129,6 +129,7 @@
               <input type="text" readonly class="form-control-plaintext" id="amount_owed" placeholder="" value="">
               <label for="amount_owed">Amount Owed</label>
             </div>
+            <input type="hidden" id="hidden_amount_owed">
             <div class="form-floating mb-3">
               <input type="text" class="form-control" id="description" placeholder="FCT">
               <label for="description">Description</label>

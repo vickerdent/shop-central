@@ -633,16 +633,16 @@ def open_staff_carts(request):
 def find_staff_cart(request):
     # Gotta be POST
     if request.method == "POST":
-        postData = json.loads(request.body.decode("utf-8"))
+        post_data = json.loads(request.body.decode("utf-8"))
 
-        cartName = postData.get("cartName")
-        prodName = postData.get("prodName")
-        saleType = postData.get("saleType").strip()
-        prodPrice = postData.get("prodPrice")
-        prodImage = postData.get("prodImage")
-        prodQuantity = postData.get("prodQuantity")
-        totalProdQuantity = postData.get("totalProdQuantity")
-        prodSlug = postData.get("prodSlug")
+        cartName = post_data.get("cartName")
+        prodName = post_data.get("prodName")
+        saleType = post_data.get("saleType").strip()
+        prodPrice = post_data.get("prodPrice")
+        prodImage = post_data.get("prodImage")
+        prodQuantity = post_data.get("prodQuantity")
+        totalProdQuantity = post_data.get("totalProdQuantity")
+        prodSlug = post_data.get("prodSlug")
         subTotal = Decimal(prodPrice) * Decimal(prodQuantity) + Decimal("0.00")
         finSub = subTotal.quantize(Decimal("1.00"))
         # Check for cart name from mongodb
@@ -885,9 +885,36 @@ def add_debtor(request):
         
         if a_user.is_admin or a_user.is_staff:
             if request.method == "POST":
-                postData = json.loads(request.body.decode("utf-8"))
+                post_data = json.loads(request.body.decode("utf-8"))
 
-                debtor_name = postData.get("debtorName")
+                first_name = post_data.get("debtor_first_name")
+                last_name = post_data.get("debtor_last_name")
+                email = post_data.get("debtor_email")
+                gender = post_data.get("debtor_gender")
+                dialing_code = post_data.get("debtor_dialing_code")
+                phone_number = post_data.get("debtor_phone_no")
+                address = post_data.get("debtor_address")
+                state = post_data.get("debtor_state")
+                # Don't forget to convert to string before storing
+                amount_owed = Decimal(str(post_data.get("debt_amount"))) + Decimal("0.00")
+                description = post_data.get("debtor_description")
+                name_in_cart = post_data.get("name_in_cart")
+                amount_paid = post_data.get("amount_paid")
+
+                complete_phone = [{"dialing_code": dialing_code, "number": phone_number}]
+
+                if default_user_image:
+                    image_url, image_path = default_user_image()
+                else:
+                    messages.error(request, "An internal Server error occurred. Please try again later.")
+                    return JsonResponse(data={"result": "Image Error"})
+            
+                username = slugify(first_name + last_name)
+
+                new_debtor = Buyer(first_name, last_name, username, email, gender, complete_phone, address,
+                                   state, datetime.now(), str(amount_owed), description, [image_url, image_path])
+
+
 
 @login_required
 def get_debtors(request):
@@ -907,7 +934,7 @@ def get_debtors(request):
             return JsonResponse(data={"result": False})
 
 @login_required
-def make_payment(request):
+def make_payment(request, name_of_customer=None, amount_by_customer=None, cust_phone_no=None, buyer=None):
     # then check if user is staff or admin
     curr_user = user_collection.find_one({"email": request.user.email})
 
@@ -919,10 +946,11 @@ def make_payment(request):
         
         if a_user.is_admin or a_user.is_staff:
             if request.method == "POST":
-                postData = json.loads(request.body.decode("utf-8"))
+                post_data = json.loads(request.body.decode("utf-8"))
 
-                customer_name = postData.get("customerName")
-                amount_paid = postData.get("amountPaid")
+                # May not work as you're passing data from view, not JS or form
+                customer_name = post_data.get("customerName") if not name_of_customer else name_of_customer
+                amount_paid = post_data.get("amountPaid") if not amount_by_customer else amount_by_customer
                 reference_no = str(datetime.now() + code_generator())
                 new_transaction = Transaction("Staff", customer_name, a_user.email, curr_customer["items"],
                                                   datetime.now(), curr_customer["total_amount"], amount_paid,
@@ -987,7 +1015,7 @@ def make_payment(request):
                 
                 elif curr_customer and Decimal(str(amount_paid)) < Decimal(curr_customer["total_amount"]):
                     # Customer is owing shop (a debtor)
-                    pass
+                    buyer_id = post_data.get("buyer_id")
                     
 
 

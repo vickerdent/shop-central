@@ -201,7 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         const result = data.result
                         if (result === "Change") {
                             // Successful transaction
-                            document.getElementById("change").style.display = ""
+                            document.getElementById("change").style.display = "block"
                             checkVideo.load();
                             document.getElementById("txnInfo").textContent = data.txn_id
                             document.getElementById("refNo").textContent = data.ref_no
@@ -282,8 +282,9 @@ document.addEventListener("DOMContentLoaded", () => {
             })
 
             // Update the modal's content.
-            document.getElementById("amount_owed").value = `₦${editPrice(debtAmt)}`
-            document.getElementById("first_name").value = recipient
+            document.getElementById("amount_owed").value = `₦${editPrice(debtAmt)}`;
+            document.getElementById("amount_owed").value = debtAmt;
+            document.getElementById("first_name").value = recipient;
             document.getElementById("add_debtor").checked = true;
             document.getElementById("update_debtor").checked = false;
             document.getElementById("submitDebt").disabled = true;
@@ -298,55 +299,135 @@ document.addEventListener("DOMContentLoaded", () => {
             cancelDebt.setAttribute("data-identify", identity)
         })
 
+        document.getElementById("description").onkeyup = () => {
+            if (document.getElementById("description").value.length > 0) {
+                var trialval = true;
+                document.querySelectorAll("#new_debtor_form input").forEach(input_field => {
+                    if (input_field.value.length > 0) {
+                        trialval = true;
+                    } else {
+                        trialval = false;
+                    }
+                });
+
+                // Finally determine the state of submit button
+                if (trialval) {
+                    document.getElementById("submitDebt").disabled = false;
+                } else {
+                    document.getElementById("submitDebt").disabled = true;
+                }
+            } else {
+                document.getElementById("submitDebt").disabled = true;
+            }
+        }
+
         document.addEventListener("click", event => {
             const element = event.target;
 
             if (element.id == "submitDebt") {
                 const debt_type = document.querySelector("input[name=debtor_type]:checked");
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 if (debt_type.value == "new_debtor") {
                     // Debtor is new and needs to be added to the database
+                    
                     if (document.getElementById("first_name").value.trim().length < 2) {
-                        return;
+                        document.getElementById("first_name").classList.add('invalid');
+                        alert("Enter valid input for customer's first name");
+                        return false;
                     }
 
                     if (document.getElementById("last_name").value.trim().length < 2) {
-                        return;
+                        document.getElementById("last_name").classList.add('invalid');
+                        alert("Enter valid input for customer's last name");
+                        return false;
                     }
 
-                    if (document.getElementById("phone_number").value.trim().length < 2) {
-                        return;
+                    if (document.getElementById("phone_number").value.trim().length < 10) {
+                        document.getElementById("phone_number").classList.add('invalid');
+                        alert("Enter valid input for customer's phone number");
+                        return false;
                     }
 
                     if (document.getElementById("address").value.trim().length < 2) {
-                        return;
+                        document.getElementById("address").classList.add('invalid');
+                        alert("Enter valid input for customer's address");
+                        return false;
                     }
 
-                    if (document.getElementById("description").value.trim().length < 2) {
-                        return;
+                    if (document.getElementById("description").value.trim().length < 5) {
+                        document.getElementById("description").classList.add('invalid');
+                        alert("Enter valid input for customer's description");
+                        return false;
                     }
 
-                    if (document.getElementById("first_name").value.trim().length < 2) {
-                        return;
+                    if (!(document.getElementById("gender").value)) {
+                        document.getElementById("gender").classList.add('invalid');
+                        alert("Select Male or Female");
+                        return false;
                     }
 
-                    (() => {
-                        'use strict'
+                    // submit debtor information, then to transaction view
+                    document.getElementById("submitDebt").disabled = true;
+                    const cust_first_name = document.getElementById("first_name").value;
+                    const cust_last_name = document.getElementById("last_name").value;
+                    const cust_email = document.getElementById("email").value;
+                    const cust_gender = document.getElementById("gender").value;
+                    const cust_dialing_code = document.getElementById("dialing_code").value;
+                    const cust_phone_no = document.getElementById("phone_number").value;
+                    const cust_address = document.getElementById("address").value;
+                    const cust_state = document.getElementById("state").value;
+                    const cust_description = document.getElementById("description").value;
+                    const cust_amount_owed = document.getElementById("hidden_amount_owed").value;
+
+                    const initial_cust_id = document.getElementById("cancelDebtButton").dataset.customer;
+                    const money_brought = document.getElementById("cancelDebtButton").dataset.amount;
+
+                    const debt_data = {debtor_first_name: cust_first_name, debtor_last_name: cust_last_name,
+                    debtor_email: cust_email, debtor_gender: cust_gender, debtor_dialing_code: cust_dialing_code,
+                    debtor_phone_no: cust_phone_no, debtor_address: cust_address, debtor_state: cust_state,
+                    debtor_description: cust_description, debt_amount: cust_amount_owed,
+                    name_in_cart: initial_cust_id, amount_paid: money_brought};                    
+                    
+                    const checkVideo = document.getElementById("checkVideo");
+                    const confirmPurchaseModal = bootstrap.Modal.getInstance(document.getElementById('confirmPurchaseModal'));
+                    const txnSuccessfulModal = bootstrap.Modal.getInstance(document.getElementById('txnSuccessfulModal'));
+
+                    fetch("add_debtor/", {
+                        method: "POST",
+                        headers: {'X-CSRFToken': csrftoken,
+                                    "Content-Type": "application/json"},
+                        mode: "same-origin",
+                        body: JSON.stringify(debt_data),
+                    })
+                    .then((response) => {
+                        if (!response.ok) {
+                            failToast.show();
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json()})
+                    .then(data => {
+                        const result = data.result
+                        if (result === "Debtor") {
+                            // Successful transaction
+                            document.getElementById("change").style.display = ""
+                            checkVideo.load();
+                            document.getElementById("txnInfo").textContent = data.txn_id
+                            document.getElementById("refNo").textContent = data.ref_no
+                            // Make change to the text Content and update previous fetches
+                            document.getElementById("change").textContent = ` ₦${data.debt}`
+                            // Call modal for success
+                            confirmPurchaseModal.hide()
+                            txnSuccessfulModal.show();
+                            checkVideo.play();
+                        } else {
+                            failToast.show();
+                        }
+                    })
+                    .catch(error => {
+                        // failToast.show();
+                        console.error({"error": error});
+                    });
                       
-                        // Fetch all the forms we want to apply custom Bootstrap validation styles to
-                        const forms = document.querySelectorAll('.needs-validation')
-                      
-                        // Loop over them and prevent submission
-                        Array.from(forms).forEach(form => {
-                          form.addEventListener('submit', event => {
-                            if (!form.checkValidity()) {
-                              event.preventDefault()
-                              event.stopPropagation()
-                            }
-                      
-                            form.classList.add('was-validated')
-                          }, false)
-                        })
-                      })
                 } else if (debt_type.value == "old_debtor") {
                     // Debtor is old and only needs to be modified
                 }
@@ -385,6 +466,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
+        // For search debtor feature
         document.getElementById("search_debtor").addEventListener("input", function(event) {
             const search_term = event.target.value.toLowerCase();
             const list_items = document.querySelectorAll("#debtor_list li");

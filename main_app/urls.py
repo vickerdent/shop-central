@@ -28,5 +28,6 @@ urlpatterns = [
     path('staff_carts/', views.staff_carts, name='staff_carts'),
     path('debtors/', views.debtors, name='debtors'),
     path('get_debtors/', views.get_debtors, name='get_debtors'),
+    path('add_debtor/', views.add_debtor, name='add_debtor'),
     path('transactions/make_payment/', views.make_payment, name='make_payment'),
 ]
