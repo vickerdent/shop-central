@@ -834,7 +834,7 @@ def debtors(request):
             phone_number = form.cleaned_data["phone_number"]
             address = form.cleaned_data["address"]
             state = form.cleaned_data["state"]
-            amount_owed = Decimal(str(form.cleaned_data["amount_owed"])) + Decimal("0.00")
+            amount_owed = form.cleaned_data["amount_owed"]
             description = form.cleaned_data["description"]
 
             complete_phone = [{"dialing_code": dialing_code, "number": phone_number}]
@@ -896,7 +896,7 @@ def add_debtor(request):
                 address = post_data.get("debtor_address")
                 state = post_data.get("debtor_state")
                 # Don't forget to convert to string before storing
-                amount_owed = Decimal(str(post_data.get("debt_amount"))) + Decimal("0.00")
+                amount_owed = post_data.get("debt_amount")
                 description = post_data.get("debtor_description")
                 name_in_cart = post_data.get("name_in_cart")
                 amount_paid = post_data.get("amount_paid")
@@ -912,11 +912,17 @@ def add_debtor(request):
                 username = slugify(first_name + last_name)
 
                 new_debtor = Buyer(first_name, last_name, username, email, gender, complete_phone, address,
-                                   state, datetime.now(), str(amount_owed), description, [image_url, image_path])
+                                   state, datetime.now(), amount_owed, description, [image_url, image_path])
 
-                # Adjust name of customer. Need linting here
-                curr_customer = staff_carts_collection.find_one({"name_of_buyer": customer_name})
-                
+                # Create reference number for information storage
+                reference_no = str(datetime.now() + code_generator())
+                curr_customer = staff_carts_collection.find_one({"name_of_buyer": name_in_cart,
+                                                                 "staff_id": a_user.email})
+
+                new_transaction = Transaction("Staff", new_debtor.first_name + " " + new_debtor.last_name, a_user.email,
+                                              curr_customer["items"], datetime.now(), curr_customer["total_amount"],
+                                              amount_paid, reference_no, phone_number)
+
                 product_slugs = []
                 product_quantities = []
                 for item in curr_customer["items"]:
@@ -925,10 +931,11 @@ def add_debtor(request):
                 
                 # Proceed to call the call_back function. Adjust variables to include buyer info
                 with client.start_session() as session:
-                    session.with_transaction(lambda s: payment_callback(s, customer_name,
+                    session.with_transaction(lambda s: payment_callback(s, name_in_cart,
                                                                         new_transaction.to_dict(),
                                                                         product_slugs,
-                                                                        product_quantities))
+                                                                        product_quantities,
+                                                                        new_debtor.to_dict()))
 
                 # Check if products have negative stock quantities and address
                 for slug in product_slugs:
@@ -940,6 +947,74 @@ def add_debtor(request):
                         
                 new_txn = transactions_collection.find_one({"reference_no": reference_no})
 
+                return JsonResponse(data={"result": "New Debtor", "txn_id": str(new_txn["_id"]), "ref_no": reference_no,
+                                          "debt": str(amount_owed)})
+            
+@login_required
+def update_debtor(request):
+    # then check if user is staff or admin
+    curr_user = user_collection.find_one({"email": request.user.email})
+
+    if curr_user:
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
+                         curr_user["address"], curr_user["state"], curr_user["image"],
+                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+        
+        if a_user.is_admin or a_user.is_staff:
+            if request.method == "POST":
+                post_data = json.loads(request.body.decode("utf-8"))
+
+                cust_phone_no = post_data.get("d_phone_no")
+                cust_new_debt = post_data.get("d_new_debt")
+                cust_total_debt = post_data.get("d_total_debt")
+                customer_name = post_data.get("customer_name")
+                amount_brought = post_data.get("amount_brought")
+
+                curr_customer = staff_carts_collection.find_one({"name_of_buyer": customer_name,
+                                                                 "staff_id": a_user.email})
+                
+                curr_debtor = debtors_collection.find_one({"phone_no.number": cust_phone_no})
+
+                # Create debtor/Buyer class from gotten info, use class to calculate debt
+                old_debtor = Buyer(curr_debtor["first_name"], curr_debtor["last_name"], curr_debtor["username"],
+                                   curr_debtor["email"], curr_debtor["gender"], curr_debtor["phone_no"],
+                                   curr_debtor["address"], curr_debtor["state"], datetime.now(),
+                                   str(cust_total_debt), curr_debtor["description"], curr_debtor["image"])
+                
+                # Create reference number for information storage
+                reference_no = str(datetime.now() + code_generator())
+
+                new_transaction = Transaction("Staff", old_debtor.first_name + " " + old_debtor.last_name, a_user.email,
+                                              curr_customer["items"], datetime.now(), curr_customer["total_amount"],
+                                              amount_brought, reference_no, cust_phone_no)
+
+                product_slugs = []
+                product_quantities = []
+                for item in curr_customer["items"]:
+                    product_slugs.append(item["product_slug"])
+                    product_quantities.append(item["total_product_quantity"])
+                
+                # Proceed to call the call_back function. Adjust variables to include buyer info
+                with client.start_session() as session:
+                    session.with_transaction(lambda s: payment_callback(s, customer_name,
+                                                                        new_transaction.to_dict(),
+                                                                        product_slugs,
+                                                                        product_quantities,
+                                                                        old_debtor.to_dict()))
+
+                # Check if products have negative stock quantities and address
+                for slug in product_slugs:
+                    product = products_collection.find_one({"slug": slug})
+                    if product and int(product["singles_stock"]) <= 0:
+                        products_collection.update_one({"slug": slug},
+                                                        {"$inc": {"carton_bag_stock": -1,
+                                                                    "singles_stock": int(product["no_in_carton_bag"])}})
+                        
+                new_txn = transactions_collection.find_one({"reference_no": reference_no})
+
+                return JsonResponse(data={"result": "Old Debtor", "txn_id": str(new_txn["_id"]), "ref_no": reference_no,
+                                          "debt": str(cust_new_debt), "total_debt": str(cust_total_debt)})
 
 @login_required
 def get_debtors(request):
@@ -973,15 +1048,15 @@ def make_payment(request):
             if request.method == "POST":
                 post_data = json.loads(request.body.decode("utf-8"))
 
-                # May not work as you're passing data from view, not JS or form
-                customer_name = post_data.get("customerName") if not name_of_customer else name_of_customer
-                amount_paid = post_data.get("amountPaid") if not amount_by_customer else amount_by_customer
+                customer_name = post_data.get("customerName")
+                amount_paid = post_data.get("amountPaid")
                 reference_no = str(datetime.now() + code_generator())
+                curr_customer = staff_carts_collection.find_one({"name_of_buyer": customer_name,
+                                                                 "staff_id": a_user.email})
+
                 new_transaction = Transaction("Staff", customer_name, a_user.email, curr_customer["items"],
                                                   datetime.now(), curr_customer["total_amount"], amount_paid,
                                                   reference_no)
-
-                curr_customer = staff_carts_collection.find_one({"name_of_buyer": customer_name})
 
                 if curr_customer and Decimal(str(amount_paid)) == Decimal(curr_customer["total_amount"]):
                     # Customer neither owes nor is owed
@@ -1037,10 +1112,9 @@ def make_payment(request):
                     la_change = Decimal(str(amount_paid)) - Decimal(curr_customer["total_amount"])
                     return JsonResponse(data={"result": "Change", "txn_id": str(new_txn["_id"]),
                                               "ref_no": reference_no, "change": str(la_change)})
-                
-                elif curr_customer and Decimal(str(amount_paid)) < Decimal(curr_customer["total_amount"]):
-                    # Customer is owing shop (a debtor)
-                    buyer_id = post_data.get("buyer_id")
+                else:
+                    # Customer doesn't exist
+                    return JsonResponse(data={"result": "Error"})
                     
 
 

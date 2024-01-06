@@ -74,7 +74,7 @@ class Buyer(Human):
         super().__init__(first_name, last_name, username, email, gender, phone_no, address, state)
         self.description = description
         self.date_modified = date_modified
-        self.amount_owed = amount_owed
+        self.amount_owed = Decimal(str(amount_owed)) + Decimal("0.00")
         self.image = image
         self.name = self.first_name + " " + self.last_name
         self.slug = self.username + "_" + self.phone_no[0]["dialing_code"] + self.phone_no[0]["number"]
@@ -97,7 +97,7 @@ class Buyer(Human):
             "address": self.address,
             "state": self.state,
             "date_modified": self.date_modified,
-            "amount_owed": self.amount_owed,
+            "amount_owed": str(self.amount_owed),
             "description": self.description,
             "image": self.image,
             "slug": self.slug

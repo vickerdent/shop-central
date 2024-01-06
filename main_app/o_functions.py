@@ -29,13 +29,14 @@ def payment_callback(session, customer_name, transaction_doc, slugs_list, quants
                                        session=session)
     
     # Delete cart from collection
-    staff_carts_collection.delete_one({"name_of_buyer": customer_name}, session=session)
+    staff_carts_collection.delete_one({"name_of_buyer": customer_name, 
+                                       "staff_id": transaction_doc["staff_id"]}, session=session)
 
     # Get reference to debtor collection, if variable is supplied and apply operation
     if debtor_doc:
         debtors_collection = session.client.JDS.debtors
         debtors_collection.update_one({"phone_no.number": debtor_doc["phone_no"][0]["number"]},
-                                      {},upsert=True)
+                                      {debtor_doc}, upsert=True)
 
     # Add new transaction to transactions collection
     transactions_collection.insert_one(transaction_doc, session=session)

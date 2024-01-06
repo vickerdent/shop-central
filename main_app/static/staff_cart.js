@@ -144,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const cartData = {customerName: element.getAttribute("data-customer"),
                 amountPaid: element.getAttribute("data-amtbrought")};
                 const checkVideo = document.getElementById("checkVideo");
-                const confirmPurchaseModal = bootstrap.Modal.getInstance(document.getElementById('confirmPurchaseModal'));
+                const confirm_purchase_modal = bootstrap.Modal.getInstance(document.getElementById('confirmPurchaseModal'));
                 const txnSuccessfulModal = bootstrap.Modal.getInstance(document.getElementById('txnSuccessfulModal'));
 
                 if (custType.value === "ok") {
@@ -166,12 +166,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         const result = data.result
                         if (result === "Exact") {
                             // Successful transaction
-                            document.getElementById("change").style.display = "none";
+                            document.getElementById("descrip_text").style.display = "none";
+                            document.getElementById("more_text").style.display = "none"
                             checkVideo.load();
                             document.getElementById("txnInfo").textContent = data.txn_id
                             document.getElementById("refNo").textContent = data.ref_no
                             // Call modal for success
-                            confirmPurchaseModal.hide();
+                            confirm_purchase_modal.hide();
                             txnSuccessfulModal.show();
                             checkVideo.play();
                         } else {
@@ -201,13 +202,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         const result = data.result
                         if (result === "Change") {
                             // Successful transaction
-                            document.getElementById("change").style.display = "block"
+                            document.getElementById("descrip_text").style.display = "block"
+                            document.getElementById("more_text").style.display = "none"
                             checkVideo.load();
                             document.getElementById("txnInfo").textContent = data.txn_id
                             document.getElementById("refNo").textContent = data.ref_no
+                            document.getElementById("descrip_text").textContent = "Change amount:"
                             document.getElementById("change").textContent = ` ₦${data.change}`
                             // Call modal for success
-                            confirmPurchaseModal.hide()
+                            confirm_purchase_modal.hide();
                             txnSuccessfulModal.show();
                             checkVideo.play();
                         } else {
@@ -274,7 +277,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             `   <span class="fw-bold">Amount Owed:</span> ₦${editPrice(element.amount_owed)}<br>`,
                             '</a>'
                           ].join('')
-                        document.getElementById("debtor_list").append(li)
+                        document.getElementById("debtor_list").append(li);
                     });
                 } else {
                     failToast.show();
@@ -327,6 +330,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (element.id == "submitDebt") {
                 const debt_type = document.querySelector("input[name=debtor_type]:checked");
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                const checkVideo = document.getElementById("checkVideo");
+                const update_debtor_modal = bootstrap.Modal.getInstance(document.getElementById('updateDebtorModal'));
+                const txnSuccessfulModal = bootstrap.Modal.getInstance(document.getElementById('txnSuccessfulModal'));
+                
                 if (debt_type.value == "new_debtor") {
                     // Debtor is new and needs to be added to the database
                     
@@ -387,10 +395,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     debtor_phone_no: cust_phone_no, debtor_address: cust_address, debtor_state: cust_state,
                     debtor_description: cust_description, debt_amount: cust_amount_owed,
                     name_in_cart: initial_cust_id, amount_paid: money_brought};                    
-                    
-                    const checkVideo = document.getElementById("checkVideo");
-                    const confirmPurchaseModal = bootstrap.Modal.getInstance(document.getElementById('confirmPurchaseModal'));
-                    const txnSuccessfulModal = bootstrap.Modal.getInstance(document.getElementById('txnSuccessfulModal'));
 
                     fetch("add_debtor/", {
                         method: "POST",
@@ -407,16 +411,18 @@ document.addEventListener("DOMContentLoaded", () => {
                         return response.json()})
                     .then(data => {
                         const result = data.result
-                        if (result === "Debtor") {
+                        if (result === "New Debtor") {
                             // Successful transaction
-                            document.getElementById("change").style.display = ""
+                            document.getElementById("descrip_text").style.display = "block"
+                            document.getElementById("more_text").style.display = "none"
                             checkVideo.load();
                             document.getElementById("txnInfo").textContent = data.txn_id
                             document.getElementById("refNo").textContent = data.ref_no
                             // Make change to the text Content and update previous fetches
+                            document.getElementById("descrip_text").textContent = "Debt amount:"
                             document.getElementById("change").textContent = ` ₦${data.debt}`
                             // Call modal for success
-                            confirmPurchaseModal.hide()
+                            update_debtor_modal.hide();
                             txnSuccessfulModal.show();
                             checkVideo.play();
                         } else {
@@ -429,7 +435,54 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
                       
                 } else if (debt_type.value == "old_debtor") {
-                    // Debtor is old and only needs to be modified
+                    // Debtor is old and only amount owed needs to be modified
+                    const debtor_phone = document.getElementById("upd_act_phone").value;
+                    const new_debt = document.getElementById("upd_act_new_amount").value;
+                    const total_debt = document.getElementById("upd_act_total_debt").value;
+                    const initial_cust_id = document.getElementById("cancelDebtButton").dataset.customer;
+                    const money_brought = document.getElementById("cancelDebtButton").dataset.amount;
+                    
+                    const debt_data = {d_phone_no: debtor_phone, d_new_debt: new_debt, d_total_debt: total_debt,
+                    customer_name: initial_cust_id, amount_brought: money_brought}
+                    
+                    fetch("update_debtor/", {
+                        method: "POST",
+                        headers: {'X-CSRFToken': csrftoken,
+                                    "Content-Type": "application/json"},
+                        mode: "same-origin",
+                        body: JSON.stringify(debt_data),
+                    })
+                    .then((response) => {
+                        if (!response.ok) {
+                            failToast.show();
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json()})
+                    .then(data => {
+                        const result = data.result
+                        if (result === "Old Debtor") {
+                            // Successful transaction
+                            document.getElementById("descrip_text").style.display = "block"
+                            document.getElementById("more_text").style.display = "block"
+                            checkVideo.load();
+                            document.getElementById("txnInfo").textContent = data.txn_id
+                            document.getElementById("refNo").textContent = data.ref_no
+                            // Make change to the text Content and update previous fetches
+                            document.getElementById("descrip_text").textContent = "Amount Owed for this TXN:"
+                            document.getElementById("change").textContent = ` ₦${data.debt}`
+                            document.getElementById("more_text").textContent = `Total Amount Owed: ₦${data.total_debt}`
+                            // Call modal for success
+                            update_debtor_modal.hide();
+                            txnSuccessfulModal.show();
+                            checkVideo.play();
+                        } else {
+                            failToast.show();
+                        }
+                    })
+                    .catch(error => {
+                        // failToast.show();
+                        console.error({"error": error});
+                    });
                 }
                 
             } else if (element.id == "add_debtor") {
@@ -483,7 +536,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })
 
         // Remove info on close
-        confirmPurchaseModal.addEventListener("hidden.bs.modal", () => {
+        updateDebtorModal.addEventListener("hidden.bs.modal", () => {
             const curr_debtors = document.querySelectorAll(".list-group-item");
             if (curr_debtors) {
                 curr_debtors.forEach(debtor => {
