@@ -915,7 +915,7 @@ def add_debtor(request):
                                    state, datetime.now(), amount_owed, description, [image_url, image_path])
 
                 # Create reference number for information storage
-                reference_no = str(datetime.now() + code_generator())
+                reference_no = str(datetime.now()) + code_generator()
                 curr_customer = staff_carts_collection.find_one({"name_of_buyer": name_in_cart,
                                                                  "staff_id": a_user.email})
 
@@ -983,7 +983,7 @@ def update_debtor(request):
                                    str(cust_total_debt), curr_debtor["description"], curr_debtor["image"])
                 
                 # Create reference number for information storage
-                reference_no = str(datetime.now() + code_generator())
+                reference_no = str(datetime.now()) + code_generator()
 
                 new_transaction = Transaction("Staff", old_debtor.first_name + " " + old_debtor.last_name, a_user.email,
                                               curr_customer["items"], datetime.now(), curr_customer["total_amount"],
@@ -1050,7 +1050,7 @@ def make_payment(request):
 
                 customer_name = post_data.get("customerName")
                 amount_paid = post_data.get("amountPaid")
-                reference_no = str(datetime.now() + code_generator())
+                reference_no = str(datetime.now()) + code_generator()
                 curr_customer = staff_carts_collection.find_one({"name_of_buyer": customer_name,
                                                                  "staff_id": a_user.email})
 

@@ -149,7 +149,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (custType.value === "ok") {
                     // Customer owes nothing nor is owed anything
-                    fetch("transactions/make_payment/", {
+                    // Place slash before url to ensure it picks from base url, not current page, if needed
+                    fetch("/transactions/make_payment/", {
                         method: "POST",
                         headers: {'X-CSRFToken': csrftoken,
                                     "Content-Type": "application/json"},
@@ -185,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
                 } else if (custType.value === "change") {
                     // Customer needs change
-                    fetch("transactions/make_payment/", {
+                    fetch("/transactions/make_payment/", {
                         method: "POST",
                         headers: {'X-CSRFToken': csrftoken,
                                     "Content-Type": "application/json"},
@@ -271,7 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             `   data-name="${element.first_name} ${element.last_name}" data-descrip="${element.description}" data-oldamount="${element.amount_owed}"`,
                             `   data-newamount="${debtAmt}" data-totalamount="${parseFloat(element.amount_owed) + parseFloat(debtAmt)}" data-btntype="debtor-button"`,
                             `   data-address="${element.address}, ${element.state}" data-dial="${element.phone_no[0].dialing_code}">`,
-                            `   <span class="fw-bold">Name:</span> ${element.first_name} ${element.last_name}<br>`,
+                            `   <span class="fw-bold">Name:</span> ${element.first_name} ${element.last_name}  <span class="fw-bold">Phone No:</span> ${element.phone_no[0].dialing_code}${element.phone_no[0].number}<br>`,
                             `   <span class="fw-bold">Address:</span> ${element.address}<br>`,
                             `   <span class="fw-bold">Description:</span> ${element.description}<br>`,
                             `   <span class="fw-bold">Amount Owed:</span> ₦${editPrice(element.amount_owed)}<br>`,
@@ -395,8 +396,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     debtor_phone_no: cust_phone_no, debtor_address: cust_address, debtor_state: cust_state,
                     debtor_description: cust_description, debt_amount: cust_amount_owed,
                     name_in_cart: initial_cust_id, amount_paid: money_brought};                    
-
-                    fetch("add_debtor/", {
+                    
+                    fetch("/add_debtor/", {
                         method: "POST",
                         headers: {'X-CSRFToken': csrftoken,
                                     "Content-Type": "application/json"},
@@ -445,7 +446,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const debt_data = {d_phone_no: debtor_phone, d_new_debt: new_debt, d_total_debt: total_debt,
                     customer_name: initial_cust_id, amount_brought: money_brought}
                     
-                    fetch("update_debtor/", {
+                    fetch("/update_debtor/", {
                         method: "POST",
                         headers: {'X-CSRFToken': csrftoken,
                                     "Content-Type": "application/json"},
