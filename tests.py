@@ -6,10 +6,13 @@ product = {"name_of": "Victor",
 
 # allof = {inst : product["all_of"][inst] for inst in product["all_of"] if inst.startswith("animal")}
 # print(allof)
-from bson.decimal128 import Decimal128, create_decimal128_context
-from decimal import Decimal
-value = Decimal("23200.349") * Decimal("2.5")
-print(value.quantize(Decimal("1.00")))
+# from decimal import Decimal
+# value = Decimal("23200.349") * Decimal("2.5")
+# print(value.quantize(Decimal("1.00")))
+
+value1 = float("30.0")
+
+print(int(value1))
 
 # price_str = str(price)
 # rev_price = price_str[::-1]

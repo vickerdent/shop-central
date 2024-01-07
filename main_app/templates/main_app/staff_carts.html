@@ -90,9 +90,11 @@
                 <label for="last_name">Last Name</label>
               </div>
             </div>
-            <div class="form-floating mb-3">
-              <input type="email" class="form-control" id="email" placeholder="name@example.com">
-              <label for="email">Email address</label>
+            <div>
+              <div class="form-floating mb-3">
+                <input type="email" class="form-control" id="email" placeholder="name@example.com">
+                <label for="email">Email address</label>
+              </div>
             </div>
             <div class="form-floating mb-3">
               <select class="form-select" id="gender" aria-label="Gender label select">
@@ -117,22 +119,30 @@
                 <label for="phone_number">Phone Number</label>
               </div>
             </div>
-            <div class="form-floating mb-3">
-              <input type="text" class="form-control" id="address" placeholder="No. 12, Super way">
-              <label for="address">Address</label>
+            <div>
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="address" placeholder="No. 12, Super way">
+                <label for="address">Address</label>
+              </div>
             </div>
-            <div class="form-floating mb-1">
-              <input type="text" class="form-control" id="state" placeholder="FCT">
-              <label for="state">State</label>
+            <div>
+              <div class="form-floating mb-1">
+                <input type="text" class="form-control" id="state" placeholder="FCT">
+                <label for="state">State</label>
+              </div>
             </div>
-            <div class="form-floating mb-1">
-              <input type="text" readonly class="form-control-plaintext" id="amount_owed" placeholder="" value="">
-              <label for="amount_owed">Amount Owed</label>
+            <div>
+              <div class="form-floating mb-1">
+                <input type="text" readonly class="form-control-plaintext" id="amount_owed" placeholder="" value="">
+                <label for="amount_owed">Amount Owed</label>
+              </div>
             </div>
             <input type="hidden" id="hidden_amount_owed">
-            <div class="form-floating mb-3">
-              <input type="text" class="form-control" id="description" placeholder="FCT">
-              <label for="description">Description</label>
+            <div>
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="description" placeholder="Describe debtor">
+                <label for="description">Description</label>
+              </div>
             </div>
           </div>
 
@@ -192,20 +202,19 @@
         <div class="modal-body">
           <br>
           <div class="d-flex justify-content-center">
-            <video muted width="150" height="150" src="{% static 'app_media/verified1.mp4' %}" id="checkVideo">
+            <video muted width="75" height="75" src="{% static 'app_media/verified.mp4' %}" id="checkVideo">
               Checked icon: Transaction successful
             </video>
           </div>
           <br>
           <h3 class="d-flex justify-content-center ms-5 me-5">Transaction Successful</h3>
           <p class="fs-5 d-flex justify-content-center">Tran. ID: <span id="txnInfo"></span></p>
-          <p class="fs-5 d-flex justify-content-center">Ref. No.: <span id="refNo"></span></p> <br>
+          <p class="fs-5 mt-0 d-flex justify-content-center">Ref. No.: <span id="refNo"></span></p>
           <p class="fs-5 d-flex justify-content-center">You can give the customer his/her goods.</p>
           <p class="fs-5 d-flex justify-content-center" id="descrip_text"><span id="change"></span></p>
           <p class="fs-5 d-flex justify-content-center" id="more_text"></p>
-        </div>
-        <div class="modal-footer">
-            <a class="btn btn-light">OK</a>
+          <br>
+          <button type="button" class="btn btn-light d-flex justify-content-center" id="refresh_button">OK</button>
         </div>
       </div>
     </div>

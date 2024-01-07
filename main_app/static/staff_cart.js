@@ -145,7 +145,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 amountPaid: element.getAttribute("data-amtbrought")};
                 const checkVideo = document.getElementById("checkVideo");
                 const confirm_purchase_modal = bootstrap.Modal.getInstance(document.getElementById('confirmPurchaseModal'));
-                const txnSuccessfulModal = bootstrap.Modal.getInstance(document.getElementById('txnSuccessfulModal'));
+                const txnSuccessfulModal = new bootstrap.Modal(document.getElementById('txnSuccessfulModal'), {
+                    keyboard: false
+                });
 
                 if (custType.value === "ok") {
                     // Customer owes nothing nor is owed anything
@@ -303,24 +305,162 @@ document.addEventListener("DOMContentLoaded", () => {
             cancelDebt.setAttribute("data-identify", identity)
         })
 
-        document.getElementById("description").onkeyup = () => {
-            if (document.getElementById("description").value.length > 0) {
-                var trialval = true;
-                document.querySelectorAll("#new_debtor_form input").forEach(input_field => {
-                    if (input_field.value.length > 0) {
-                        trialval = true;
-                    } else {
-                        trialval = false;
+        document.getElementById("first_name").onkeyup = () => {
+            if (document.getElementById("first_name").value.trim().length > 0) {
+                document.getElementById("first_name").classList.remove("is-invalid");
+                if (document.getElementById("description").value.trim().length > 0) {
+                    if (document.getElementById("last_name").value.trim().length > 0) {
+                        if (document.getElementById("email").value.trim().length > 0) {
+                            if (document.getElementById("phone_number").value.trim().length > 0) {
+                                if (document.getElementById("address").value.trim().length > 0) {
+                                    if (document.getElementById("state").value.trim().length > 0) {
+                                        document.getElementById("submitDebt").disabled = false;
+                                    }
+                                }
+                            }
+                        }
                     }
-                });
-
-                // Finally determine the state of submit button
-                if (trialval) {
-                    document.getElementById("submitDebt").disabled = false;
-                } else {
-                    document.getElementById("submitDebt").disabled = true;
                 }
             } else {
+                document.getElementById("first_name").classList.add('is-invalid');
+                document.getElementById("submitDebt").disabled = true;
+            }
+        }
+
+        document.getElementById("last_name").onkeyup = () => {
+            if (document.getElementById("last_name").value.trim().length > 0) {
+                document.getElementById("last_name").classList.remove("is-invalid");
+                if (document.getElementById("first_name").value.trim().length > 0) {
+                    if (document.getElementById("description").value.trim().length > 0) {
+                        if (document.getElementById("email").value.trim().length > 0) {
+                            if (document.getElementById("phone_number").value.trim().length > 0) {
+                                if (document.getElementById("address").value.trim().length > 0) {
+                                    if (document.getElementById("state").value.trim().length > 0) {
+                                        document.getElementById("submitDebt").disabled = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                document.getElementById("last_name").classList.add('is-invalid');
+                document.getElementById("submitDebt").disabled = true;
+            }
+        }
+
+        document.getElementById("email").onkeyup = () => {
+            if (document.getElementById("email").value.trim().length > 0) {
+                document.getElementById("email").classList.remove("is-invalid");
+                if (document.getElementById("first_name").value.trim().length > 0) {
+                    if (document.getElementById("last_name").value.trim().length > 0) {
+                        if (document.getElementById("description").value.trim().length > 0) {
+                            if (document.getElementById("phone_number").value.trim().length > 0) {
+                                if (document.getElementById("address").value.trim().length > 0) {
+                                    if (document.getElementById("state").value.trim().length > 0) {
+                                        document.getElementById("submitDebt").disabled = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                document.getElementById("email").classList.add('is-invalid');
+                document.getElementById("submitDebt").disabled = true;
+            }
+        }
+
+        document.getElementById("phone_number").onkeyup = () => {
+            if (document.getElementById("phone_number").value.trim().length > 0) {
+                document.getElementById("phone_number").classList.remove("is-invalid");
+                if (document.getElementById("first_name").value.trim().length > 0) {
+                    if (document.getElementById("last_name").value.trim().length > 0) {
+                        if (document.getElementById("email").value.trim().length > 0) {
+                            if (document.getElementById("description").value.trim().length > 0) {
+                                if (document.getElementById("address").value.trim().length > 0) {
+                                    if (document.getElementById("state").value.trim().length > 0) {
+                                        document.getElementById("submitDebt").disabled = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                document.getElementById("phone_number").classList.add('is-invalid');
+                document.getElementById("submitDebt").disabled = true;
+            }
+        }
+
+        document.getElementById("address").onkeyup = () => {
+            if (document.getElementById("address").value.trim().length > 0) {
+                document.getElementById("address").classList.remove("is-invalid");
+                if (document.getElementById("first_name").value.trim().length > 0) {
+                    if (document.getElementById("last_name").value.trim().length > 0) {
+                        if (document.getElementById("email").value.trim().length > 0) {
+                            if (document.getElementById("phone_number").value.trim().length > 0) {
+                                if (document.getElementById("description").value.trim().length > 0) {
+                                    if (document.getElementById("state").value.trim().length > 0) {
+                                        document.getElementById("submitDebt").disabled = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                document.getElementById("address").classList.add('is-invalid');
+                document.getElementById("submitDebt").disabled = true;
+            }
+        }
+
+        document.getElementById("state").onkeyup = () => {
+            if (document.getElementById("state").value.trim().length > 0) {
+                document.getElementById("state").classList.remove("is-invalid");
+                if (document.getElementById("first_name").value.trim().length > 0) {
+                    if (document.getElementById("last_name").value.trim().length > 0) {
+                        if (document.getElementById("email").value.trim().length > 0) {
+                            if (document.getElementById("phone_number").value.trim().length > 0) {
+                                if (document.getElementById("address").value.trim().length > 0) {
+                                    if (document.getElementById("description").value.trim().length > 0) {
+                                        document.getElementById("submitDebt").disabled = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                document.getElementById("state").classList.add('is-invalid');
+                document.getElementById("submitDebt").disabled = true;
+            }
+        }
+
+        document.getElementById("gender").onchange = () => {
+            if (document.getElementById("gender").value) {
+                document.getElementById("gender").classList.remove("is-invalid");
+            }
+        }
+
+        document.getElementById("description").onkeyup = () => {
+            if (document.getElementById("description").value.trim().length > 0) {
+                document.getElementById("description").classList.remove("is-invalid");
+                if (document.getElementById("first_name").value.trim().length > 0) {
+                    if (document.getElementById("last_name").value.trim().length > 0) {
+                        if (document.getElementById("email").value.trim().length > 0) {
+                            if (document.getElementById("phone_number").value.trim().length > 0) {
+                                if (document.getElementById("address").value.trim().length > 0) {
+                                    if (document.getElementById("state").value.trim().length > 0) {
+                                        document.getElementById("submitDebt").disabled = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                document.getElementById("description").classList.add('is-invalid');
                 document.getElementById("submitDebt").disabled = true;
             }
         }
@@ -334,44 +474,65 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const checkVideo = document.getElementById("checkVideo");
                 const update_debtor_modal = bootstrap.Modal.getInstance(document.getElementById('updateDebtorModal'));
-                const txnSuccessfulModal = bootstrap.Modal.getInstance(document.getElementById('txnSuccessfulModal'));
+                const txnSuccessfulModal = new bootstrap.Modal(document.getElementById('txnSuccessfulModal'), {
+                    keyboard: false
+                });
                 
                 if (debt_type.value == "new_debtor") {
                     // Debtor is new and needs to be added to the database
                     
                     if (document.getElementById("first_name").value.trim().length < 2) {
-                        document.getElementById("first_name").classList.add('invalid');
+                        document.getElementById("first_name").classList.add('is-invalid');
                         alert("Enter valid input for customer's first name");
+                        document.getElementById("first_name").focus();
                         return false;
                     }
 
                     if (document.getElementById("last_name").value.trim().length < 2) {
-                        document.getElementById("last_name").classList.add('invalid');
+                        document.getElementById("last_name").classList.add('is-invalid');
                         alert("Enter valid input for customer's last name");
+                        document.getElementById("last_name").focus();
+                        return false;
+                    }
+
+                    if (document.getElementById("email").value.trim().length < 2) {
+                        document.getElementById("email").classList.add('is-invalid');
+                        alert("Enter valid input for customer's email address");
+                        document.getElementById("email").focus();
                         return false;
                     }
 
                     if (document.getElementById("phone_number").value.trim().length < 10) {
-                        document.getElementById("phone_number").classList.add('invalid');
+                        document.getElementById("phone_number").classList.add('is-invalid');
                         alert("Enter valid input for customer's phone number");
+                        document.getElementById("phone_number").focus();
                         return false;
                     }
 
                     if (document.getElementById("address").value.trim().length < 2) {
-                        document.getElementById("address").classList.add('invalid');
+                        document.getElementById("address").classList.add('is-invalid');
                         alert("Enter valid input for customer's address");
+                        document.getElementById("address").focus();
+                        return false;
+                    }
+
+                    if (document.getElementById("state").value.trim().length < 2) {
+                        document.getElementById("state").classList.add('is-invalid');
+                        alert("Enter valid input for customer's state");
+                        document.getElementById("state").focus();
                         return false;
                     }
 
                     if (document.getElementById("description").value.trim().length < 5) {
-                        document.getElementById("description").classList.add('invalid');
+                        document.getElementById("description").classList.add('is-invalid');
                         alert("Enter valid input for customer's description");
+                        document.getElementById("description").focus();
                         return false;
                     }
 
                     if (!(document.getElementById("gender").value)) {
-                        document.getElementById("gender").classList.add('invalid');
-                        alert("Select Male or Female");
+                        document.getElementById("gender").classList.add('is-invalid');
+                        document.getElementById("gender").focus();
                         return false;
                     }
 
@@ -545,6 +706,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 })
             }
         })
+    }
+
+    const txnSuccessfulModal = document.getElementById('txnSuccessfulModal')
+    if (txnSuccessfulModal) {
+        document.addEventListener("click", event => {
+            const element = event.target;
+
+            if (element.id == "refresh_button") {
+                location.reload();
+            }
+        });
     }
 });
 

@@ -25,7 +25,7 @@ def payment_callback(session, customer_name, transaction_doc, slugs_list, quants
     # Update all products respectively in cart at checkout
     for index, slug in enumerate(slugs_list):
         products_collection.update_one({"slug": slug},
-                                       {"$inc": {"singles_stock": -int(quants_list[index])}},
+                                       {"$inc": {"singles_stock": -int(float(quants_list[index]))}},
                                        session=session)
     
     # Delete cart from collection

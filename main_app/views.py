@@ -918,8 +918,8 @@ def add_debtor(request):
                 reference_no = str(datetime.now()) + code_generator()
                 curr_customer = staff_carts_collection.find_one({"name_of_buyer": name_in_cart,
                                                                  "staff_id": a_user.email})
-
-                new_transaction = Transaction("Staff", new_debtor.first_name + " " + new_debtor.last_name, a_user.email,
+                # Or Cash Payment
+                new_transaction = Transaction("Goods Purchase", "Staff", new_debtor.first_name + " " + new_debtor.last_name, a_user.email,
                                               curr_customer["items"], datetime.now(), curr_customer["total_amount"],
                                               amount_paid, reference_no, phone_number)
 
@@ -985,7 +985,7 @@ def update_debtor(request):
                 # Create reference number for information storage
                 reference_no = str(datetime.now()) + code_generator()
 
-                new_transaction = Transaction("Staff", old_debtor.first_name + " " + old_debtor.last_name, a_user.email,
+                new_transaction = Transaction("Goods Purchase", "Staff", old_debtor.first_name + " " + old_debtor.last_name, a_user.email,
                                               curr_customer["items"], datetime.now(), curr_customer["total_amount"],
                                               amount_brought, reference_no, cust_phone_no)
 
@@ -1054,7 +1054,7 @@ def make_payment(request):
                 curr_customer = staff_carts_collection.find_one({"name_of_buyer": customer_name,
                                                                  "staff_id": a_user.email})
 
-                new_transaction = Transaction("Staff", customer_name, a_user.email, curr_customer["items"],
+                new_transaction = Transaction("Goods Purchase", "Staff", customer_name, a_user.email, curr_customer["items"],
                                                   datetime.now(), curr_customer["total_amount"], amount_paid,
                                                   reference_no)
 

@@ -245,12 +245,13 @@ class Transaction:
     buyer_id should be phone numbers, only necessary
     if buyer is owing money
     """
-    __slot__ = ("txn_type", "name_of_buyer", "staff_id", "items", "total_amount", "checkout_date",
+    __slot__ = ("txn_type", "txn_initiator", "name_of_buyer", "staff_id", "items", "total_amount", "checkout_date",
                 "amount_paid", "reference_no", "buyer_id")
     
-    def __init__(self, txn_type, name_of_buyer, staff_id, items, checkout_date: datetime, total_amount,
+    def __init__(self, txn_type, txn_initiator, name_of_buyer, staff_id, items, checkout_date: datetime, total_amount,
                  amount_paid, reference_no, buyer_id = "") -> None:
         self.txn_type = txn_type
+        self.txn_initiator = txn_initiator
         self.name_of_buyer = name_of_buyer
         self.staff_id = staff_id
         self.items = items
@@ -269,13 +270,14 @@ class Transaction:
         """
         return {
             "txn_type": self.txn_type,
+            "txn_by": self.txn_initiator,
             "name_of_buyer": self.name_of_buyer,
             "buyer_id": self.buyer_id,
             "staff_id": self.staff_id,
             "items": self.items,
             "total_amount": str(self.total_amount),
             "amount_paid": str(self.amount_paid),
-            "amount_owed": str(self.amount_owed),
             "checkout_date": self.checkout_date,
-            "reference_no": self.reference_no
+            "reference_no": self.reference_no,
+            "amount_owed": str(self.amount_owed)
         }
