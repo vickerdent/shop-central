@@ -32,17 +32,34 @@ def payment_callback(session, customer_name, transaction_doc, slugs_list, quants
     staff_carts_collection.delete_one({"name_of_buyer": customer_name, 
                                        "staff_id": transaction_doc["staff_id"]}, session=session)
 
-    # Get reference to debtor collection, if variable is supplied and apply operation
+    # Get reference to debtor collections, if variable is supplied and apply operation
     if debtor_doc:
         debtors_collection = session.client.JDS.debtors
         debtors_collection.update_one({"phone_no.number": debtor_doc["phone_no"][0]["number"]},
                                       {debtor_doc}, upsert=True)
+        
+        debtor_records_collection = session.client.JDS.debtor_records
+        debtor_records_collection.insert_one({"txn_date": transaction_doc["checkout_date"], "buyer_id": transaction_doc["buyer_id"],
+                                              "txn_type": transaction_doc["txn_type"], "txn_reference": transaction_doc["reference_no"],
+                                              "txn_amount": transaction_doc["total_amount"], "amount_paid": transaction_doc["amount_paid"],
+                                              "balance": debtor_doc["amount_owed"]})
 
     # Add new transaction to transactions collection
     transactions_collection.insert_one(transaction_doc, session=session)
 
     return
 
+def standardize_phone(d_phone_number: str):
+    """
+    Function to standardize phone numbers as
+    10 digits, for use with country codes
+    """
+    if len(d_phone_number) == 11:
+        processed_phone = d_phone_number[1:]
+    else:
+        processed_phone = d_phone_number
+
+    return processed_phone
 
 def correct_id(name) -> str:
     """ Used to introduce correct

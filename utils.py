@@ -23,6 +23,7 @@ products_collection = database["products"]
 staff_carts_collection = database["staff_carts"]
 transactions_collection = database["transactions"]
 debtors_collection = database["debtors"]
+debtor_records_collection = database["debtor_records"]
 
 # human TheUser("Victor Abuka", "vickerdent@gmail.com", "vickerdent", "Male", "08080360932",
 #                 "No. 42, Winners' Way, Dawaki, Abuja", "F.C.T.", [], True, True, True)
@@ -31,7 +32,7 @@ debtors_collection = database["debtors"]
 # print(first.inserted_id, first.acknowledged)
 
 # Create index
-# what = transactions_collection.create_index([("reference_no", pymongo.ASCENDING)], unique=True)
+# what = debtor_records_collection.create_index([("buyer_id", pymongo.ASCENDING)])
 # what2 = debtors_collection.create_index([("phone_no.number", pymongo.ASCENDING)], unique=True)
 # print(what)
 
@@ -48,9 +49,11 @@ def code_generator():
     fourth_elem = random.randint(1, 9)
     fifth_elem = random.randint(1, 9)
     sixth_elem = random.randint(1, 9)
+    seventh_elem = random.choice(alpha_num_list)
+    eight_elem = random.randint(1, 9)
 
     char_list = str(first_elem) + str(second_elem) + str(third_elem) + \
-    str(fourth_elem) + str(fifth_elem) + str(sixth_elem)
+    str(fourth_elem) + str(fifth_elem) + str(sixth_elem) + str(seventh_elem) + str(eight_elem)
 
     return char_list
 

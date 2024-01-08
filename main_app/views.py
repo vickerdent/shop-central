@@ -11,7 +11,7 @@ from bson.son import SON
 import pymongo, json
 from decimal import Decimal
 
-from .o_functions import humans, payment_callback
+from .o_functions import humans, payment_callback, standardize_phone
 from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, \
     EditProfileImageForm, EditNameForm, AddProductForm, CarouselForm, EditProductForm, AddDebtorForm
 from .models import TheUser, Buyer, Product, StaffCart, Carousel, Transaction
@@ -125,7 +125,7 @@ def sign_up(request):
             last_name = form.cleaned_data.get("last_name")
             gender = form.cleaned_data.get("gender")
             dialing_code = form.cleaned_data.get("dialing_code")
-            phone_number = form.cleaned_data.get("phone_number")
+            phone_number = standardize_phone(form.cleaned_data.get("phone_number"))
             address = form.cleaned_data.get("address")
             state = form.cleaned_data.get("state")
 
@@ -681,6 +681,7 @@ def find_staff_cart(request):
                             if updateResult.modified_count == 1:
                                 return JsonResponse(data={"result": 1})
                             else:
+                                print("Error here")
                                 return JsonResponse(data={"result": False})
 
             # Create dictionary for new item
@@ -725,6 +726,7 @@ def find_staff_cart(request):
 
             return JsonResponse(data={"result": True})
     else:
+        print("Error here instead")
         return JsonResponse(data={"result": False})
     
 # Create view to check if given product is in cart already
@@ -831,7 +833,7 @@ def debtors(request):
             email = form.cleaned_data["email"]
             gender = form.cleaned_data["gender"]
             dialing_code = form.cleaned_data["dialing_code"]
-            phone_number = form.cleaned_data["phone_number"]
+            phone_number = standardize_phone(form.cleaned_data["phone_number"])
             address = form.cleaned_data["address"]
             state = form.cleaned_data["state"]
             amount_owed = form.cleaned_data["amount_owed"]
@@ -892,7 +894,7 @@ def add_debtor(request):
                 email = post_data.get("debtor_email")
                 gender = post_data.get("debtor_gender")
                 dialing_code = post_data.get("debtor_dialing_code")
-                phone_number = post_data.get("debtor_phone_no")
+                phone_number = standardize_phone(post_data.get("debtor_phone_no"))
                 address = post_data.get("debtor_address")
                 state = post_data.get("debtor_state")
                 # Don't forget to convert to string before storing
@@ -919,6 +921,9 @@ def add_debtor(request):
                 curr_customer = staff_carts_collection.find_one({"name_of_buyer": name_in_cart,
                                                                  "staff_id": a_user.email})
                 # Or Cash Payment
+                # Date - Buyer ID - Transaction Type - Transaction Reference - Transaction Amount - Amount Paid - Balance
+                # Today - 0909233 - Goods Purchase - all that reference - 5000 - 4500 - 500 (or inc current debt)
+                # Today - 0909233 - Cash Payment - all that reference - 500 - 500 - 0 (or dec current debt)
                 new_transaction = Transaction("Goods Purchase", "Staff", new_debtor.first_name + " " + new_debtor.last_name, a_user.email,
                                               curr_customer["items"], datetime.now(), curr_customer["total_amount"],
                                               amount_paid, reference_no, phone_number)

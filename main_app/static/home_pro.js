@@ -1264,7 +1264,16 @@ document.addEventListener("DOMContentLoaded", () => {
                             badge.id = "noOfCarts";
                             document.querySelector("#theStaffCart").append(badge);
                         } else {
-                            noOfCarts.textContent = parseInt(document.querySelector("#noOfCustomers").value) + 1
+                            var cust_array = [];
+                            var i;
+                            for (i = 0; i < document.getElementById("cartList").options.length; i++) {
+                                cust_array.push(document.getElementById("cartList").options[i].value)
+                            }
+                            console.log(cust_array)
+                            console.log(custName.value)
+                            if (!(cust_array.includes(custName.value))) {
+                                noOfCarts.textContent = parseInt(document.querySelector("#noOfCustomers").value) + 1
+                            }
                         }
                         successfulerToast.show()
                         productModal.hide()
@@ -1585,6 +1594,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             const quantField = document.getElementById("prodquantity");
             quantField.value = 1;
+            quantField.disabled = false;
             const discountDiv = document.getElementById("discounting");
             if (discountDiv) {
                 discountDiv.remove();

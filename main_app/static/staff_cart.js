@@ -30,26 +30,29 @@ document.addEventListener("DOMContentLoaded", () => {
             idNum = parseInt(currID.split("_")[1])
         }
 
-        document.getElementById(`amountPaid_${idNum}`).onkeyup = () => {
-            if (document.getElementById(`amountPaid_${idNum}`).value.length > 0 && !(document.getElementById(`amountPaid_${idNum}`).value.startsWith("0")) && parseFloat(document.getElementById(`amountPaid_${idNum}`).value) > 0) {
-                document.getElementById(`purchaseOrder_${idNum}`).disabled = false;
-                var moneyBrought = parseFloat(document.getElementById(`amountPaid_${idNum}`).value);
-                var amountOwed = parseFloat(document.getElementById(`totalAmount_${idNum}`).value) - moneyBrought
-                document.getElementById(`amountOwed_${idNum}`).value = amountOwed.toFixed(2)
-                var strAmount = amountOwed.toFixed(2)
-                if (strAmount <= parseFloat(0.0)) {
-                    document.getElementById(`owed_${idNum}`).textContent = editPrice("0.00")
+        const pay_amount = document.getElementById(`amountPaid_${idNum}`)
+        if (pay_amount) {
+            document.getElementById(`amountPaid_${idNum}`).onkeyup = () => {
+                if (document.getElementById(`amountPaid_${idNum}`).value.length > 0 && !(document.getElementById(`amountPaid_${idNum}`).value.startsWith("0")) && parseFloat(document.getElementById(`amountPaid_${idNum}`).value) > 0) {
+                    document.getElementById(`purchaseOrder_${idNum}`).disabled = false;
+                    var moneyBrought = parseFloat(document.getElementById(`amountPaid_${idNum}`).value);
+                    var amountOwed = parseFloat(document.getElementById(`totalAmount_${idNum}`).value) - moneyBrought
+                    document.getElementById(`amountOwed_${idNum}`).value = amountOwed.toFixed(2)
+                    var strAmount = amountOwed.toFixed(2)
+                    if (strAmount <= parseFloat(0.0)) {
+                        document.getElementById(`owed_${idNum}`).textContent = editPrice("0.00")
+                    } else {
+                        document.getElementById(`owed_${idNum}`).textContent = editPrice(strAmount)
+                    }
+                    
                 } else {
+                    document.getElementById(`purchaseOrder_${idNum}`).disabled = true;
+                    var moneyBrought = parseFloat(0);
+                    var amountOwed = parseFloat(document.getElementById(`totalAmount_${idNum}`).value) - moneyBrought
+                    document.getElementById(`amountOwed_${idNum}`).value = amountOwed.toFixed(2)
+                    var strAmount = amountOwed.toFixed(2)
                     document.getElementById(`owed_${idNum}`).textContent = editPrice(strAmount)
                 }
-                
-            } else {
-                document.getElementById(`purchaseOrder_${idNum}`).disabled = true;
-                var moneyBrought = parseFloat(0);
-                var amountOwed = parseFloat(document.getElementById(`totalAmount_${idNum}`).value) - moneyBrought
-                document.getElementById(`amountOwed_${idNum}`).value = amountOwed.toFixed(2)
-                var strAmount = amountOwed.toFixed(2)
-                document.getElementById(`owed_${idNum}`).textContent = editPrice(strAmount)
             }
         }
     })

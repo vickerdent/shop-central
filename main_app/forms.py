@@ -60,7 +60,7 @@ class SignUpForm(UserCreationForm):
         attrs={"placeholder":"choose", "class":"form-select", "name": "gender"}), label="Gender")
     dialing_code = forms.ChoiceField(required=True, choices=COUNTRY_CODE, widget=forms.widgets.Select(
         attrs={"placeholder":"choose", "class":"form-select", "name": "dialing_code"}), label="Country Code")
-    phone_number = forms.CharField(label="Phone Number", required=True, max_length=11, widget=forms.widgets.TextInput(
+    phone_number = forms.CharField(label="Phone Number", required=True, min_length=10, max_length=11, widget=forms.widgets.TextInput(
         attrs={"name": "phone_number", "class": "form-control", "placeholder":"08058482381", "autocomplete": "off"}),
         label_suffix="")
     address = forms.CharField(label="Address", required=True, max_length=1000, widget=forms.widgets.TextInput(
@@ -772,7 +772,7 @@ class AddDebtorForm(forms.Form):
     
     dialing_code = forms.ChoiceField(required=True, choices=COUNTRY_CODE, widget=forms.widgets.Select(
         attrs={"placeholder":"choose", "class":"form-select", "name": "dialing_code"}), label="Country Code")
-    phone_number = forms.CharField(label="Phone Number", required=True, max_length=11, widget=forms.widgets.TextInput(
+    phone_number = forms.CharField(label="Phone Number", required=True, min_length=10, max_length=11, widget=forms.widgets.TextInput(
         attrs={"name": "phone_number", "class": "form-control", "placeholder":"08058482381", "autocomplete": "off"}),
         label_suffix="")
     address = forms.CharField(label="Address", required=True, max_length=1000, widget=forms.widgets.TextInput(

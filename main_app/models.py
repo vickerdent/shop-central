@@ -112,7 +112,7 @@ class Product:
     depending on how the product is produced
 
     Note that price-related variables accept strings
-    to convert to their decimals
+    to convert to their decimals before finally storing as strings
     """
     __slot__ = ("brand_name", "product_name", "size", "product_image", "tags", "retail_price", "wholesale_price",
                 "is_discount", "discount_retail_price", "has_bulk", "bulk_prices", "bulk_types", "nos_in_bulk", "bulk_images",
@@ -242,6 +242,7 @@ class Transaction:
 
     Note that price-related variables accept strings
     to convert to their decimals.
+
     buyer_id should be phone numbers, only necessary
     if buyer is owing money
     """
