@@ -58,14 +58,17 @@
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content text-light">
         <div class="modal-body">
-          <div class="d-flex justify-content-center">
-            <div class="card" style="width: 29rem; background-color: darkred;">
-              <div class="mt-1 mb-2 d-flex justify-content-center">
-                <img src="{% static 'app_media/warning.png' %}" class="" alt="Warning Image" width="25px" height="25px">
+          <div id="warn_user">
+            <div class="d-flex justify-content-center">
+              <div class="card" style="width: 29rem; background-color: darkred;">
+                <div class="mt-1 mb-2 d-flex justify-content-center">
+                  <img src="{% static 'app_media/warning.png' %}" class="" alt="Warning Image" width="25px" height="25px">
+                </div>
+                <p class="mt-0 mb-0 d-flex justify-content-center">Additional Customer information is required.</p>
+                <p class="d-flex justify-content-center">Customer owes money and must be updated accordingly.</p>
               </div>
-              <p class="mt-0 mb-0 d-flex justify-content-center">Additional Customer information is required.</p>
-              <p class="d-flex justify-content-center">Customer owes money and must be updated accordingly.</p>
             </div>
+            <br>
           </div>
           <br>
           <!-- buttons for existing and new debtors -->
@@ -115,7 +118,7 @@
                 <label for="dialing_code">Country Code</label>
               </div>
               <div class="form-floating">
-                <input type="text" class="form-control" id="phone_number" placeholder="name">
+                <input type="text" class="form-control" id="phone_number" placeholder="name" minlength="10" maxlength="11">
                 <label for="phone_number">Phone Number</label>
               </div>
             </div>
@@ -211,7 +214,7 @@
           <p class="fs-5 d-flex justify-content-center">Tran. ID: <span id="txnInfo"></span></p>
           <p class="fs-5 mt-0 d-flex justify-content-center">Ref. No.: <span id="refNo"></span></p>
           <p class="fs-5 d-flex justify-content-center">You can give the customer his/her goods.</p>
-          <p class="fs-5 d-flex justify-content-center" id="descrip_text"><span id="change"></span></p>
+          <p class="fs-5 d-flex justify-content-center" id="descrip_text"></p>
           <p class="fs-5 d-flex justify-content-center" id="more_text"></p>
           <br>
           <div class="d-flex justify-content-center">

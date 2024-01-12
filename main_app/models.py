@@ -280,5 +280,5 @@ class Transaction:
             "amount_paid": str(self.amount_paid),
             "checkout_date": self.checkout_date,
             "reference_no": self.reference_no,
-            "amount_owed": str(self.amount_owed)
+            "balance": str(self.amount_owed)
         }

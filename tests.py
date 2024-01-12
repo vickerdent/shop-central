@@ -5,16 +5,16 @@ product = {"name_of": "Victor",
 
 # allof = {inst : product["all_of"][inst] for inst in product["all_of"] if inst.startswith("animal")}
 # print(allof)
-# from decimal import Decimal
-# value = Decimal("23200.349") * Decimal("2.5")
-# print(value.quantize(Decimal("1.00")))
+from decimal import Decimal
+value = Decimal("") + Decimal("0.00")
+print(value)
 
-inputed_phone = "8036069832"
-if len(inputed_phone) == 11:
-    processed_phone = inputed_phone[1:]
-else:
-    processed_phone = inputed_phone
+# inputed_phone = "8036069832"
+# if len(inputed_phone) == 11:
+#     processed_phone = inputed_phone[1:]
+# else:
+#     processed_phone = inputed_phone
 
-print(processed_phone)
+# print(processed_phone)
 
 

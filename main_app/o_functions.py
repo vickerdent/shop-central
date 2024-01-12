@@ -36,7 +36,7 @@ def payment_callback(session, customer_name, transaction_doc, slugs_list, quants
     if debtor_doc:
         debtors_collection = session.client.JDS.debtors
         debtors_collection.update_one({"phone_no.number": debtor_doc["phone_no"][0]["number"]},
-                                      {debtor_doc}, upsert=True)
+                                      {"$set": debtor_doc}, upsert=True)
         
         debtor_records_collection = session.client.JDS.debtor_records
         debtor_records_collection.insert_one({"txn_date": transaction_doc["checkout_date"], "buyer_id": transaction_doc["buyer_id"],

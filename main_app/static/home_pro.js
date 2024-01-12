@@ -1269,8 +1269,6 @@ document.addEventListener("DOMContentLoaded", () => {
                             for (i = 0; i < document.getElementById("cartList").options.length; i++) {
                                 cust_array.push(document.getElementById("cartList").options[i].value)
                             }
-                            console.log(cust_array)
-                            console.log(custName.value)
                             if (!(cust_array.includes(custName.value))) {
                                 noOfCarts.textContent = parseInt(document.querySelector("#noOfCustomers").value) + 1
                             }

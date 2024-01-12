@@ -1115,6 +1115,7 @@ def make_payment(request):
                             
                     new_txn = transactions_collection.find_one({"reference_no": reference_no})
                     la_change = Decimal(str(amount_paid)) - Decimal(curr_customer["total_amount"])
+
                     return JsonResponse(data={"result": "Change", "txn_id": str(new_txn["_id"]),
                                               "ref_no": reference_no, "change": str(la_change)})
                 else:

@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const pay_amount = document.getElementById(`amountPaid_${idNum}`)
         if (pay_amount) {
             document.getElementById(`amountPaid_${idNum}`).onkeyup = () => {
-                if (document.getElementById(`amountPaid_${idNum}`).value.length > 0 && !(document.getElementById(`amountPaid_${idNum}`).value.startsWith("0")) && parseFloat(document.getElementById(`amountPaid_${idNum}`).value) > 0) {
+                if (document.getElementById(`amountPaid_${idNum}`).value.length > 0 && (!(document.getElementById(`amountPaid_${idNum}`).value.startsWith("0")) || (document.getElementById(`amountPaid_${idNum}`).value.startsWith("0") && document.getElementById(`amountPaid_${idNum}`).value.length == 1)) && parseFloat(document.getElementById(`amountPaid_${idNum}`).value) >= 0) {
                     document.getElementById(`purchaseOrder_${idNum}`).disabled = false;
                     var moneyBrought = parseFloat(document.getElementById(`amountPaid_${idNum}`).value);
                     var amountOwed = parseFloat(document.getElementById(`totalAmount_${idNum}`).value) - moneyBrought
@@ -205,16 +205,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                         return response.json()})
                     .then(data => {
-                        const result = data.result
-                        if (result === "Change") {
+                        const dresult = data.result
+                        if (dresult === "Change") {
                             // Successful transaction
                             document.getElementById("descrip_text").style.display = "block"
                             document.getElementById("more_text").style.display = "none"
                             checkVideo.load();
                             document.getElementById("txnInfo").textContent = data.txn_id
                             document.getElementById("refNo").textContent = data.ref_no
-                            document.getElementById("descrip_text").textContent = "Change amount:"
-                            document.getElementById("change").textContent = ` ₦${data.change}`
+                            document.getElementById("descrip_text").textContent = `Change amount: ₦${data.change}`
                             // Call modal for success
                             confirm_purchase_modal.hide();
                             txnSuccessfulModal.show();
@@ -240,6 +239,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         })
     }
+
+    var debtor_phones = []
 
     const updateDebtorModal = document.getElementById('updateDebtorModal')
     if (updateDebtorModal) {
@@ -284,6 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             '</a>'
                           ].join('')
                         document.getElementById("debtor_list").append(li);
+                        debtor_phones.push(element.phone_no[0].number);
                     });
                 } else {
                     failToast.show();
@@ -292,7 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Update the modal's content.
             document.getElementById("amount_owed").value = `₦${editPrice(debtAmt)}`;
-            document.getElementById("amount_owed").value = debtAmt;
+            document.getElementById("hidden_amount_owed").value = debtAmt;
             document.getElementById("first_name").value = recipient;
             document.getElementById("add_debtor").checked = true;
             document.getElementById("update_debtor").checked = false;
@@ -539,6 +541,38 @@ document.addEventListener("DOMContentLoaded", () => {
                         return false;
                     }
 
+                    // Check if phone number already exists
+                    const cust_phone_no = document.getElementById("phone_number").value;
+                    var processed_phone = "";
+                    if (cust_phone_no.length == 11) {
+                        processed_phone = cust_phone_no.slice(1);
+                        document.getElementById("phone_number").value = processed_phone
+                    } else {
+                        processed_phone = cust_phone_no;
+                    }
+
+                    if (debtor_phones.includes(processed_phone)) {
+                        const div_hold = document.getElementById("warn_user");
+                        const wrapper = document.createElement("div");
+                        wrapper.id = "alertError";
+
+                        wrapper.innerHTML = [
+                            '<div class="alert alert-danger d-flex align-items-center alert-dismissible" role="alert">',
+                            '   <svg class="bi flex-shrink-0 me-2" width="16" height="16" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg>',
+                            '   <div>',
+                            '       Debtor with entered phone number already exists!',
+                            '       <br> Enter a unique phone number belonging to debtor or update existing debtor',
+                            '   </div>',
+                            '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+                            '</div>'
+                        ].join('')
+
+                        div_hold.append(wrapper);
+                        document.getElementById("phone_number").classList.add('is-invalid');
+                        document.getElementById("phone_number").focus();
+                        return false;
+                    }
+
                     // submit debtor information, then to transaction view
                     document.getElementById("submitDebt").disabled = true;
                     const cust_first_name = document.getElementById("first_name").value;
@@ -546,7 +580,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     const cust_email = document.getElementById("email").value;
                     const cust_gender = document.getElementById("gender").value;
                     const cust_dialing_code = document.getElementById("dialing_code").value;
-                    const cust_phone_no = document.getElementById("phone_number").value;
                     const cust_address = document.getElementById("address").value;
                     const cust_state = document.getElementById("state").value;
                     const cust_description = document.getElementById("description").value;
@@ -557,7 +590,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     const debt_data = {debtor_first_name: cust_first_name, debtor_last_name: cust_last_name,
                     debtor_email: cust_email, debtor_gender: cust_gender, debtor_dialing_code: cust_dialing_code,
-                    debtor_phone_no: cust_phone_no, debtor_address: cust_address, debtor_state: cust_state,
+                    debtor_phone_no: processed_phone, debtor_address: cust_address, debtor_state: cust_state,
                     debtor_description: cust_description, debt_amount: cust_amount_owed,
                     name_in_cart: initial_cust_id, amount_paid: money_brought};                    
                     
@@ -584,8 +617,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             document.getElementById("txnInfo").textContent = data.txn_id
                             document.getElementById("refNo").textContent = data.ref_no
                             // Make change to the text Content and update previous fetches
-                            document.getElementById("descrip_text").textContent = "Debt amount:"
-                            document.getElementById("change").textContent = ` ₦${data.debt}`
+                            document.getElementById("descrip_text").textContent = `Debt amount: ₦${data.debt}`
                             // Call modal for success
                             update_debtor_modal.hide();
                             txnSuccessfulModal.show();
@@ -633,8 +665,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             document.getElementById("txnInfo").textContent = data.txn_id
                             document.getElementById("refNo").textContent = data.ref_no
                             // Make change to the text Content and update previous fetches
-                            document.getElementById("descrip_text").textContent = "Amount Owed for this TXN:"
-                            document.getElementById("change").textContent = ` ₦${data.debt}`
+                            document.getElementById("descrip_text").textContent = `Amount Owed for this TXN: ₦${data.debt}`
+
                             document.getElementById("more_text").textContent = `Total Amount Owed: ₦${data.total_debt}`
                             // Call modal for success
                             update_debtor_modal.hide();
@@ -717,6 +749,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const element = event.target;
 
             if (element.id == "refresh_button") {
+                const transaction_success = bootstrap.Modal.getInstance(document.getElementById('txnSuccessfulModal'));
+                transaction_success.hide();
                 location.reload();
             }
         });
