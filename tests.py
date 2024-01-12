@@ -5,9 +5,10 @@ product = {"name_of": "Victor",
 
 # allof = {inst : product["all_of"][inst] for inst in product["all_of"] if inst.startswith("animal")}
 # print(allof)
-from decimal import Decimal
-value = Decimal("") + Decimal("0.00")
-print(value)
+# from decimal import Decimal
+# value = Decimal("") + Decimal("0.00")
+
+from datetime import datetime
 
 # inputed_phone = "8036069832"
 # if len(inputed_phone) == 11:
