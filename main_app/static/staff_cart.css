@@ -18,3 +18,7 @@
 .owable {
     color: red;
 }
+
+.span-space {
+    visibility: hidden;
+}

@@ -61,7 +61,7 @@ def standardize_phone(d_phone_number: str):
 
     return processed_phone
 
-def correct_id(name) -> str:
+def correct_book_id(name) -> str:
     """ Used to introduce correct
         IDs for books and other content"""
     the_index = 0
@@ -72,6 +72,21 @@ def correct_id(name) -> str:
             the_index += 1
             d_id += new_input[the_index]
             continue
+        the_index += 1
+    return d_id
+
+def strip_id(id_num: str) -> str:
+    """Eliminates spaces, dashes, colons and periods
+    from id variable"""
+
+    the_index = 0
+    new_input = id_num.strip()
+    d_id = ""
+    while the_index < len(new_input):
+        if new_input[the_index] in [' ', "-", ":", "."]:
+            the_index += 1
+            continue
+        d_id += new_input[the_index]
         the_index += 1
     return d_id
 

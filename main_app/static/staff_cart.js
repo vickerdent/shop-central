@@ -175,8 +175,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             document.getElementById("descrip_text").style.display = "none";
                             document.getElementById("more_text").style.display = "none"
                             checkVideo.load();
-                            document.getElementById("txnInfo").textContent = data.txn_id
-                            document.getElementById("refNo").textContent = data.ref_no
+                            document.getElementById("txnInfo").textContent = ` ${data.txn_id}`
+                            document.getElementById("refNo").textContent = ` ${data.ref_no}`
                             // Call modal for success
                             confirm_purchase_modal.hide();
                             txnSuccessfulModal.show();
@@ -211,8 +211,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             document.getElementById("descrip_text").style.display = "block"
                             document.getElementById("more_text").style.display = "none"
                             checkVideo.load();
-                            document.getElementById("txnInfo").textContent = data.txn_id
-                            document.getElementById("refNo").textContent = data.ref_no
+                            document.getElementById("txnInfo").textContent = ` ${data.txn_id}`
+                            document.getElementById("refNo").textContent = ` ${data.ref_no}`
                             document.getElementById("descrip_text").textContent = `Change amount: ₦${data.change}`
                             // Call modal for success
                             confirm_purchase_modal.hide();
@@ -251,6 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const recipient = button.getAttribute("data-customer")
             const totalAmount = button.getAttribute("data-amount")
+            const amt_brought = button.getAttribute("data-amtbrought")
             const identity = button.getAttribute("data-identify")
             const debtAmt = button.getAttribute("data-owed")
             // If necessary, you could initiate an Ajax request here
@@ -274,7 +275,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         // Obtains the first phone number belonging to each debtor, maybe add dialing code,
                         // and also place value of phone number in hidden input field (for aesthetics)
                         li.innerHTML = [
-                            `<a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-phone="${element.phone_no[0].number}"`,
+                            `<a class="link-light link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover" href="#" role="button" data-phone="${element.phone_no[0].number}"`,
                             `   data-name="${element.first_name} ${element.last_name}" data-descrip="${element.description}" data-oldamount="${element.amount_owed}"`,
                             `   data-newamount="${debtAmt}" data-totalamount="${parseFloat(element.amount_owed) + parseFloat(debtAmt)}" data-btntype="debtor-button"`,
                             `   data-address="${element.address}, ${element.state}" data-dial="${element.phone_no[0].dialing_code}">`,
@@ -308,6 +309,7 @@ document.addEventListener("DOMContentLoaded", () => {
             cancelDebt.setAttribute("data-customer", recipient)
             cancelDebt.setAttribute("data-amount", totalAmount)
             cancelDebt.setAttribute("data-identify", identity)
+            cancelDebt.setAttribute("data-amtbrought", amt_brought)
         })
 
         document.getElementById("first_name").onkeyup = () => {
@@ -563,13 +565,14 @@ document.addEventListener("DOMContentLoaded", () => {
                             '       Debtor with entered phone number already exists!',
                             '       <br> Enter a unique phone number belonging to debtor or update existing debtor',
                             '   </div>',
-                            '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+                            '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" id="close_alert"></button>',
                             '</div>'
                         ].join('')
 
                         div_hold.append(wrapper);
                         document.getElementById("phone_number").classList.add('is-invalid');
-                        document.getElementById("phone_number").focus();
+                        document.getElementById("close_alert").focus();
+                        // document.getElementById("phone_number").focus();
                         return false;
                     }
 
@@ -586,7 +589,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const cust_amount_owed = document.getElementById("hidden_amount_owed").value;
 
                     const initial_cust_id = document.getElementById("cancelDebtButton").dataset.customer;
-                    const money_brought = document.getElementById("cancelDebtButton").dataset.amount;
+                    const money_brought = document.getElementById("cancelDebtButton").dataset.amtbrought;
 
                     const debt_data = {debtor_first_name: cust_first_name, debtor_last_name: cust_last_name,
                     debtor_email: cust_email, debtor_gender: cust_gender, debtor_dialing_code: cust_dialing_code,
@@ -614,8 +617,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             document.getElementById("descrip_text").style.display = "block"
                             document.getElementById("more_text").style.display = "none"
                             checkVideo.load();
-                            document.getElementById("txnInfo").textContent = data.txn_id
-                            document.getElementById("refNo").textContent = data.ref_no
+                            document.getElementById("txnInfo").textContent = ` ${data.txn_id}`
+                            document.getElementById("refNo").textContent = ` ${data.ref_no}`
                             // Make change to the text Content and update previous fetches
                             document.getElementById("descrip_text").textContent = `Debt amount: ₦${data.debt}`
                             // Call modal for success
@@ -633,11 +636,12 @@ document.addEventListener("DOMContentLoaded", () => {
                       
                 } else if (debt_type.value == "old_debtor") {
                     // Debtor is old and only amount owed needs to be modified
+                    document.getElementById("submitDebt").disabled = true;
                     const debtor_phone = document.getElementById("upd_act_phone").value;
                     const new_debt = document.getElementById("upd_act_new_amount").value;
                     const total_debt = document.getElementById("upd_act_total_debt").value;
                     const initial_cust_id = document.getElementById("cancelDebtButton").dataset.customer;
-                    const money_brought = document.getElementById("cancelDebtButton").dataset.amount;
+                    const money_brought = document.getElementById("cancelDebtButton").dataset.amtbrought;
                     
                     const debt_data = {d_phone_no: debtor_phone, d_new_debt: new_debt, d_total_debt: total_debt,
                     customer_name: initial_cust_id, amount_brought: money_brought}
@@ -662,11 +666,10 @@ document.addEventListener("DOMContentLoaded", () => {
                             document.getElementById("descrip_text").style.display = "block"
                             document.getElementById("more_text").style.display = "block"
                             checkVideo.load();
-                            document.getElementById("txnInfo").textContent = data.txn_id
-                            document.getElementById("refNo").textContent = data.ref_no
+                            document.getElementById("txnInfo").textContent = ` ${data.txn_id}`
+                            document.getElementById("refNo").textContent = ` ${data.ref_no}`
                             // Make change to the text Content and update previous fetches
                             document.getElementById("descrip_text").textContent = `Amount Owed for this TXN: ₦${data.debt}`
-
                             document.getElementById("more_text").textContent = `Total Amount Owed: ₦${data.total_debt}`
                             // Call modal for success
                             update_debtor_modal.hide();

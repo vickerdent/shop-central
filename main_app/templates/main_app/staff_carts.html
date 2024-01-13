@@ -211,8 +211,8 @@
           </div>
           <br>
           <h3 class="d-flex justify-content-center ms-5 me-5">Transaction Successful</h3>
-          <p class="fs-5 d-flex justify-content-center">Tran. ID: <span id="txnInfo"></span></p>
-          <p class="fs-5 mt-0 d-flex justify-content-center">Ref. No.: <span id="refNo"></span></p>
+          <p class="fs-5 d-flex justify-content-center">Tran. ID: <span class="span-space">.</span><span id="txnInfo"></span></p>
+          <p class="fs-5 mt-0 d-flex justify-content-center">Ref. No.: <span class="span-space">.</span><span id="refNo"></span></p>
           <p class="fs-5 d-flex justify-content-center">You can give the customer his/her goods.</p>
           <p class="fs-5 d-flex justify-content-center" id="descrip_text"></p>
           <p class="fs-5 d-flex justify-content-center" id="more_text"></p>
@@ -220,6 +220,21 @@
           <div class="d-flex justify-content-center">
             <button type="button" class="btn btn-light" id="refresh_button">OK</button>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Delete modal -->
+  <div class="modal fade" id="confirm_delete_modal" aria-hidden="true" aria-labelledby="confirm_delete_modalLabel2" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-theme="dark">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body text-light">
+          Hide this modal and show the first with the button below.
+        </div>
+        <div class="modal-footer">
+            <a href="#" role="button" class="btn btn-light" data-bs-dismiss="modal">Delete</a>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
       </div>
     </div>
@@ -260,6 +275,9 @@
                     <input type="hidden" name="slug" value="{{ item.product_slug }}">
                   </div>
                 </div>
+                <a class="link-dark link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover" href="#" role="button" data-bs-toggle="modal" data-bs-target="#confirm_delete_modal" data-slug="{{ item.product_slug }}" data-customer="{{ cart.name_of_buyer }}">
+                  Delete
+                </a>
               </div>
               <div class="card-footer text-end text-bg-secondary">
                 Sub-total = ₦{{ item.sub_total|intcomma }}
@@ -279,7 +297,7 @@
               <input type="number" class="form-control" name="amoutPaid_{{ forloop.counter }}" id="amountPaid_{{ forloop.counter }}">
             </div>
           </div>
-          <button type="button" id="purchaseOrder_{{ forloop.counter }}" class="btn btn-primary purchases" 
+          <button type="button" id="purchaseOrder_{{ forloop.counter }}" class="btn btn-light purchases" 
             data-bs-toggle="modal" data-bs-target="#confirmPurchaseModal" data-customer="{{ cart.name_of_buyer }}" data-amount="{{ cart.total_amount }}"
             data-identify="purchaseOrder_{{ forloop.counter }}">
             Pay Order

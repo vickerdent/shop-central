@@ -257,6 +257,7 @@ class Transaction:
         self.staff_id = staff_id
         self.items = items
         self.checkout_date = checkout_date
+        self.friendly_date = str(checkout_date.day) + "/" + str(checkout_date.month) + "/" + str(checkout_date.year)
         self.total_amount = Decimal(str(total_amount))
         self.amount_paid = Decimal(str(amount_paid)) + Decimal("0.00")
         # Note that amount owed can be negative, which will translate to giving customer change

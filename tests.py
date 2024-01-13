@@ -8,7 +8,6 @@ product = {"name_of": "Victor",
 # from decimal import Decimal
 # value = Decimal("") + Decimal("0.00")
 
-from datetime import datetime
 
 # inputed_phone = "8036069832"
 # if len(inputed_phone) == 11:

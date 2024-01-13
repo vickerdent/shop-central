@@ -13,7 +13,6 @@ security_guard = InfisicalClient(token=os.getenv("INFISICAL_URI"))
 uri = security_guard.get_secret("MONGODB_URI").secret_value
 
 client = pymongo.MongoClient(uri, server_api=ServerApi('1'))
-wc_majority = pymongo.WriteConcern("majority", wtimeout=1000)
 
 database = client["JDS"]
 
@@ -39,10 +38,12 @@ debtor_records_collection = database["debtor_records"]
 
 def code_generator():
     """Generate random code"""
+
     alpha_num_list = (
         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'
         'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
         )
+    
     first_elem = random.choice(alpha_num_list)
     second_elem = random.randint(1, 9)
     third_elem = random.randint(1, 9)
@@ -86,3 +87,5 @@ def send_email_code(receiver: str):
         smtp.login(email_sender, email_password)
         smtp.sendmail(email_sender, receiver, msg.as_string())
 
+if __name__ == "__main__":
+    code_generator()

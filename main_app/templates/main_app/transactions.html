@@ -1,0 +1,49 @@
+{% extends "main_app/base.html" %}
+
+{% block title %} Transactions {% endblock %}
+
+<!-- Continue here -->
+{% block content%}
+{% load static %}
+{% load humanize %}
+
+<div>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+              <th scope="col">TXN Date</th>
+              <th scope="col">TXN Type</th>
+              <th scope="col">Customer</th>
+              <th scope="col">Staff ID</th>
+              <th scope="col">Total Amount</th>
+              <th scope="col">Amount Paid</th>
+              <th scope="col">Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for txn in transactions %}
+                <tr>
+                <td>{{ txn.friendly_date }}</td>
+                <td>{{ txn.txn_type }}</td>
+                <td><a href="#" data-details="{{ txn.reference_no }}">{{ txn.name_of_buyer }}</a></td>
+                <td>{{ txn.staff_id }}</td>
+                <td>₦{{ txn.total_amount|intcomma }}</td>
+                <td>₦{{ txn.amount_paid|intcomma }}</td>
+                {% if txn.amount_owed < 0 %}
+                    <td>₦{{ txn.amount_owed|intcomma|cut:"-" }} (Change)</td>
+                {% elif txn.amount_owed == 0 %}
+                    <td>₦{{ txn.amount_owed|intcomma }}</td>
+                {% else %}
+                    <td>₦{{ txn.amount_owed|intcomma }} (Debt)</td>
+                {% endif %}
+                </tr>
+            {% empty %}
+                <tr>
+                    No transactions carried out yet. <a href="{% url 'home' %}">Purchase</a> some products for customers to see them here.
+                </tr>
+            {% endfor %}
+          </tbody>
+    </table>
+</div>
+
+{% endblock %}

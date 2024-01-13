@@ -11,7 +11,7 @@ from bson.son import SON
 import pymongo, json
 from decimal import Decimal
 
-from .o_functions import humans, payment_callback, standardize_phone
+from .o_functions import humans, payment_callback, standardize_phone, strip_id
 from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, \
     EditProfileImageForm, EditNameForm, AddProductForm, CarouselForm, EditProductForm, AddDebtorForm
 from .models import TheUser, Buyer, Product, StaffCart, Carousel, Transaction
@@ -857,10 +857,6 @@ def debtors(request):
             messages.success(request, "Debtor has been added successfully.")
             return redirect("debtors")
         
-        if not a_user.registered:
-            messages.error(request, "Please confirm your email address.")
-            return redirect("confirm_code")
-        
         if a_user.is_admin:
             return render(request, "main_app/debtors.html", {"is_admin": True, "is_staff": True, "form": form, 
                                                           "debtors": full_list, "noOfCarts": noOfCarts})
@@ -917,7 +913,7 @@ def add_debtor(request):
                                    state, datetime.now(), amount_owed, description, [image_url, image_path])
 
                 # Create reference number for information storage
-                reference_no = str(datetime.now()) + code_generator()
+                reference_no = strip_id(str(datetime.now()) + code_generator())
                 curr_customer = staff_carts_collection.find_one({"name_of_buyer": name_in_cart,
                                                                  "staff_id": a_user.email})
                 # Or Cash Payment
@@ -988,7 +984,7 @@ def update_debtor(request):
                                    str(cust_total_debt), curr_debtor["description"], curr_debtor["image"])
                 
                 # Create reference number for information storage
-                reference_no = str(datetime.now()) + code_generator()
+                reference_no = strip_id(str(datetime.now()) + code_generator())
 
                 new_transaction = Transaction("Goods Purchase", "Staff", old_debtor.first_name + " " + old_debtor.last_name, a_user.email,
                                               curr_customer["items"], datetime.now(), curr_customer["total_amount"],
@@ -1055,7 +1051,7 @@ def make_payment(request):
 
                 customer_name = post_data.get("customerName")
                 amount_paid = post_data.get("amountPaid")
-                reference_no = str(datetime.now()) + code_generator()
+                reference_no = strip_id(str(datetime.now()) + code_generator())
                 curr_customer = staff_carts_collection.find_one({"name_of_buyer": customer_name,
                                                                  "staff_id": a_user.email})
 
@@ -1122,5 +1118,41 @@ def make_payment(request):
                     # Customer doesn't exist
                     return JsonResponse(data={"result": "Error"})
                     
+@login_required
+def get_transactions(request):
+    # Get all transactions from DB
+    all_transactions = list(transactions_collection.find().sort("checkout_date", pymongo.DESCENDING))
+    full_list = []
+    for txn in all_transactions:
+        item = Transaction(txn["txn_type"], txn["txn_by"], txn["name_of_buyer"], txn["staff_id"],
+                           txn["items"], txn["checkout_date"], txn["total_amount"], txn["amount_paid"],
+                           txn["reference_no"], txn["buyer_id"])
+        full_list.append(item)
 
+    # Also get all carts for user
+    all_carts = list(staff_carts_collection.find({"staff_id": request.user.email}))
+    noOfCarts = len(all_carts)
+
+    # check that user is registered
+    # then check if user is staff or admin
+    curr_user = user_collection.find_one({"email": request.user.email})
+
+    if curr_user:
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
+                         curr_user["address"], curr_user["state"], curr_user["image"],
+                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+        
+        if a_user.is_admin:
+            return render(request, "main_app/transactions.html", {"is_admin": True, "is_staff": True,
+                                                          "transactions": full_list, "noOfCarts": noOfCarts})
+        elif a_user.is_staff:
+            return render(request, "main_app/transactions.html", {"is_staff": True, "transactions": full_list,
+                                                            "carts": noOfCarts})
+        else:
+            messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
+            return render(request, "main_app/400.html", {})
+    else:
+        messages.error(request, "An internal error occurred. Please try again later.")
+        return render(request, "main_app/404.html", {})
 
