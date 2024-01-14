@@ -1133,7 +1133,6 @@ def get_transactions(request):
     all_carts = list(staff_carts_collection.find({"staff_id": request.user.email}))
     noOfCarts = len(all_carts)
 
-    # check that user is registered
     # then check if user is staff or admin
     curr_user = user_collection.find_one({"email": request.user.email})
 
@@ -1156,3 +1155,25 @@ def get_transactions(request):
         messages.error(request, "An internal error occurred. Please try again later.")
         return render(request, "main_app/404.html", {})
 
+def delete_item(request):
+    # then check if user is staff or admin
+    curr_user = user_collection.find_one({"email": request.user.email})
+
+    if curr_user:
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
+                         curr_user["address"], curr_user["state"], curr_user["image"],
+                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+        
+        if a_user.is_staff or a_user.is_admin:
+            if request.method == "POST":
+                post_data = json.loads(request.body.decode("utf-8"))
+                d_slug = post_data.get("item_slug")
+                d_customer = post_data.get("item_customer")
+                
+        else:
+            messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
+            return render(request, "main_app/400.html", {})
+    else:
+        messages.error(request, "An internal error occurred. Please try again later.")
+        return render(request, "main_app/404.html", {})

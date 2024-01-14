@@ -7,7 +7,7 @@
 {% load static %}
 {% load humanize %}
 
-<div>
+<div class="d-none d-md-block d-lg-block d-xl-block d-xxl-block">
     <table class="table table-hover">
         <thead>
             <tr>
@@ -44,6 +44,10 @@
             {% endfor %}
           </tbody>
     </table>
+</div>
+
+<div class="d-block d-md-none">
+    Only on little devices
 </div>
 
 {% endblock %}

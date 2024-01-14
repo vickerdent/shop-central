@@ -26,6 +26,7 @@ urlpatterns = [
     path('check_product_cart/<str:slug>', views.check_product_in_cart, name='check_product_cart'),
     path('edit_product/<str:slug>', views.edit_product, name='edit_product'),
     path('staff_carts/', views.staff_carts, name='staff_carts'),
+    path('staff_carts/delete_item', views.delete_item, name='delete_item'),
     path('debtors/', views.debtors, name='debtors'),
     path('get_debtors/', views.get_debtors, name='get_debtors'),
     path('add_debtor/', views.add_debtor, name='add_debtor'),

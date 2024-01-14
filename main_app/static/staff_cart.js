@@ -24,8 +24,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.addEventListener("click", event => {
         const element = event.target;
-        // If element.id starts with
-        if (element.id.startsWith("amountPaid")) {
+        if (element.classList.contains("delete-item")) {
+            // alert("Ready to delete")
+            
+        } else if (element.id.startsWith("amountPaid")) {
             const currID = element.id;
             idNum = parseInt(currID.split("_")[1])
         }
@@ -472,7 +474,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        document.addEventListener("click", event => {
+        updateDebtorModal.addEventListener("click", event => {
             const element = event.target;
 
             if (element.id == "submitDebt") {
@@ -748,7 +750,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const txnSuccessfulModal = document.getElementById('txnSuccessfulModal')
     if (txnSuccessfulModal) {
-        document.addEventListener("click", event => {
+        txnSuccessfulModal.addEventListener("click", event => {
             const element = event.target;
 
             if (element.id == "refresh_button") {
@@ -757,6 +759,83 @@ document.addEventListener("DOMContentLoaded", () => {
                 location.reload();
             }
         });
+    }
+
+    // Delete modal
+    const confirm_delete_modal = document.getElementById('confirm_delete_modal')
+    if (confirm_delete_modal) {
+        confirm_delete_modal.addEventListener('show.bs.modal', event => {
+            // Button that triggered the modal
+            const button = event.relatedTarget
+            // Extract info from data-* attributes
+
+            const ze_customer = button.getAttribute("data-customer");
+            const ze_product = button.getAttribute("data-product");
+            const ze_slug = button.getAttribute("data-slug");
+
+            // Update the modal's content.
+            document.getElementById("prod_name").textContent = `${ze_product}`;
+            document.getElementById("cust_name").textContent = `${ze_customer}`;
+
+            const confirm_delete = document.getElementById("confirm_delete");
+            confirm_delete.setAttribute("data-delslug", ze_slug);
+            confirm_delete.setAttribute("data-delcustomer", ze_customer);
+
+        });
+
+        confirm_delete_modal.addEventListener("click", (event) => {
+            const element = event.target;
+
+            if (element.id == "confirm_delete") {
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const item_data = {item_slug: element.dataset.delslug,
+                item_customer: element.dataset.delcustomer}
+                
+                // Remove beginning slash to add new url to current page, instead of base
+                // fetch("delete_item/", {
+                //     method: "POST",
+                //     headers: {'X-CSRFToken': csrftoken,
+                //                 "Content-Type": "application/json"},
+                //     mode: "same-origin",
+                //     body: JSON.stringify(item_data),
+                // })
+                // .then((response) => {
+                //     if (!response.ok) {
+                //         failToast.show();
+                //         throw new Error(`HTTP error! Status: ${response.status}`);
+                //     }
+                //     return response.json()})
+                // .then(data => {
+                //     const result = data.result
+                //     if (result === "Successful") {
+                        // Successful deletion
+                const confirm_delete = bootstrap.Modal.getInstance(document.getElementById('confirm_delete_modal'));
+                confirm_delete.hide();
+                const del_item = document.querySelector(`a[data-slug=${element.dataset.delslug}][data-customer=${element.dataset.delcustomer}]`);
+                var item_sub_total = parseFloat(document.querySelector(`input[name=hidden_item_sub_total][data-slug=${element.dataset.delslug}][data-customer=${element.dataset.delcustomer}]`).value);
+                var cart_total = parseFloat(document.querySelector(`input[name=hidden_total_amount][data-customer=${element.dataset.delcustomer}]`).value);
+                var new_cart_total = cart_total - item_sub_total
+                // Set new cart total (hidden and shown)
+                document.querySelector(`input[name=hidden_total_amount][data-customer=${element.dataset.delcustomer}]`).value = new_cart_total
+                document.querySelector(`span[data-customertotal=${element.dataset.delcustomer}]`).textContent = editPrice(new_cart_total.toString())
+
+                var amount_owed = parseFloat(document.querySelector(`input[name=hidden_amount_owed][data-customer=${element.dataset.delcustomer}]`).value);
+                document.querySelector(`input[type=number][data-customer=${element.dataset.delcustomer}]`).value = "";
+                document.querySelector(`button[type=button][data-customer=${element.dataset.delcustomer}]`).disabled = true;
+                del_item.parentElement.parentElement.parentElement.style.animationPlayState = "running";
+                del_item.parentElement.parentElement.parentElement.addEventListener("animationend", function() {
+                    del_item.parentElement.parentElement.parentElement.remove();
+                })
+                //     } else {
+                //         failToast.show();
+                //     }
+                // })
+                // .catch(error => {
+                //     // failToast.show();
+                //     console.error({"error": error});
+                // });
+            }
+        })
     }
 });
 

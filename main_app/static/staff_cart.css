@@ -22,3 +22,34 @@
 .span-space {
     visibility: hidden;
 }
+
+@keyframes hide {
+    0% {
+        opacity: 1;
+        height: 100%;
+        line-height: 100%;
+        margin-bottom: 10px;
+    }
+
+    75% {
+        opacity: 0;
+        height: 100%;
+        line-height: 100%;
+        margin-bottom: 10px;
+    }
+
+    100% {
+        opacity: 0;
+        height: 0px;
+        line-height: 0px;
+        margin-bottom: 0px;
+    }
+}
+
+.an-item {
+    margin-bottom: 10px;
+    animation-name: hide;
+    animation-duration: 1.3s;
+    animation-fill-mode: forwards;
+    animation-play-state: paused;
+}

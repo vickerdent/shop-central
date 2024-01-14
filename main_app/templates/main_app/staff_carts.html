@@ -226,14 +226,15 @@
   </div>
 
   <!-- Confirm Delete modal -->
-  <div class="modal fade" id="confirm_delete_modal" aria-hidden="true" aria-labelledby="confirm_delete_modalLabel2" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-theme="dark">
+  <div class="modal fade" id="confirm_delete_modal" aria-hidden="true" aria-labelledby="confirm_delete_modalLabel2" tabindex="-1" data-bs-theme="dark">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body text-light">
-          Hide this modal and show the first with the button below.
+          Are you sure you want to delete <span id="prod_name" class="fw-bold"></span>
+          from <span id="cust_name" class="fw-bold"></span>'s cart?
         </div>
         <div class="modal-footer">
-            <a href="#" role="button" class="btn btn-light" data-bs-dismiss="modal">Delete</a>
+            <a href="#" role="button" class="btn btn-light" id="confirm_delete" data-bs-dismiss="modal">Delete</a>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
       </div>
@@ -262,7 +263,8 @@
         <h5 class="card-header">{{ cart.name_of_buyer }}'s Cart</h5>
         <div class="card-body">
           {% for item in cart.items %}
-            <div class="card mb-2" data-bs-theme="light">
+          <div class="an-item">
+            <div class="card" data-bs-theme="light">
               <div class="card-body">
                 <div class="d-flex align-items-center">
                   <div class="flex-shrink-0">
@@ -272,29 +274,31 @@
                     {{ item.product_name }} <br>
                     <strong>Sale Type:</strong> {{ item.sale_type }}  Quantity: {{ item.product_quantity }} <br>
                     <strong>₦{{ item.product_price|intcomma }}</strong>
-                    <input type="hidden" name="slug" value="{{ item.product_slug }}">
+                    <input type="hidden" name="hidden_item_price" data-slug="{{ item.product_slug }}" data-customer="{{ cart.name_of_buyer }}" value="{{ item.product_price }}">
                   </div>
                 </div>
-                <a class="link-dark link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover" href="#" role="button" data-bs-toggle="modal" data-bs-target="#confirm_delete_modal" data-slug="{{ item.product_slug }}" data-customer="{{ cart.name_of_buyer }}">
+                <a class="delete-item link-dark link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover" href="#" role="button" data-bs-toggle="modal" data-bs-target="#confirm_delete_modal" data-product="{{ item.product_name }}" data-slug="{{ item.product_slug }}" data-customer="{{ cart.name_of_buyer }}">
                   Delete
                 </a>
               </div>
               <div class="card-footer text-end text-bg-secondary">
                 Sub-total = ₦{{ item.sub_total|intcomma }}
+                <input type="hidden" name="hidden_item_sub_total" data-slug="{{ item.product_slug }}" data-customer="{{ cart.name_of_buyer }}" value="{{ item.sub_total }}">
               </div>
             </div>
+          </div>
           {% endfor %}
         </div>
         <div class="card-footer text-bg-secondary text-end">
-          <h5>Total Amount Due: ₦{{ cart.total_amount|intcomma }}</h5>
-          <input type="hidden" id="totalAmount_{{ forloop.counter }}" value="{{ cart.total_amount }}">
-          <h5>Total Amount Owed: <span class="owable" >₦<span id="owed_{{ forloop.counter }}">{{ cart.amount_owed|intcomma }}</span></span></h5>
-          <input type="hidden" id="amountOwed_{{ forloop.counter }}" value="{{ cart.amount_owed }}">
+          <h5>Total Amount Due: ₦<span data-customertotal="{{ cart.name_of_buyer }}">{{ cart.total_amount|intcomma }}</span></h5>
+          <input type="hidden" id="totalAmount_{{ forloop.counter }}" name="hidden_total_amount" data-customer="{{ cart.name_of_buyer }}" value="{{ cart.total_amount }}">
+          <h5>Total Amount Owed: <span class="owable" >₦<span id="owed_{{ forloop.counter }}" data-customerowed="{{ cart.name_of_buyer }}">{{ cart.amount_owed|intcomma }}</span></span></h5>
+          <input type="hidden" id="amountOwed_{{ forloop.counter }}" name="hidden_amount_owed" data-customer="{{ cart.name_of_buyer }}" value="{{ cart.amount_owed }}">
           <div class="d-flex justify-content-end mb-2">
             <h5 class="me-2">Amount Paid:</h5>
             <div class="input-group input-group-sm payable">
               <span class="input-group-text" id="inputGroup-sizing-sm">₦</span>
-              <input type="number" class="form-control" name="amoutPaid_{{ forloop.counter }}" id="amountPaid_{{ forloop.counter }}">
+              <input type="number" class="form-control" name="amoutPaid_{{ forloop.counter }}" data-customer="{{ cart.name_of_buyer }}" id="amountPaid_{{ forloop.counter }}">
             </div>
           </div>
           <button type="button" id="purchaseOrder_{{ forloop.counter }}" class="btn btn-light purchases" 
