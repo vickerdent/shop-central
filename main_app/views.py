@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.conf import settings
 from django.http import JsonResponse
 from bson.son import SON
@@ -1121,7 +1121,11 @@ def make_payment(request):
 @login_required
 def get_transactions(request):
     # Get all transactions from DB
-    all_transactions = list(transactions_collection.find().sort("checkout_date", pymongo.DESCENDING))
+    today = datetime.today()
+    oneday = timedelta(days=1)
+    yesterday = today - oneday
+
+    all_transactions = list(transactions_collection.find({"checkout_date": {"$gt": yesterday}}).sort("checkout_date", pymongo.DESCENDING))
     full_list = []
     for txn in all_transactions:
         item = Transaction(txn["txn_type"], txn["txn_by"], txn["name_of_buyer"], txn["staff_id"],
@@ -1171,6 +1175,35 @@ def delete_item(request):
                 d_slug = post_data.get("item_slug")
                 d_customer = post_data.get("item_customer")
                 
+                # Find and delete document if it only has one item in cart. Else, just remove the item
+                delete_op = staff_carts_collection.find_one_and_delete({"name_of_buyer": d_customer,
+                                                                        "staff_id": a_user.email,
+                                                                        "items": {"$size": 1}})
+                
+                if delete_op:
+                    # Customer only had one item in cart. Deleted
+                    return JsonResponse(data={"result": "Successful"})
+                else:
+                    # Customer has other items he/she intends to buy
+                    # Get the particular product's subtotal
+                    the_cart = staff_carts_collection.find_one({"name_of_buyer": d_customer, "staff_id": a_user.email})
+                    product_sub = "0.00"
+                    for item in the_cart["items"]:
+                        if item["product_slug"] == d_slug:
+                            product_sub = item["sub_total"]
+                            break
+                    
+                    cart_total = the_cart["total_amount"]
+                    new_total = Decimal(cart_total) - Decimal(product_sub)
+
+                    # Update cart with new details
+                    staff_carts_collection.update_one({"name_of_buyer": d_customer,
+                                                        "staff_id": a_user.email},
+                                                        {"$pull": {"items": {"product_slug": d_slug}},
+                                                        "$set": {"total_amount": str(new_total),
+                                                                "amount_owed": str(new_total)}})
+                    
+                    return JsonResponse(data={"result": "Successful"})
         else:
             messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
             return render(request, "main_app/400.html", {})

@@ -14,6 +14,13 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("noOfCustomers").value = data.carts.length
     })
 
+    const quantities = document.getElementsByClassName("item-quantity")
+    for (let index = 0; index < quantities.length; index++) {
+        const element = quantities[index];
+        var num_quantity = element.textContent
+        var str_quantity = humanize_float()
+    }
+
     const links = document.getElementsByClassName("purchases");
     for (let index = 0; index < links.length; index++) {
         const element = links[index];
@@ -792,52 +799,76 @@ document.addEventListener("DOMContentLoaded", () => {
                 item_customer: element.dataset.delcustomer}
                 
                 // Remove beginning slash to add new url to current page, instead of base
-                // fetch("delete_item/", {
-                //     method: "POST",
-                //     headers: {'X-CSRFToken': csrftoken,
-                //                 "Content-Type": "application/json"},
-                //     mode: "same-origin",
-                //     body: JSON.stringify(item_data),
-                // })
-                // .then((response) => {
-                //     if (!response.ok) {
-                //         failToast.show();
-                //         throw new Error(`HTTP error! Status: ${response.status}`);
-                //     }
-                //     return response.json()})
-                // .then(data => {
-                //     const result = data.result
-                //     if (result === "Successful") {
-                        // Successful deletion
-                const confirm_delete = bootstrap.Modal.getInstance(document.getElementById('confirm_delete_modal'));
-                confirm_delete.hide();
-                const del_item = document.querySelector(`a[data-slug=${element.dataset.delslug}][data-customer=${element.dataset.delcustomer}]`);
-                var item_sub_total = parseFloat(document.querySelector(`input[name=hidden_item_sub_total][data-slug=${element.dataset.delslug}][data-customer=${element.dataset.delcustomer}]`).value);
-                var cart_total = parseFloat(document.querySelector(`input[name=hidden_total_amount][data-customer=${element.dataset.delcustomer}]`).value);
-                var new_cart_total = cart_total - item_sub_total
-                // Set new cart total (hidden and shown)
-                document.querySelector(`input[name=hidden_total_amount][data-customer=${element.dataset.delcustomer}]`).value = new_cart_total
-                document.querySelector(`span[data-customertotal=${element.dataset.delcustomer}]`).textContent = editPrice(new_cart_total.toString())
-
-                var amount_owed = parseFloat(document.querySelector(`input[name=hidden_amount_owed][data-customer=${element.dataset.delcustomer}]`).value);
-                document.querySelector(`input[type=number][data-customer=${element.dataset.delcustomer}]`).value = "";
-                document.querySelector(`button[type=button][data-customer=${element.dataset.delcustomer}]`).disabled = true;
-                del_item.parentElement.parentElement.parentElement.style.animationPlayState = "running";
-                del_item.parentElement.parentElement.parentElement.addEventListener("animationend", function() {
-                    del_item.parentElement.parentElement.parentElement.remove();
+                fetch("delete_item/", {
+                    method: "POST",
+                    headers: {'X-CSRFToken': csrftoken,
+                                "Content-Type": "application/json"},
+                    mode: "same-origin",
+                    body: JSON.stringify(item_data),
                 })
-                //     } else {
-                //         failToast.show();
-                //     }
-                // })
-                // .catch(error => {
-                //     // failToast.show();
-                //     console.error({"error": error});
-                // });
+                .then((response) => {
+                    if (!response.ok) {
+                        failToast.show();
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json()})
+                .then(data => {
+                    const result = data.result
+                    if (result === "Successful") {
+                        // Successful deletion
+                        const confirm_delete = bootstrap.Modal.getInstance(document.getElementById('confirm_delete_modal'));
+                        confirm_delete.hide();
+                        const del_item = document.querySelector(`a[data-slug=${element.dataset.delslug}][data-customer=${element.dataset.delcustomer}]`);
+                        var item_sub_total = parseFloat(document.querySelector(`input[name=hidden_item_sub_total][data-slug=${element.dataset.delslug}][data-customer=${element.dataset.delcustomer}]`).value);
+                        var cart_total = parseFloat(document.querySelector(`input[name=hidden_total_amount][data-customer=${element.dataset.delcustomer}]`).value);
+                        var new_cart_total = cart_total - item_sub_total
+                        // Set new cart total (hidden and shown)
+                        document.querySelector(`input[name=hidden_total_amount][data-customer=${element.dataset.delcustomer}]`).value = new_cart_total;
+                        document.querySelector(`span[data-customertotal=${element.dataset.delcustomer}]`).textContent = editPrice(new_cart_total.toString());
+                        
+                        // Also set amount owed (hidden and shown) as well as button data attribute
+                        document.querySelector(`input[type=number][data-customer=${element.dataset.delcustomer}]`).value = "";
+                        document.querySelector(`button[type=button][data-customer=${element.dataset.delcustomer}]`).disabled = true;
+                        document.querySelector(`input[name=hidden_amount_owed][data-customer=${element.dataset.delcustomer}]`).value = new_cart_total;
+                        document.querySelector(`span[data-customerowed=${element.dataset.delcustomer}]`).textContent = editPrice(new_cart_total.toString());
+                        document.querySelector(`button[type=button][data-customer=${element.dataset.delcustomer}]`).dataset.amount = new_cart_total;
+                        if (new_cart_total == 0) {
+                            del_item.parentElement.parentElement.parentElement.parentElement.parentElement.remove();
+                        } else {
+                            del_item.parentElement.parentElement.parentElement.style.animationPlayState = "running";
+                            del_item.parentElement.parentElement.parentElement.addEventListener("animationend", function() {
+                                del_item.parentElement.parentElement.parentElement.remove();
+                            })
+                        }
+                    } else {
+                        failToast.show();
+                    }
+                })
+                .catch(error => {
+                    // failToast.show();
+                    console.error({"error": error});
+                });
             }
         })
     }
 });
+
+function humanize_float(d_float) {
+    var point = d_float.indexOf(".")
+    if ((point != -1)) {
+        var whole_value  = d_float.slice(0, point);
+        var decimal_value = d_float.slice(point + 1);
+        if (decimal_value == "5") {
+            
+        } else if (decimal_value == "25") {
+            
+        } else if (decimal_value == "75") {
+            
+        }
+    } else {
+
+    }
+}
 
 function editPrice(dPrice) {
     var point = dPrice.indexOf(".")

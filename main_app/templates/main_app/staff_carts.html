@@ -272,7 +272,7 @@
                   </div>
                   <div class="flex-grow-1 ms-3">
                     {{ item.product_name }} <br>
-                    <strong>Sale Type:</strong> {{ item.sale_type }}  Quantity: {{ item.product_quantity }} <br>
+                    <strong>Sale Type:</strong> {{ item.sale_type }}  Quantity: <span class="item-quantity">{{ item.product_quantity }}</span> <br>
                     <strong>₦{{ item.product_price|intcomma }}</strong>
                     <input type="hidden" name="hidden_item_price" data-slug="{{ item.product_slug }}" data-customer="{{ cart.name_of_buyer }}" value="{{ item.product_price }}">
                   </div>

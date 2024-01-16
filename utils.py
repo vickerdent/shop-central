@@ -31,7 +31,7 @@ debtor_records_collection = database["debtor_records"]
 # print(first.inserted_id, first.acknowledged)
 
 # Create index
-# what = debtor_records_collection.create_index([("buyer_id", pymongo.ASCENDING)])
+# what = staff_carts_collection.create_index([("staff_id", pymongo.ASCENDING)])
 # what2 = debtors_collection.create_index([("phone_no.number", pymongo.ASCENDING)], unique=True)
 # print(what)
 
