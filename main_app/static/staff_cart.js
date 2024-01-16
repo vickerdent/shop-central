@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let index = 0; index < quantities.length; index++) {
         const element = quantities[index];
         var num_quantity = element.textContent
-        var str_quantity = humanize_float()
+        // var str_quantity = humanize_float()
     }
 
     const links = document.getElementsByClassName("purchases");
