@@ -1033,6 +1033,26 @@ def get_debtors(request):
             return JsonResponse(data={"result": True, "debtors": all_debtors})
         else:
             return JsonResponse(data={"result": False})
+    else:
+        return JsonResponse(data={"result": False})
+        
+def get_the_debtor(request, slug):
+    # then check if user is staff or admin
+    curr_user = user_collection.find_one({"email": request.user.email})
+
+    if curr_user:
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
+                         curr_user["address"], curr_user["state"], curr_user["image"],
+                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+        
+        if a_user.is_admin or a_user.is_staff:
+            the_debtor = debtors_collection.find_one({"slug": slug}, {"_id": 0})
+            return JsonResponse(data={"result": True, "debtor": the_debtor})
+        else:
+            return JsonResponse(data={"result": False})
+    else:
+        return JsonResponse(data={"result": False})
 
 @login_required
 def make_payment(request):

@@ -47,6 +47,10 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-light" id="confirmPay">OK</button>
+          <button type="button" id="load_payment" class="btn btn-light">
+            <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
+            <span role="status">Loading...</span>
+          </button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
       </div>
@@ -58,140 +62,150 @@
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content text-light">
         <div class="modal-body">
-          <div id="warn_user">
-            <div class="d-flex justify-content-center">
-              <div class="card" style="width: 29rem; background-color: darkred;">
-                <div class="mt-1 mb-2 d-flex justify-content-center">
-                  <img src="{% static 'app_media/warning.png' %}" class="" alt="Warning Image" width="25px" height="25px">
+          <div class="text-center">
+            <div id="ze_spinner" class="spinner-grow" style="width: 3rem; height: 3rem; margin: 100px;" role="status">
+            </div>
+          </div>
+          <div id="debtor_content">
+            <div id="warn_user">
+              <div class="d-flex justify-content-center">
+                <div class="card" style="width: 29rem; background-color: darkred;">
+                  <div class="mt-1 mb-2 d-flex justify-content-center">
+                    <img src="{% static 'app_media/warning.png' %}" class="" alt="Warning Image" width="25px" height="25px">
+                  </div>
+                  <p class="mt-0 mb-0 d-flex justify-content-center">Additional Customer information is required.</p>
+                  <p class="d-flex justify-content-center">Customer owes money and must be updated accordingly.</p>
                 </div>
-                <p class="mt-0 mb-0 d-flex justify-content-center">Additional Customer information is required.</p>
-                <p class="d-flex justify-content-center">Customer owes money and must be updated accordingly.</p>
               </div>
+              <br>
             </div>
             <br>
-          </div>
-          <br>
-          <!-- buttons for existing and new debtors -->
-          <div class="mb-3">
-            <input type="radio" class="btn-check" name="debtor_type" value="new_debtor" id="add_debtor" autocomplete="off" checked>
-            <label class="btn btn-outline-light" for="add_debtor">Add New Debtor</label>
-            <span class="ms-2" id="hold_update_button">
-              <input type="radio" class="btn-check" name="debtor_type" value="old_debtor" id="update_debtor" autocomplete="off">
-              <label class="btn btn-outline-light" for="update_debtor">Update Existing Debtor</label>
-            </span>
-          </div>
+            <!-- buttons for existing and new debtors -->
+            <div class="mb-3">
+              <input type="radio" class="btn-check" name="debtor_type" value="new_debtor" id="add_debtor" autocomplete="off" checked>
+              <label class="btn btn-outline-light" for="add_debtor">Add New Debtor</label>
+              <span class="ms-2" id="hold_update_button">
+                <input type="radio" class="btn-check" name="debtor_type" value="old_debtor" id="update_debtor" autocomplete="off">
+                <label class="btn btn-outline-light" for="update_debtor">Update Existing Debtor</label>
+              </span>
+            </div>
 
-          <div class="needs-validation" id="new_debtor_form">
-            {% csrf_token %}
-            <div class="input-group mb-3">
-              <div class="form-floating">
-                <input type="text" class="form-control" id="first_name" placeholder="name" required>
-                <label for="first_name">First Name</label>
+            <div class="needs-validation" id="new_debtor_form">
+              {% csrf_token %}
+              <div class="input-group mb-3">
+                <div class="form-floating">
+                  <input type="text" class="form-control" id="first_name" placeholder="name" required>
+                  <label for="first_name">First Name</label>
+                </div>
+                <div class="form-floating">
+                  <input type="text" class="form-control" id="last_name" placeholder="name">
+                  <label for="last_name">Last Name</label>
+                </div>
               </div>
-              <div class="form-floating">
-                <input type="text" class="form-control" id="last_name" placeholder="name">
-                <label for="last_name">Last Name</label>
+              <div>
+                <div class="form-floating mb-3">
+                  <input type="email" class="form-control" id="email" placeholder="name@example.com">
+                  <label for="email">Email address</label>
+                </div>
               </div>
-            </div>
-            <div>
               <div class="form-floating mb-3">
-                <input type="email" class="form-control" id="email" placeholder="name@example.com">
-                <label for="email">Email address</label>
-              </div>
-            </div>
-            <div class="form-floating mb-3">
-              <select class="form-select" id="gender" aria-label="Gender label select">
-                <option selected disabled value="">--Select one--</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
-              <label for="gender">Gender</label>
-            </div>
-            <div class="input-group mb-3">
-              <div class="form-floating">
-                <select class="form-select" id="dialing_code" aria-label="Dialing Code label select">
-                  <option selected value="+234">+234 (Nigeria)</option>
-                  <option value="+233">+233 (Ghana)</option>
-                  <option value="+1">+1 (USA)</option>
-                  <option value="+44">+44 (UK)</option>
+                <select class="form-select" id="gender" aria-label="Gender label select">
+                  <option selected disabled value="">--Select one--</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
                 </select>
-                <label for="dialing_code">Country Code</label>
+                <label for="gender">Gender</label>
+              </div>
+              <div class="input-group mb-3">
+                <div class="form-floating">
+                  <select class="form-select" id="dialing_code" aria-label="Dialing Code label select">
+                    <option selected value="+234">+234 (Nigeria)</option>
+                    <option value="+233">+233 (Ghana)</option>
+                    <option value="+1">+1 (USA)</option>
+                    <option value="+44">+44 (UK)</option>
+                  </select>
+                  <label for="dialing_code">Country Code</label>
+                </div>
+                <div class="form-floating">
+                  <input type="text" class="form-control" id="phone_number" placeholder="name" minlength="10" maxlength="11">
+                  <label for="phone_number">Phone Number</label>
+                </div>
+              </div>
+              <div>
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="address" placeholder="No. 12, Super way">
+                  <label for="address">Address</label>
+                </div>
+              </div>
+              <div>
+                <div class="form-floating mb-1">
+                  <input type="text" class="form-control" id="state" placeholder="FCT">
+                  <label for="state">State</label>
+                </div>
+              </div>
+              <div>
+                <div class="form-floating mb-1">
+                  <input type="text" readonly class="form-control-plaintext" id="amount_owed" placeholder="" value="">
+                  <label for="amount_owed">Amount Owed</label>
+                </div>
+              </div>
+              <input type="hidden" id="hidden_amount_owed">
+              <div>
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="description" placeholder="Describe debtor">
+                  <label for="description">Description</label>
+                </div>
+              </div>
+            </div>
+
+            <div id="update_debtor_div">
+              <input type="text" class="form-control" name="search_debtor" id="search_debtor" autocomplete="off" placeholder="Search debtors">
+              <br>
+              <ul class="list-group" id="debtor_list">
+              </ul>
+            </div>
+            <div id="update_debtor_form">
+              <div class="form-floating">
+                <input type="text" readonly class="form-control-plaintext" id="upd_full_name" placeholder="" value="">
+                <label for="upd_full_name">Full Name</label>
               </div>
               <div class="form-floating">
-                <input type="text" class="form-control" id="phone_number" placeholder="name" minlength="10" maxlength="11">
-                <label for="phone_number">Phone Number</label>
+                <input type="text" readonly class="form-control-plaintext" id="upd_phone" placeholder="" value="">
+                <label for="upd_phone">Phone Number</label>
               </div>
-            </div>
-            <div>
-              <div class="form-floating mb-3">
-                <input type="text" class="form-control" id="address" placeholder="No. 12, Super way">
-                <label for="address">Address</label>
+              <input type="hidden" id="upd_act_phone">
+              <div class="form-floating">
+                <input type="text" readonly class="form-control-plaintext" id="upd_description" placeholder="" value="">
+                <label for="upd_description">Description</label>
               </div>
-            </div>
-            <div>
-              <div class="form-floating mb-1">
-                <input type="text" class="form-control" id="state" placeholder="FCT">
-                <label for="state">State</label>
+              <div class="form-floating">
+                <input type="text" readonly class="form-control-plaintext" id="upd_address" placeholder="" value="">
+                <label for="upd_address">Address</label>
               </div>
-            </div>
-            <div>
-              <div class="form-floating mb-1">
-                <input type="text" readonly class="form-control-plaintext" id="amount_owed" placeholder="" value="">
-                <label for="amount_owed">Amount Owed</label>
+              <div class="form-floating">
+                <input type="text" readonly class="form-control-plaintext" id="upd_old_amount" placeholder="" value="">
+                <label for="upd_old_amount">Old Amount Owed</label>
               </div>
-            </div>
-            <input type="hidden" id="hidden_amount_owed">
-            <div>
-              <div class="form-floating mb-3">
-                <input type="text" class="form-control" id="description" placeholder="Describe debtor">
-                <label for="description">Description</label>
+              <input type="hidden" id="upd_act_old_amount">
+              <div class="form-floating">
+                <input type="text" readonly class="form-control-plaintext" id="upd_new_amount" placeholder="" value="">
+                <label for="upd_new_amount">New Amount Owed</label>
               </div>
+              <input type="hidden" id="upd_act_new_amount">
+              <div class="form-floating">
+                <input type="text" readonly class="form-control-plaintext" id="upd_total_debt" placeholder="" value="">
+                <label for="upd_total_debt">Total Amount Owed</label>
+              </div>
+              <input type="hidden" id="upd_act_total_debt">
             </div>
-          </div>
-
-          <div id="update_debtor_div">
-            <input type="text" class="form-control" name="search_debtor" id="search_debtor" autocomplete="off" placeholder="Search debtors">
-            <br>
-            <ul class="list-group" id="debtor_list">
-            </ul>
-          </div>
-          <div id="update_debtor_form">
-            <div class="form-floating">
-              <input type="text" readonly class="form-control-plaintext" id="upd_full_name" placeholder="" value="">
-              <label for="upd_full_name">Full Name</label>
-            </div>
-            <div class="form-floating">
-              <input type="text" readonly class="form-control-plaintext" id="upd_phone" placeholder="" value="">
-              <label for="upd_phone">Phone Number</label>
-            </div>
-            <input type="hidden" id="upd_act_phone">
-            <div class="form-floating">
-              <input type="text" readonly class="form-control-plaintext" id="upd_description" placeholder="" value="">
-              <label for="upd_description">Description</label>
-            </div>
-            <div class="form-floating">
-              <input type="text" readonly class="form-control-plaintext" id="upd_address" placeholder="" value="">
-              <label for="upd_address">Address</label>
-            </div>
-            <div class="form-floating">
-              <input type="text" readonly class="form-control-plaintext" id="upd_old_amount" placeholder="" value="">
-              <label for="upd_old_amount">Old Amount Owed</label>
-            </div>
-            <input type="hidden" id="upd_act_old_amount">
-            <div class="form-floating">
-              <input type="text" readonly class="form-control-plaintext" id="upd_new_amount" placeholder="" value="">
-              <label for="upd_new_amount">New Amount Owed</label>
-            </div>
-            <input type="hidden" id="upd_act_new_amount">
-            <div class="form-floating">
-              <input type="text" readonly class="form-control-plaintext" id="upd_total_debt" placeholder="" value="">
-              <label for="upd_total_debt">Total Amount Owed</label>
-            </div>
-            <input type="hidden" id="upd_act_total_debt">
           </div>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-light" id="submitDebt">Submit</button>
+            <button type="button" id="load_button" class="btn btn-light" disabled>
+              <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
+              <span role="status">Loading...</span>
+            </button>
             <button type="button" class="btn btn-secondary" data-bs-target="#confirmPurchaseModal" data-bs-toggle="modal" id="cancelDebtButton">Cancel</button>
         </div>
       </div>
@@ -235,6 +249,10 @@
         </div>
         <div class="modal-footer">
             <a href="#" role="button" class="btn btn-light" id="confirm_delete" data-bs-dismiss="modal">Delete</a>
+            <button type="button" id="load_button_two" class="btn btn-light">
+              <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
+              <span role="status">Loading...</span>
+            </button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
       </div>
@@ -273,7 +291,7 @@
                   <div class="flex-grow-1 ms-3">
                     {{ item.product_name }} <br>
                     <strong>Sale Type:</strong> {{ item.sale_type }}  Quantity: <span class="item-quantity">{{ item.product_quantity }}</span> <br>
-                    <strong>₦{{ item.product_price|intcomma }}</strong>
+                    <h5><strong>₦{{ item.product_price|intcomma }}</strong></h5>
                     <input type="hidden" name="hidden_item_price" data-slug="{{ item.product_slug }}" data-customer="{{ cart.name_of_buyer }}" value="{{ item.product_price }}">
                   </div>
                 </div>

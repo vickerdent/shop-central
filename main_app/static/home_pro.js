@@ -46,11 +46,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 const product_name = data.product_name
                 const size = data.size
                 const product_image = data.product_image
-                const tags = data.tags
                 const retail_price = data.retail_price
                 const wholesale_price = data.wholesale_price
                 const is_discount = data.is_discount
-                const discount_retail_price = data.discount_retail_price
                 const is_divisible = data.is_divisible
                 const has_bulk = data.has_bulk
                 // Can loop through bulk if needed
@@ -368,6 +366,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     quantLeft.textContent = `${totalQuantity} available`;
                 }
+                document.getElementById("ze_spinner").style.display = "none";
+                document.getElementById("product_content").style.display = "block";
+                document.getElementById("productInfoModalLabel").style.visibility = "visible";
             })
             .catch(error => {
                 // failToast.show();
@@ -1212,8 +1213,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 const updateToast = bootstrap.Toast.getOrCreateInstance(updateful)
                 const unSuccess = document.getElementById("toastError");
                 const failToast = bootstrap.Toast.getOrCreateInstance(unSuccess)
+
                 // button is the add to cart button that adds item to customer's cart
-                document.getElementById("addToCart").disabled = true;
+                document.getElementById("addToCart").style.display = "none";
+                document.getElementById("load_button").style.display = "block";
+
                 const custName = document.getElementById("openCart");
                 
                 // obtain variables here
@@ -1608,6 +1612,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (dataList) {
                 dataList.remove();
             }
+            document.getElementById("ze_spinner").style.display = "block";
+            document.getElementById("product_content").style.display = "none";
+            document.getElementById("productInfoModalLabel").style.visibility = "hidden";
+            document.getElementById("addToCart").style.display = "block";
+            document.getElementById("load_button").style.display = "none";
         })
     }
 });

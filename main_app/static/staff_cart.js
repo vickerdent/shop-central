@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let index = 0; index < quantities.length; index++) {
         const element = quantities[index];
         var num_quantity = element.textContent
-        // var str_quantity = humanize_float()
+        element.textContent = humanize_float(num_quantity)
     }
 
     const links = document.getElementsByClassName("purchases");
@@ -149,7 +149,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const element = event.target;
 
             if (element.id == "confirmPay") {
-                document.getElementById("confirmPay").disabled = true;
+                document.getElementById("confirmPay").style.display = "none";
+                document.getElementById("load_payment").style.display = "block";
                 const custType = document.getElementById("custType")
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
@@ -246,6 +247,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (varDel) {
                 varDel.remove();
             }
+            document.getElementById("confirmPay").style.display = "block";
+            document.getElementById("load_payment").style.display = "none";
         })
     }
 
@@ -297,6 +300,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         document.getElementById("debtor_list").append(li);
                         debtor_phones.push(element.phone_no[0].number);
                     });
+                    document.getElementById("ze_spinner").style.display = "none";
+                    document.getElementById("debtor_content").style.display = "block";
                 } else {
                     failToast.show();
                 }
@@ -586,7 +591,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
 
                     // submit debtor information, then to transaction view
-                    document.getElementById("submitDebt").disabled = true;
+                    document.getElementById("submitDebt").style.display = "none";
+                    document.getElementById("load_button").style.display = "block";
                     const cust_first_name = document.getElementById("first_name").value;
                     const cust_last_name = document.getElementById("last_name").value;
                     const cust_email = document.getElementById("email").value;
@@ -645,7 +651,8 @@ document.addEventListener("DOMContentLoaded", () => {
                       
                 } else if (debt_type.value == "old_debtor") {
                     // Debtor is old and only amount owed needs to be modified
-                    document.getElementById("submitDebt").disabled = true;
+                    document.getElementById("submitDebt").style.display = "none";
+                    document.getElementById("load_button").style.display = "block";
                     const debtor_phone = document.getElementById("upd_act_phone").value;
                     const new_debt = document.getElementById("upd_act_new_amount").value;
                     const total_debt = document.getElementById("upd_act_total_debt").value;
@@ -752,7 +759,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     debtor.remove();
                 })
             }
-        })
+            document.getElementById("submitDebt").style.display = "block";
+            document.getElementById("load_button").style.display = "none";
+        });
     }
 
     const txnSuccessfulModal = document.getElementById('txnSuccessfulModal')
@@ -794,6 +803,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const element = event.target;
 
             if (element.id == "confirm_delete") {
+                document.getElementById("confirm_delete").style.display = "none";
+                document.getElementById("load_button_two").style.display = "block";
+                
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 const item_data = {item_slug: element.dataset.delslug,
                 item_customer: element.dataset.delcustomer}
@@ -817,7 +829,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (result === "Successful") {
                         // Successful deletion
                         const confirm_delete = bootstrap.Modal.getInstance(document.getElementById('confirm_delete_modal'));
-                        confirm_delete.hide();
                         const del_item = document.querySelector(`a[data-slug=${element.dataset.delslug}][data-customer=${element.dataset.delcustomer}]`);
                         var item_sub_total = parseFloat(document.querySelector(`input[name=hidden_item_sub_total][data-slug=${element.dataset.delslug}][data-customer=${element.dataset.delcustomer}]`).value);
                         var cart_total = parseFloat(document.querySelector(`input[name=hidden_total_amount][data-customer=${element.dataset.delcustomer}]`).value);
@@ -840,6 +851,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 del_item.parentElement.parentElement.parentElement.remove();
                             })
                         }
+                        confirm_delete.hide();
                     } else {
                         failToast.show();
                     }
@@ -850,6 +862,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             }
         })
+
+        confirm_delete_modal.addEventListener("hidden.bs.modal", () => {
+            document.getElementById("load_button_two").style.display = "none";
+            document.getElementById("confirm_delete").style.display = "block";
+        })
     }
 });
 
@@ -858,15 +875,35 @@ function humanize_float(d_float) {
     if ((point != -1)) {
         var whole_value  = d_float.slice(0, point);
         var decimal_value = d_float.slice(point + 1);
-        if (decimal_value == "5") {
-            
-        } else if (decimal_value == "25") {
-            
-        } else if (decimal_value == "75") {
-            
-        }
-    } else {
+        var final_value = "";
 
+        if (whole_value == "0") {
+            if (decimal_value == "5") {
+                // Quantity ends with half value
+                final_value = `Half`;
+            } else if (decimal_value == "25") {
+                // Quantity ends with quarter value
+                final_value = `Quarter`;
+            } else if (decimal_value == "75") {
+                // Quantity ends with quarter value
+                final_value = `Three Quarters`;
+            }
+        } else {
+            if (decimal_value == "5") {
+                // Quantity ends with half value
+                final_value = `${whole_value} and Half`;
+            } else if (decimal_value == "25") {
+                // Quantity ends with quarter value
+                final_value = `${whole_value} and Quarter`;
+            } else if (decimal_value == "75") {
+                // Quantity ends with quarter value
+                final_value = `${whole_value} and Three Quarters`;
+            }
+        }
+        return final_value
+    } else {
+        // Variable has no point in it
+        return d_float
     }
 }
 

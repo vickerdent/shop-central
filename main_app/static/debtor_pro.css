@@ -5,3 +5,11 @@
 .oneDebtor div div {
     font-size: 14px;
 }
+
+#debtor_content {
+    display: none;
+}
+
+#load_button {
+    display: none;
+}

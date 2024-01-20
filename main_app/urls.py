@@ -28,6 +28,7 @@ urlpatterns = [
     path('staff_carts/', views.staff_carts, name='staff_carts'),
     path('staff_carts/delete_item/', views.delete_item, name='delete_item'),
     path('debtors/', views.debtors, name='debtors'),
+    path('debtors/get_debtor/<str:slug>', views.get_the_debtor, name='get_the_debtor'),
     path('get_debtors/', views.get_debtors, name='get_debtors'),
     path('add_debtor/', views.add_debtor, name='add_debtor'),
     path('update_debtor/', views.update_debtor, name='update_debtor'),

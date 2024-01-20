@@ -14,6 +14,22 @@
     font-size: 14px;
 }
 
+#product_content {
+    display: none;
+}
+
+#productInfoModalLabel {
+    visibility: hidden;
+}
+
+#load_button {
+    display: none;
+}
+
+#load_button_two {
+    display: none;
+}
+
 .nonProduct {
     width: 168px;
 }

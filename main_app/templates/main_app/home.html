@@ -9,6 +9,8 @@
     <script src="{% static 'home_pro.js' %}"></script>
     <link rel="stylesheet" href="{% static 'home_pro.css' %}">
     <input type="hidden" name="noOfCust" id="noOfCustomers">
+
+    <!-- Modal for products -->
     <div class="modal fade" id="productInfoModal" tabindex="-1" aria-labelledby="productInfoModalLabel" aria-hidden="true" data-bs-theme="dark">
         <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content">
@@ -19,33 +21,37 @@
                 <a href="#" class="btn btn-light text-nowrap" id="editCall">Edit Product</a>
               </div>
             </div>
-            <div class="modal-body">
+            <div class="modal-body text-light">
+              <div class="d-flex justify-content-center">
+                <div id="ze_spinner" class="spinner-grow" style="width: 3rem; height: 3rem; margin: 150px;" role="status">
+                </div>
+              </div>
               {% csrf_token %}
-              <div class="container-fluid">
+              <div class="container-fluid" id="product_content">
                 <div class="d-flex justify-content-center" id="picHold">
                 </div>
                 <div id="productHold">
-                  <h6 class="fs-6 text-light d-flex justify-content-center" id="prodName"></h6>
-                  <h3 class="fs-3 text-light d-flex justify-content-center" id="prodPrice"></h3>
+                  <h6 class="fs-6 d-flex justify-content-center" id="prodName"></h6>
+                  <h3 class="fs-3 d-flex justify-content-center" id="prodPrice"></h3>
                   <input type="hidden" name="priced" id="priceHold">
                   <!-- Alert should be created using java script, using this design -->
                   <div id="prodExists"></div>
                   <div id="saleID">
                     <div class="d-flex justify-content-start">
-                      <h4 class="me-2 text-light">Sale Type:</h4>
-                      <h4 class="text-light" id="saleType"></h4>
+                      <h4 class="me-2">Sale Type:</h4>
+                      <h4 id="saleType"></h4>
                     </div>
                   </div>
                   <div class="d-flex flex-wrap" id="buttonHolder">
                   </div> <br>
                   <div class="d-flex justify-content-start">
-                    <h4 class="me-2 text-light">Quantity:</h4>
-                    <h4 class="text-light" id="totalQuantity">1</h4>
+                    <h4 class="me-2">Quantity:</h4>
+                    <h4 id="totalQuantity">1</h4>
                     <input type="hidden" name="quant" id="quantleft">
                   </div>
                   <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" role="switch" id="isWhole">
-                    <label class="form-check-label text-light" for="isWhole">Customer only wants Half/Quarter</label>
+                    <label class="form-check-label" for="isWhole">Customer only wants Half/Quarter</label>
                   </div>
                   <div class="container text-center">
                     <div class="row g-2 align-items-center" id="quantHold">
@@ -76,7 +82,13 @@
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
               <div class="d-flex flex-row" id="custInfo">
                 <div class="me-2 ms-2"><input autocomplete="off" placeholder="Type to select/add Cart" id="openCart" list="cartList" class="form-control"></div>
-                <div><button type="button" class="btn btn-light text-nowrap" id="addToCart">Add To Cart</button></div>
+                <div>
+                  <button type="button" class="btn btn-light text-nowrap" id="addToCart">Add To Cart</button>
+                  <button type="button" id="load_button" class="btn btn-light" disabled>
+                    <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
+                    <span role="status">Loading...</span>
+                  </button>
+                </div>
               </div>              
             </div>
           </div>
@@ -142,6 +154,10 @@
           </div>
           <div class="modal-footer">
               <a class="btn btn-light" data-bs-target="#productInfoModal" data-bs-toggle="modal">Update</a>
+              <button type="button" id="load_button_two" class="btn btn-light">
+                <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
+                <span role="status">Loading...</span>
+              </button>
               <button type="button" class="btn btn-secondary" data-bs-target="#productInfoModal" data-bs-toggle="modal">Cancel</button>
           </div>
         </div>

@@ -21,7 +21,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
         <div class="toast-body text-light">
-          <span id="prodID"></span> added to <span id="custID"></span>'s cart successfully.
+          <span id="debtor_id"></span> added successfully.
         </div>
       </div>
     </div>
@@ -42,31 +42,31 @@
     </div>
 
     <!-- Add Debtor modal -->
-    <div class="modal fade" id="addDebtorModal" aria-hidden="true" aria-labelledby="addDebtorModalLabel2" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-theme="dark">
+    <div class="modal fade" id="addDebtorModal" aria-hidden="true" aria-labelledby="addDebtorModalLabel" tabindex="-1" data-bs-theme="dark">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
-          <form action="" method="post" id="addDebtorForm">
-            <div class="modal-header">
-              <h1 class="modal-title fs-5 text-light" id="addDebtorModalLabel2">Add Debtor</h1>
-            </div>
-            <div class="modal-body text-light">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5 text-light">Add Debtor</h1>
+          </div>
+          <div class="modal-body text-light">
+            <form action="" method="post" id="addDebtorForm">
               {% csrf_token %}
               {% for field in form %}
                 {% if "amount" in field.html_name %}
-                <div class="input-group mb-3">
-                  <span class="input-group-text">₦</span>
-                  <div class="form-floating">
-                      {{ field }}
-                      {{ field.label_tag }}
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">₦</span>
+                    <div class="form-floating">
+                        {{ field }}
+                        {{ field.label_tag }}
+                    </div>
                   </div>
-              </div>
                 {% elif "dialing" in field.html_name %}
                   <div class="input-group mb-3">
-                    <div class="form-floating mb-3">
+                    <div class="form-floating">
                       {{ field }}
                       {{ field.label_tag }}
                     </div>
-                    <div class="form-floating mb-3">
+                    <div class="form-floating">
                       {{ form.phone_number }}
                       {{ form.phone_number.label_tag }}
                     </div>
@@ -83,36 +83,162 @@
                   {% endif %}
                 {% endif %}
               {% endfor %}
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-light" id="addDebtor" type="submit">Add Debtor</button>
-                <button type="button" class="btn btn-secondary"  data-bs-dismiss="modal">Cancel</button>
-            </div>
-          </form>
+            </form>
+            <button class="btn btn-light" id="addDebtor" type="submit">Add Debtor</button>
+            <button type="button" class="btn btn-secondary"  data-bs-dismiss="modal">Cancel</button>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Modify Debtor's Debt modal -->
-    <div class="modal fade" id="editDebtorModal" aria-hidden="true" aria-labelledby="editDebtorModalLabel2" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-theme="dark">
+    <div class="modal fade" id="editDebtorModal" aria-hidden="true" aria-labelledby="editDebtorModalLabel" tabindex="-1" data-bs-theme="dark">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
             <h1 class="modal-title fs-5 text-light" id="editDebtorModalLabel2">Update Debtor</h1>
-            <a class="btn btn-light text-nowrap">Edit Debtor</a>
-            <a class="btn btn-light text-nowrap">Show All Transactions</a>
+            <div>
+              <a class="btn btn-light text-nowrap">Edit Debtor</a>
+              <a class="btn btn-light text-nowrap">Show All TXNs</a>
+            </div>
           </div>
           <div class="modal-body text-light">
-            {% csrf_token %}
-            Debtor Information
+            <div id="ze_spinner" class="text-center">
+              <div class="spinner-grow" style="width: 3rem; height: 3rem; margin: 100px;" role="status">
+              </div>
+            </div>
+            <div id="debtor_content">
+              {% csrf_token %}
+              <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                  <img src="" alt="Debtor's Profile Image" width="90" height="80" id="debtor_profile">
+                </div>
+                <div class="flex-grow-1 ms-3">
+                  <h4 class="mb-0" id="debtor_name"></h4>
+                  <p class="mb-0" id="debtor_details"></p>
+                  <p class="mt-0" id="more_debtor_details"></p>
+                  <h5>₦<span id="amount_owed"></span></h5>
+                  <input type="hidden" name="hidden_item_price" data-slug="{{ item.product_slug }}" data-customer="{{ cart.name_of_buyer }}" value="{{ item.product_price }}">
+                </div>
+              </div>
+              <h5>Debtor Activity</h5>
+              <!-- buttons to either make payment or collect debt -->
+              <div class="mb-3">
+                <input type="radio" class="btn-check" name="debtor_activity" value="make_payment" id="pay_debt" autocomplete="off" checked>
+                <label class="btn btn-outline-light" for="pay_debt">Make Payment</label>
+                <span class="ms-2" id="hold_update_button">
+                  <input type="radio" class="btn-check" name="debtor_activity" value="more_debt" id="collect_debt" autocomplete="off">
+                  <label class="btn btn-outline-light" for="collect_debt">Collect Debt</label>
+                </span>
+              </div>
+
+              <!-- Form to collect debt -->
+              <div id="collect_debt_form">
+                <!-- Collected Debt -->
+                <div class="row g-3">
+                  <div class="col-auto">
+                    <label for="amount_collected" class="col-form-label">Collected Debt:</label>
+                  </div>
+                  <div class="col-auto">
+                    <div class="input-group">
+                      <span class="input-group-text">₦</span>
+                      <input type="number" class="form-control" id="amount_collected" placeholder="0.00">
+                    </div>
+                  </div>
+                </div>
+                <br>
+
+                <!-- Date -->
+                <div class="nativeDatePicker row g-3">
+                  <div class="col-auto">
+                    <label for="date_collected" class="col-form-label">Date Collected:</label>
+                  </div>
+                  <div class="col-auto">
+                    <input type="date" id="date_collected" name="date_collected" class="form-control" />
+                  </div>
+                </div>
+                <p class="fallbackLabel">Date Collected:</p>
+                <div class="fallbackDatePicker">
+                  <span>
+                    <label for="day">Day:</label>
+                    <select id="day" name="day"></select>
+                  </span>
+                  <span>
+                    <label for="month">Month:</label>
+                    <select id="month" name="month">
+                      <option selected>January</option>
+                      <option>February</option>
+                      <option>March</option>
+                      <option>April</option>
+                      <option>May</option>
+                      <option>June</option>
+                      <option>July</option>
+                      <option>August</option>
+                      <option>September</option>
+                      <option>October</option>
+                      <option>November</option>
+                      <option>December</option>
+                    </select>
+                  </span>
+                  <span>
+                    <label for="year">Year:</label>
+                    <select id="year" name="year"></select>
+                  </span>
+                </div>
+              </div>
+              <div id="make_payment_form">
+                <div class="row g-3">
+                  <div class="col-auto">
+                    <label for="amount_paid" class="col-form-label">Amount To Pay:</label>
+                  </div>
+                  <div class="col-auto">
+                    <div class="input-group">
+                      <span class="input-group-text">₦</span>
+                      <input type="number" class="form-control" id="amount_paid" placeholder="0.00">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="modal-footer">
-              <a class="btn btn-light">Update</a>
-              <button type="button" class="btn btn-secondary"  data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-light" id="update_button">Update</button>
+            <button type="button" id="load_button" class="btn btn-light" disabled>
+              <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
+              <span role="status">Loading...</span>
+            </button>
+            <button type="button" class="btn btn-secondary"  data-bs-dismiss="modal">Cancel</button>
           </div>
         </div>
       </div>
     </div>
+
+  <!-- TXN-Successful modal -->
+  <div class="modal fade" id="txnSuccessfulModal" aria-hidden="true" aria-labelledby="txnSuccessfulModalLabel" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-theme="dark">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content text-light">
+        <div class="modal-body">
+          <br>
+          <div class="d-flex justify-content-center">
+            <video muted width="75" height="75" src="{% static 'app_media/verified.mp4' %}" id="checkVideo">
+              Checked icon: Transaction successful
+            </video>
+          </div>
+          <br>
+          <h3 class="d-flex justify-content-center ms-5 me-5">Transaction Successful</h3>
+          <p class="fs-5 d-flex justify-content-center">Tran. ID: <span class="span-space">.</span><span id="txnInfo"></span></p>
+          <p class="fs-5 mt-0 d-flex justify-content-center">Ref. No.: <span class="span-space">.</span><span id="refNo"></span></p>
+          <p class="fs-5 d-flex justify-content-center">You can give the customer his/her goods.</p>
+          <p class="fs-5 d-flex justify-content-center" id="descrip_text"></p>
+          <p class="fs-5 d-flex justify-content-center" id="more_text"></p>
+          <br>
+          <div class="d-flex justify-content-center">
+            <button type="button" class="btn btn-light" id="refresh_button">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
     <div class="container">
       <a href="" class="btn btn-dark" role="button" data-bs-toggle="modal" data-bs-target="#addDebtorModal">Add Debtor</a>
@@ -123,7 +249,7 @@
           <div class="me-3 mb-3 oneDebtor">
             <a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-bs-toggle="modal" data-bs-target="#editDebtorModal" data-slug="{{ debtor.slug }}">
               <div class="card h-100">
-                  <img src="{{ debtor.image.0 }}" class="card-img-top" alt="Product's Image" width="70" height="70">
+                  <img src="{{ debtor.image.0 }}" class="card-img-top" alt="Product's Image" width="70">
                   <div class="card-body">
                       {{ debtor.name|truncatechars:32 }} <br>
                       <strong>₦{{ debtor.amount_owed|intcomma }}</strong>
