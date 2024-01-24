@@ -14,7 +14,7 @@ from decimal import Decimal
 from .o_functions import humans, payment_callback, standardize_phone, strip_id
 from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, \
     EditProfileImageForm, EditNameForm, AddProductForm, CarouselForm, EditProductForm, AddDebtorForm
-from .models import TheUser, Buyer, Product, StaffCart, Carousel, Transaction
+from .models import TheUser, Buyer, Product, StaffCart, Carousel, Transaction, ProductLite
 from .custom_storage import handle_user_image, default_user_image, compress_image, \
     change_image_name, delete_image, default_bulk_image, default_carton_image, \
         handle_product_image
@@ -28,17 +28,8 @@ def home(request):
     all_products = list(products_collection.find().sort("price_modified_date", pymongo.DESCENDING))
     inventory = []
     for product in all_products:
-        item = Product(product["brand_name"], product["product_name"], product["size"], product["product_image"],
-                       product["tags"], product["retail_price"], product["wholesale_price"],
-                       product["is_discount"], product["discount_retail_price"], product["has_bulk"],
-                       {bk_price : product["bulk"][bk_price] for bk_price in product["bulk"] if bk_price.startswith("bulk_price")},
-                       {bk_type : product["bulk"][bk_type] for bk_type in product["bulk"] if bk_type.startswith("bulk_type")},
-                       {bk_no : product["bulk"][bk_no] for bk_no in product["bulk"] if bk_no.startswith("no_in_bulk")},
-                       {bk_img : product["bulk"][bk_img] for bk_img in product["bulk"] if bk_img.startswith("bulk_image")},
-                       product["is_carton_bag"], product["carton_bag_price"], product["no_in_carton_bag"],
-                       product["carton_bag_image"], product["price_modified_date"], product["singles_stock"],
-                       product["carton_bag_stock"], product["description"], product["slug"], product["is_divisible"],
-                       product["is_carton_bag_divisible"])
+        item = ProductLite(product["brand_name"], product["product_name"], product["size"], product["product_image"],
+                       product["retail_price"], product["singles_stock"], product["slug"])
         inventory.append(item)
 
     # Also get all carts for user
@@ -279,6 +270,8 @@ def add_product(request):
     # check if user is staff or admin
     curr_user = user_collection.find_one({"email": request.user.email})
 
+    BULK_CHOICES = ("Dozen", "Pack", "Packet", "Roll")
+
     if curr_user:
         a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
                          curr_user["email"], curr_user["gender"], curr_user["phone_no"],
@@ -298,24 +291,24 @@ def add_product(request):
             retail_price = form.cleaned_data["retail_price"]
             wholesale_price = form.cleaned_data["wholesale_price"]
             is_discount = form.cleaned_data["is_discount"]
-            discount_retail_price = form.cleaned_data["discount_retail_price"]
+            discount_retail_price = form.cleaned_data.get("discount_retail_price")
             is_divisible = form.cleaned_data["is_divisible"]
             has_bulk = form.cleaned_data["has_bulk"]
             is_carton_bag = form.cleaned_data["is_carton_bag"]
-            carton_price = form.cleaned_data["carton_price"]
-            no_in_carton = form.cleaned_data["no_in_carton"]
+            carton_price = form.cleaned_data.get("carton_price")
+            no_in_carton = form.cleaned_data.get("no_in_carton")
             carton_image = request.FILES.get("carton_image", False)
-            carton_stock = form.cleaned_data["carton_stock"]
-            is_carton_divisible = form.cleaned_data["is_carton_divisible"]
-            bag_price = form.cleaned_data["bag_price"]
-            no_in_bag = form.cleaned_data["no_in_bag"]
+            carton_stock = form.cleaned_data.get("carton_stock")
+            is_carton_divisible = form.cleaned_data.get("is_carton_divisible")
+            bag_price = form.cleaned_data.get("bag_price")
+            no_in_bag = form.cleaned_data.get("no_in_bag")
             bag_image = request.FILES.get("bag_image", False)
-            bag_stock = form.cleaned_data["bag_stock"]
-            is_bag_divisible = form.cleaned_data["is_bag_divisible"]
+            bag_stock = form.cleaned_data.get("bag_stock")
+            is_bag_divisible = form.cleaned_data.get("is_bag_divisible")
             singles_stock = form.cleaned_data["singles_stock"]
             tags = form.cleaned_data["tags"]
             description = form.cleaned_data.get("description")
-            
+
             # Check that product does not already exist
             product_id = slugify(brand_name + " " + product_name + " " + size)
 
@@ -325,8 +318,6 @@ def add_product(request):
             # Run for loop and call: 
             if product_check:
                 messages.error(request, "Product already exists in database!")
-    
-                BULK_CHOICES = ("Dozen", "Pack", "Packet", "Roll")
 
                 if a_user.is_admin:
                     context = {"form": form, "is_admin": True, "is_staff": True,
@@ -336,37 +327,43 @@ def add_product(request):
                     context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
                     return render(request, "main_app/add_product.html", context)
 
+            # Process bulk info, if any
             i = 1
             bulk_type = "bulk_type_" + str(i)
             bulk_price = "bulk_price_" + str(i)
             no_in_bulk = "no_in_bulk_" + str(i)
             bulk_image = "bulk_image_" + str(i)
 
-            bulk_types = {}
-            bulk_prices = {}
-            nos_in_bulk = {}
-            bulk_images = {}
+            bulk = []
 
             if has_bulk == "True":
-                # Bulk type
                 while request.POST.get(bulk_type):
-                    if request.POST.get(bulk_type) in bulk_types.values():
-                        messages.warning(request, "You can't have duplicate bulk types!")
-            
-                        BULK_CHOICES = ("Dozen", "Pack", "Packet", "Roll")
+                    # Check through bulk items, if bulk_type or bulk_price already exists
+                    for item in bulk:
+                        if request.POST.get(bulk_type) in item.values():
+                            messages.warning(request, "You can't have duplicate bulk types!")
 
-                        if a_user.is_admin:
-                            context = {"form": form, "is_admin": True, "is_staff": True,
-                                       "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
-                            return render(request, "main_app/add_product.html", context)
-                        elif a_user.is_staff:
-                            context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
-                            return render(request, "main_app/add_product.html", context)
-                    else:
-                        bulk_types[bulk_type] = request.POST.get(bulk_type)
+                            if a_user.is_admin:
+                                context = {"form": form, "is_admin": True, "is_staff": True,
+                                        "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
+                                return render(request, "main_app/add_product.html", context)
+                            elif a_user.is_staff:
+                                context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
+                                return render(request, "main_app/add_product.html", context)
+
+                        if request.POST.get(bulk_price) in item.values():
+                            messages.warning(request, "You can't have duplicate bulk prices!")
+
+                            if a_user.is_admin:
+                                context = {"form": form, "is_admin": True, "is_staff": True,
+                                        "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
+                                return render(request, "main_app/add_product.html", context)
+                            elif a_user.is_staff:
+                                context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
+                                return render(request, "main_app/add_product.html", context)
                     
-                    i += 1
-                    bulk_type = "bulk_type_" + str(i)
+                    # At this point, duplicates have been handled
+                    # Handle images next
 
                     # Check if corresponding bulk_image exists, else use default image
                     if request.FILES.get(bulk_image):
@@ -383,37 +380,28 @@ def add_product(request):
                         image_url, image_path = handle_product_image(compressed_image)
 
                         # Add obtained image's uri to bulk_image's dictionary
-                        bulk_images[bulk_image] = [image_url, image_path]
+                        image_info = [image_url, image_path]
                     else:
                         # No corresponding image, so use default
                         image_url, image_path = default_bulk_image()
-                        bulk_images[bulk_image] = [image_url, image_path]
+                        image_info = [image_url, image_path]
+                    
+                    bulk_item = {
+                        "bulk_type": request.POST.get(bulk_type),
+                        "bulk_price": str(Decimal(request.POST.get(bulk_price)) + Decimal("0.00")),
+                        "no_in_bulk": int(request.POST.get(no_in_bulk)),
+                        "bulk_image": image_info
+                    }
 
-                    # Increment image's name in order
-                    bulk_image = "bulk_image_" + str(i)
+                    bulk.append(bulk_item)
 
-                    # Bulk_price
-                    if request.POST.get(bulk_price) in bulk_prices.values():
-                        messages.warning(request, "You can't have duplicate bulk prices!")
-            
-                        BULK_CHOICES = ("Dozen", "Pack", "Packet", "Roll")
-
-                        if a_user.is_admin:
-                            context = {"form": form, "is_admin": True, "is_staff": True,
-                                       "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
-                            return render(request, "main_app/add_product.html", context)
-                        elif a_user.is_staff:
-                            context = {"form": form, "is_staff": True,
-                                       "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
-                            return render(request, "main_app/add_product.html", context)
-                    else:
-                        bulk_prices[bulk_price] = Decimal(request.POST.get(bulk_price)) + Decimal("0.00")
-
+                    i += 1
+                    # Check for next bulk info in request
+                    bulk_type = "bulk_type_" + str(i)
                     bulk_price = "bulk_price_" + str(i)
-
-                    # No in bulk
-                    nos_in_bulk[no_in_bulk] = int(request.POST.get(no_in_bulk))
                     no_in_bulk = "no_in_bulk_" + str(i)
+                    bulk_image = "bulk_image_" + str(i)
+                    
     
             # Process product image as well
             # modify this to make queries faster
@@ -483,9 +471,9 @@ def add_product(request):
             # Create Product object and add to mongodb
             new_product = Product(brand_name, product_name, size, [product_img_url, product_img_path], new_tags,
                                   retail_price, wholesale_price, discount_fact, discount_retail_price if discount_fact else 0,
-                                  bulk_fact, bulk_prices, bulk_types, nos_in_bulk, bulk_images, is_carton_bag,
-                                  carton_bag_price, no_in_carton_bag, carton_bag_image, datetime.now(), singles_stock,
-                                  carton_bag_stock, description, product_id, divisible_fact, is_carton_bag_divisible
+                                  bulk_fact, bulk, is_carton_bag, carton_bag_price, no_in_carton_bag, carton_bag_image,
+                                  datetime.now(), singles_stock, carton_bag_stock, description, product_id, divisible_fact,
+                                  is_carton_bag_divisible
                                   )
 
             products_collection.insert_one(new_product.to_dict())
@@ -493,8 +481,6 @@ def add_product(request):
             messages.success(request, "Product added succesfully.")
             return redirect("home")
         else:
-            BULK_CHOICES = ("Dozen", "Pack", "Packet", "Roll")
-
             if a_user.is_admin:
                 context = {"form": form, "is_admin": True, "is_staff": True,
                            "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
@@ -502,8 +488,6 @@ def add_product(request):
             elif a_user.is_staff:
                 context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
                 return render(request, "main_app/add_product.html", context)
-        
-        BULK_CHOICES = ("Dozen", "Pack", "Packet", "Roll")
 
         if a_user.is_admin:
             context = {"form": form, "is_admin": True, "is_staff": True,
@@ -798,6 +782,27 @@ def edit_product(request, slug):
     else:
         messages.error(request, "An internal error occurred. Please try again later.")
         return render(request, "main_app/404.html", {})
+    
+def edit_product_price(request):
+    # then check if user is staff or admin
+    curr_user = user_collection.find_one({"email": request.user.email})
+
+    if curr_user:
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
+                         curr_user["address"], curr_user["state"], curr_user["image"],
+                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+        
+        if a_user.is_admin or a_user.is_staff:
+            if request.method == "POST":
+                post_data = json.loads(request.body.decode("utf-8"))
+
+                cust_phone_no = post_data.get("d_phone_no")
+
+        else:
+            return JsonResponse(data={"result": False})
+    else:
+        return JsonResponse(data={"result": False})
 
 @login_required
 def debtors(request):
@@ -849,10 +854,21 @@ def debtors(request):
             
             username = slugify(first_name + last_name)
 
+            # Create reference number for information storage
+            reference_no = strip_id(str(datetime.now()) + code_generator())
+            the_date = datetime.now()
+
             new_debtor = Buyer(first_name, last_name, username, email, gender, complete_phone, address,
                                state, datetime.now(), str(amount_owed), description, [image_url, image_path])
             
-            debtors_collection.insert_one(new_debtor.to_dict())
+            new_transaction = Transaction("Credit Collect", "Staff", new_debtor.first_name + " " + new_debtor.last_name,
+                                          a_user.email, [], the_date, str(amount_owed), "0.00", reference_no, phone_number)
+            
+            # Proceed to call the call_back function. Adjust variables to include buyer info
+            with client.start_session() as session:
+                session.with_transaction(lambda s: payment_callback(s, new_debtor.first_name + " " + new_debtor.last_name,
+                                                                    new_transaction.to_dict(),
+                                                                    debtor_doc=new_debtor.to_dict()))
 
             messages.success(request, "Debtor has been added successfully.")
             return redirect("debtors")
@@ -914,14 +930,16 @@ def add_debtor(request):
 
                 # Create reference number for information storage
                 reference_no = strip_id(str(datetime.now()) + code_generator())
+                the_date = datetime.now()
+
                 curr_customer = staff_carts_collection.find_one({"name_of_buyer": name_in_cart,
                                                                  "staff_id": a_user.email})
                 # Or Cash Payment
                 # Date - Buyer ID - Transaction Type - Transaction Reference - Transaction Amount - Amount Paid - Balance
                 # Today - 0909233 - Goods Purchase - all that reference - 5000 - 4500 - 500 (or inc current debt)
-                # Today - 0909233 - Cash Payment - all that reference - 500 - 500 - 0 (or dec current debt)
+                # Today - 0909236 - Cash Payment - all that reference - 500 - 500 - 0 (or dec current debt)
                 new_transaction = Transaction("Goods Purchase", "Staff", new_debtor.first_name + " " + new_debtor.last_name, a_user.email,
-                                              curr_customer["items"], datetime.now(), curr_customer["total_amount"],
+                                              curr_customer["items"], the_date, curr_customer["total_amount"],
                                               amount_paid, reference_no, phone_number)
 
                 product_slugs = []
@@ -972,30 +990,61 @@ def update_debtor(request):
                 customer_name = post_data.get("customer_name")
                 amount_brought = post_data.get("amount_brought")
 
-                curr_customer = staff_carts_collection.find_one({"name_of_buyer": customer_name,
-                                                                 "staff_id": a_user.email})
-                
                 curr_debtor = debtors_collection.find_one({"phone_no.number": cust_phone_no})
-
-                # Create debtor/Buyer class from gotten info, use class to calculate debt
-                old_debtor = Buyer(curr_debtor["first_name"], curr_debtor["last_name"], curr_debtor["username"],
-                                   curr_debtor["email"], curr_debtor["gender"], curr_debtor["phone_no"],
-                                   curr_debtor["address"], curr_debtor["state"], datetime.now(),
-                                   str(cust_total_debt), curr_debtor["description"], curr_debtor["image"])
                 
                 # Create reference number for information storage
                 reference_no = strip_id(str(datetime.now()) + code_generator())
+                the_date = datetime.now()
 
-                new_transaction = Transaction("Goods Purchase", "Staff", old_debtor.first_name + " " + old_debtor.last_name, a_user.email,
-                                              curr_customer["items"], datetime.now(), curr_customer["total_amount"],
-                                              amount_brought, reference_no, cust_phone_no)
+                if amount_brought:
+                    the_total_debt = Decimal(curr_debtor["amount_owed"]) - Decimal(str(amount_brought))
+                else:
+                    the_total_debt = Decimal(cust_new_debt) + Decimal(curr_debtor["amount_owed"])
 
-                product_slugs = []
-                product_quantities = []
-                for item in curr_customer["items"]:
-                    product_slugs.append(item["product_slug"])
-                    product_quantities.append(item["total_product_quantity"])
+                # Create debtor/Buyer class from gotten info, use class to calculate debt
+                old_debtor = Buyer(curr_debtor["first_name"], curr_debtor["last_name"], curr_debtor["username"],
+                                curr_debtor["email"], curr_debtor["gender"], curr_debtor["phone_no"],
+                                curr_debtor["address"], curr_debtor["state"], the_date,
+                                str(the_total_debt), curr_debtor["description"], curr_debtor["image"])
                 
+                product_slugs = None
+                product_quantities = None
+
+                if cust_new_debt and cust_total_debt and customer_name:
+                    # It's a goods purchase transaction
+                    curr_customer = staff_carts_collection.find_one({"name_of_buyer": customer_name,
+                                                                    "staff_id": a_user.email})
+
+                    # Reset debtor/Buyer class from gotten info, use class to calculate debt, if condition is true
+                    old_debtor = Buyer(curr_debtor["first_name"], curr_debtor["last_name"], curr_debtor["username"],
+                                    curr_debtor["email"], curr_debtor["gender"], curr_debtor["phone_no"],
+                                    curr_debtor["address"], curr_debtor["state"], the_date,
+                                    str(cust_total_debt), curr_debtor["description"], curr_debtor["image"])
+                    
+                    new_transaction = Transaction("Goods Purchase", "Staff", old_debtor.first_name + " " + old_debtor.last_name, a_user.email,
+                                                curr_customer["items"], the_date, curr_customer["total_amount"],
+                                                amount_brought, reference_no, cust_phone_no)
+
+                    product_slugs = []
+                    product_quantities = []
+                    for item in curr_customer["items"]:
+                        product_slugs.append(item["product_slug"])
+                        product_quantities.append(item["total_product_quantity"])
+
+                elif cust_new_debt:
+                    # Debtor collected more debt
+                    customer_name = curr_debtor["first_name"] + " " + curr_debtor["last_name"]
+
+                    # reverse total amount and amount brought
+                    new_transaction = Transaction("Credit Collect", "Staff", customer_name, a_user.email,
+                                                [], the_date, cust_new_debt, "0.00", reference_no, cust_phone_no)
+                else:
+                    # Cash payment instead
+                    customer_name = curr_debtor["first_name"] + " " + curr_debtor["last_name"]
+
+                    new_transaction = Transaction("Cash Payment", "Staff", customer_name, a_user.email,
+                                                [], the_date, "0.00", amount_brought, reference_no, cust_phone_no)
+                    
                 # Proceed to call the call_back function. Adjust variables to include buyer info
                 with client.start_session() as session:
                     session.with_transaction(lambda s: payment_callback(s, customer_name,
@@ -1005,17 +1054,28 @@ def update_debtor(request):
                                                                         old_debtor.to_dict()))
 
                 # Check if products have negative stock quantities and address
-                for slug in product_slugs:
-                    product = products_collection.find_one({"slug": slug})
-                    if product and int(product["singles_stock"]) <= 0:
-                        products_collection.update_one({"slug": slug},
-                                                        {"$inc": {"carton_bag_stock": -1,
-                                                                    "singles_stock": int(product["no_in_carton_bag"])}})
+                if product_slugs:
+                    for slug in product_slugs:
+                        product = products_collection.find_one({"slug": slug})
+                        if product and int(product["singles_stock"]) <= 0:
+                            products_collection.update_one({"slug": slug},
+                                                            {"$inc": {"carton_bag_stock": -1,
+                                                                        "singles_stock": int(product["no_in_carton_bag"])}})
                         
                 new_txn = transactions_collection.find_one({"reference_no": reference_no})
 
+                if not cust_new_debt:
+                    cust_new_debt = amount_brought
+
+                if not cust_total_debt:
+                    cust_total_debt = the_total_debt
+
                 return JsonResponse(data={"result": "Old Debtor", "txn_id": str(new_txn["_id"]), "ref_no": reference_no,
                                           "debt": str(cust_new_debt), "total_debt": str(cust_total_debt)})
+        else:
+            return JsonResponse(data={"result": False})
+    else:
+        return JsonResponse(data={"result": False})
 
 @login_required
 def get_debtors(request):
@@ -1047,7 +1107,7 @@ def get_the_debtor(request, slug):
                          curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
         
         if a_user.is_admin or a_user.is_staff:
-            the_debtor = debtors_collection.find_one({"slug": slug}, {"_id": 0})
+            the_debtor = debtors_collection.find_one({"phone_no.number": slug}, {"_id": 0})
             return JsonResponse(data={"result": True, "debtor": the_debtor})
         else:
             return JsonResponse(data={"result": False})
@@ -1072,11 +1132,12 @@ def make_payment(request):
                 customer_name = post_data.get("customerName")
                 amount_paid = post_data.get("amountPaid")
                 reference_no = strip_id(str(datetime.now()) + code_generator())
+                the_date = datetime.now()
                 curr_customer = staff_carts_collection.find_one({"name_of_buyer": customer_name,
                                                                  "staff_id": a_user.email})
 
                 new_transaction = Transaction("Goods Purchase", "Staff", customer_name, a_user.email, curr_customer["items"],
-                                                  datetime.now(), curr_customer["total_amount"], amount_paid,
+                                                  the_date, curr_customer["total_amount"], amount_paid,
                                                   reference_no)
 
                 if curr_customer and Decimal(str(amount_paid)) == Decimal(curr_customer["total_amount"]):
@@ -1137,15 +1198,21 @@ def make_payment(request):
                 else:
                     # Customer doesn't exist
                     return JsonResponse(data={"result": "Error"})
+        else:
+            return JsonResponse(data={"result": False})
+    else:
+        return JsonResponse(data={"result": False})
                     
 @login_required
 def get_transactions(request):
     # Get all transactions from DB
     today = datetime.today()
-    oneday = timedelta(days=1)
-    yesterday = today - oneday
+    # Reset time to the morning of the day
+    time_difference = timedelta(seconds=today.second, hours=today.hour, minutes=today.minute,
+                                microseconds=today.microsecond)
+    morning = today - time_difference
 
-    all_transactions = list(transactions_collection.find({"checkout_date": {"$gt": yesterday}}).sort("checkout_date", pymongo.DESCENDING))
+    all_transactions = list(transactions_collection.find({"checkout_date": {"$gte": morning}}).sort("checkout_date", pymongo.DESCENDING))
     full_list = []
     for txn in all_transactions:
         item = Transaction(txn["txn_type"], txn["txn_by"], txn["name_of_buyer"], txn["staff_id"],
@@ -1230,3 +1297,23 @@ def delete_item(request):
     else:
         messages.error(request, "An internal error occurred. Please try again later.")
         return render(request, "main_app/404.html", {})
+    
+@login_required
+def update_product_price(request):
+     # then check if user is staff or admin
+    curr_user = user_collection.find_one({"email": request.user.email})
+
+    if curr_user:
+        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
+                         curr_user["address"], curr_user["state"], curr_user["image"],
+                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+        
+        if a_user.is_staff or a_user.is_admin:
+            if request.method == "POST":
+                post_data = json.loads(request.body.decode("utf-8"))
+
+        else:
+            return JsonResponse(data={"result": False})
+    else:
+        return JsonResponse(data={"result": False})

@@ -77,7 +77,6 @@ class Buyer(Human):
         self.amount_owed = Decimal(str(amount_owed)) + Decimal("0.00")
         self.image = image
         self.name = self.first_name + " " + self.last_name
-        self.slug = self.username + "_" + self.phone_no[0]["dialing_code"] + self.phone_no[0]["number"]
 
     def __str__(self) -> str:
         return f"{self.first_name} {self.last_name}"
@@ -99,8 +98,7 @@ class Buyer(Human):
             "date_modified": self.date_modified,
             "amount_owed": str(self.amount_owed),
             "description": self.description,
-            "image": self.image,
-            "slug": self.slug
+            "image": self.image
         }
 
 # Add discount and proper bulk and carton/bag variables
@@ -115,16 +113,15 @@ class Product:
     to convert to their decimals before finally storing as strings
     """
     __slot__ = ("brand_name", "product_name", "size", "product_image", "tags", "retail_price", "wholesale_price",
-                "is_discount", "discount_retail_price", "has_bulk", "bulk_prices", "bulk_types", "nos_in_bulk", "bulk_images",
+                "is_discount", "discount_retail_price", "has_bulk", "bulk",
                 "is_carton_bag", "carton_bag_price", "no_in_carton_bag", "carton_bag_image", "price_modified_date",
                 "singles_stock", "carton_bag_stock", "description", "slug", "is_divisible", "is_carton_bag_divisible")
     
     def __init__(self, brand_name: str, product_name: str, size: str, product_image: list, tags: list,
                  retail_price: str, wholesale_price: str, is_discount: bool, discount_retail_price: str, has_bulk: bool,
-                 bulk_prices: dict, bulk_types: dict, nos_in_bulk: dict, bulk_images: dict, is_carton_bag: str,
-                 carton_bag_price: str, no_in_carton_bag: int, carton_bag_image: list, price_modified_date: datetime,
-                 singles_stock: int, carton_bag_stock: int, description: str, slug: str, is_divisible: bool,
-                 is_carton_bag_divisible: bool) -> None:
+                 bulk: list, is_carton_bag: str, carton_bag_price: str, no_in_carton_bag: int, carton_bag_image: list,
+                 price_modified_date: datetime, singles_stock: int, carton_bag_stock: int, description: str, slug: str,
+                 is_divisible: bool, is_carton_bag_divisible: bool) -> None:
         self.brand_name = brand_name
         self.product_name = product_name
         self.size = size
@@ -136,10 +133,7 @@ class Product:
         self.discount_retail_price = Decimal(str(discount_retail_price)) + Decimal("0.00")
         self.is_divisible = is_divisible
         self.has_bulk = has_bulk
-        self.bulk_prices = bulk_prices
-        self.bulk_types = bulk_types
-        self.nos_in_bulk = nos_in_bulk
-        self.bulk_images = bulk_images
+        self.bulk = bulk
         self.is_carton_bag = is_carton_bag # Does Product come in Cartons or Bags?
         self.carton_bag_price = Decimal(str(carton_bag_price)) + Decimal("0.00")
         self.no_in_carton_bag = no_in_carton_bag
@@ -169,7 +163,7 @@ class Product:
             "discount_retail_price": str(self.discount_retail_price),
             "is_divisible": self.is_divisible,
             "has_bulk": self.has_bulk,
-            "bulk": {**self.bulk_types, **self.bulk_prices, **self.nos_in_bulk, **self.bulk_images},
+            "bulk": self.bulk,
             "is_carton_bag": self.is_carton_bag,
             "carton_bag_price": str(self.carton_bag_price),
             "no_in_carton_bag": self.no_in_carton_bag,
@@ -181,6 +175,25 @@ class Product:
             "description": self.descripton,
             "slug": self.slug
         }
+    
+class ProductLite:
+    """
+    Class defining products in the shop's inventory
+    to be displayed in the product's page
+    """
+    __slot__ = ("brand_name", "product_name", "size", "product_image", "tags", "retail_price",
+                "singles_stock", "slug")
+    
+    def __init__(self, brand_name: str, product_name: str, size: str, product_image: list,
+                 retail_price: str, singles_stock: int, slug: str) -> None:
+        self.brand_name = brand_name
+        self.product_name = product_name
+        self.size = size
+        self.product_image = product_image
+        self.retail_price = Decimal(str(retail_price)) + Decimal("0.00")
+        self.singles_stock = singles_stock
+        self.slug = slug
+        self.name = self.brand_name + " " + self.product_name + " - " + self.size
 
 class Carousel:
     """
@@ -257,7 +270,6 @@ class Transaction:
         self.staff_id = staff_id
         self.items = items
         self.checkout_date = checkout_date
-        self.friendly_date = str(checkout_date.day) + "/" + str(checkout_date.month) + "/" + str(checkout_date.year)
         self.total_amount = Decimal(str(total_amount))
         self.amount_paid = Decimal(str(amount_paid)) + Decimal("0.00")
         # Note that amount owed can be negative, which will translate to giving customer change

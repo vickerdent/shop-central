@@ -159,7 +159,7 @@
             </div>
 
             <div id="update_debtor_div">
-              <input type="text" class="form-control" name="search_debtor" id="search_debtor" autocomplete="off" placeholder="Search debtors">
+              <input type="search" class="form-control" name="search_debtor" id="search_debtor" autocomplete="off" placeholder="Search debtors">
               <br>
               <ul class="list-group" id="debtor_list">
               </ul>
@@ -290,7 +290,7 @@
                   </div>
                   <div class="flex-grow-1 ms-3">
                     {{ item.product_name }} <br>
-                    <strong>Sale Type:</strong> {{ item.sale_type }}  Quantity: <span class="item-quantity">{{ item.product_quantity }}</span> <br>
+                    <strong>Sale Type:</strong> {{ item.sale_type }}  <strong>Quantity:</strong> <span class="item-quantity">{{ item.product_quantity }}</span> <br>
                     <h5><strong>₦{{ item.product_price|intcomma }}</strong></h5>
                     <input type="hidden" name="hidden_item_price" data-slug="{{ item.product_slug }}" data-customer="{{ cart.name_of_buyer }}" value="{{ item.product_price }}">
                   </div>

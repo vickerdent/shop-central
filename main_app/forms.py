@@ -399,89 +399,7 @@ class AddProductForm(forms.Form):
 
     def clean(self):
         super().clean()
-
-        has_bulk = self.cleaned_data.get("has_bulk")
-
-        i = 1
-
-        bulk_type = "bulk_type_" + str(i)
-        bulk_price = "bulk_price_" + str(i)
-        no_in_bulk = "no_in_bulk_" + str(i)
-        bulk_image = "bulk_image_" + str(i)
         
-        bulk_types = {}
-        bulk_prices = {}
-        nos_in_bulk = {}
-        bulk_images = {}
-
-        if has_bulk:
-            # Bulk_type
-            the_type = self.cleaned_data[bulk_type]
-            if has_bulk == "True" and the_type == "":
-                self.add_error(bulk_type, "Name of Bulk required!")
-            elif has_bulk == "False" and the_type:
-                self.add_error("has_bulk", "Product does not have a bulk quantity!")
-            
-            # Run bulk_image validation alongside bulk_type
-            the_image = self.cleaned_data[bulk_image]
-            if has_bulk == "False" and the_image != None:
-                self.add_error("has_bulk", "Product does not have a bulk quantity!")
-
-            while self.cleaned_data.get(bulk_type):
-                the_type = self.cleaned_data[bulk_type]
-                if the_type in bulk_types.values():
-                    self.add_error(bulk_type, "You can't have duplicate bulk types!")
-                else:
-                    bulk_types[bulk_type] = the_type
-                i += 1
-                bulk_type = "bulk_type_" + str(i)
-                
-                # Add image to dictionary if valid
-                the_image = self.cleaned_data[bulk_image]
-                if the_image:
-                    bulk_images[bulk_image] = the_image
-                bulk_image = "bulk_image_" + str(i)
-
-
-            # Bulk_price
-            the_price = self.cleaned_data[bulk_price]
-            if has_bulk == "True" and the_price == None:
-                self.add_error(bulk_price, "Price of Bulk required!")
-            elif has_bulk == "True" and the_price < 1:
-                self.add_error(bulk_price, "Price of Bulk must be greater than 0!")
-            elif has_bulk == "False" and the_price != None:
-                self.add_error("has_bulk", "Product does not have a bulk quantity!")
-            i = 1
-            while self.cleaned_data.get(bulk_price):
-                the_price = self.cleaned_data[bulk_price]
-                if the_price in bulk_prices.values():
-                    self.add_error(bulk_price, "You can't have duplicate bulk prices!")
-                else:
-                    bulk_prices[bulk_price] = the_price
-                i += 1
-                bulk_price = "bulk_price_" + str(i)
-
-            i = 1
-            # No_in_bulk
-            the_num = self.cleaned_data[no_in_bulk]
-            if has_bulk == "True" and the_num == None:
-                self.add_error(no_in_bulk, "Number in Bulk required!")
-            elif has_bulk == "True" and the_num < 1:
-                self.add_error(no_in_bulk, "Number in Bulk must be greater than 0!")
-            elif has_bulk == "False" and the_num != None:
-                self.add_error("has_bulk", "Product does not have a bulk quantity!")
-
-            while self.cleaned_data.get(no_in_bulk):
-                the_num = self.cleaned_data[no_in_bulk]
-                nos_in_bulk[no_in_bulk] = the_num
-                i += 1
-                no_in_bulk = "no_in_bulk_" + str(i)
-
-        self.cleaned_data["bulk_types"] = bulk_types
-        self.cleaned_data["bulk_prices"] = bulk_prices
-        self.cleaned_data["nos_in_bulk"] = nos_in_bulk
-        self.cleaned_data["bulk_images"] = bulk_images
-            
         # raise validation for if_discount
         is_discount = self.cleaned_data.get("is_discount")
         if is_discount:
@@ -588,12 +506,6 @@ class AddProductForm(forms.Form):
         data = self.cleaned_data["singles_stock"]
         if data < 0:
             raise forms.ValidationError("You can't have a negative stock!")
-        return data
-    
-    def clean_carton_bag_stock(self):
-        data = self.cleaned_data["carton_bag_stock"]
-        if data < 0:
-            raise forms.ValidationError("")
         return data
     
 class CarouselForm(forms.Form):

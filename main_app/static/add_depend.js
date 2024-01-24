@@ -403,7 +403,7 @@ function submission(event) {
 
     bulk_prices.forEach(element => {
         if (document.getElementById("has_bulk").value === "True") {
-            first_try = document.getElementById(element);
+            const first_try = document.getElementById(element);
             comparison = document.getElementById("retail_price");
             if (parseInt(first_try.value) <= parseInt(comparison.value)) {
                 first_try.focus();
@@ -417,7 +417,7 @@ function submission(event) {
 
     nos_in_bulk.forEach(element => {
         if (document.getElementById("has_bulk").value === "True") {
-            second_try = document.getElementById(element);
+            const second_try = document.getElementById(element);
             if (parseInt(second_try.value) < 1) {
                 second_try.focus();
                 alert("Number in Bulk must be greater than 0!");
@@ -434,5 +434,13 @@ function submission(event) {
         document.getElementById("bulk_price_1").value = "";
         document.getElementById("no_in_bulk_1").value = "";
         document.getElementById("bulk_image_1").value = "";
+    }
+}
+
+function validity() {
+    document.getElementById(this.id).onkeyup = () => {
+        if (this.value.length > 0) {
+            this.classList.remove("is-invalid")
+        }
     }
 }

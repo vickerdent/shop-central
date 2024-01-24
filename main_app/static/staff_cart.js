@@ -196,7 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     })
                     .catch(error => {
-                        // failToast.show();
+                        failToast.show();
                         console.error({"error": error});
                     });
                 } else if (custType.value === "change") {
@@ -233,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     })
                     .catch(error => {
-                        // failToast.show();
+                        failToast.show();
                         console.error({"error": error});
                     });
                 }
@@ -610,7 +610,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     debtor_email: cust_email, debtor_gender: cust_gender, debtor_dialing_code: cust_dialing_code,
                     debtor_phone_no: processed_phone, debtor_address: cust_address, debtor_state: cust_state,
                     debtor_description: cust_description, debt_amount: cust_amount_owed,
-                    name_in_cart: initial_cust_id, amount_paid: money_brought};                    
+                    name_in_cart: initial_cust_id, amount_paid: money_brought};
                     
                     fetch("/add_debtor/", {
                         method: "POST",
@@ -645,7 +645,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     })
                     .catch(error => {
-                        // failToast.show();
+                        failToast.show();
                         console.error({"error": error});
                     });
                       
@@ -696,7 +696,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     })
                     .catch(error => {
-                        // failToast.show();
+                        failToast.show();
                         console.error({"error": error});
                     });
                 }
@@ -847,11 +847,11 @@ document.addEventListener("DOMContentLoaded", () => {
                             del_item.parentElement.parentElement.parentElement.parentElement.parentElement.remove();
                         } else {
                             del_item.parentElement.parentElement.parentElement.style.animationPlayState = "running";
-                            del_item.parentElement.parentElement.parentElement.addEventListener("animationend", function() {
+                            del_item.parentElement.parentElement.parentElement.addEventListener("animationend", () => {
                                 del_item.parentElement.parentElement.parentElement.remove();
                             })
                         }
-                        confirm_delete.hide();
+                        setTimeout(confirm_delete.hide(), 3000);
                     } else {
                         failToast.show();
                     }

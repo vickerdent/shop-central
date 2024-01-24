@@ -3,6 +3,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const productInfoModal = document.getElementById('productInfoModal')
     if (productInfoModal) {
         productInfoModal.addEventListener('show.bs.modal', event => {
+            
+            // Remove all created input in update_price modal
+            const bulk_prices = document.getElementById("price_container");
+            bulk_prices.querySelectorAll("input[name=bulk_prices").forEach(element => {
+                if (element) {
+                    element.parentElement.parentElement.parentElement.remove();
+                }
+            });
+
             // Link that triggered the modal
             const link = event.relatedTarget
             
@@ -10,10 +19,17 @@ document.addEventListener("DOMContentLoaded", () => {
             const recipient = link.getAttribute('data-slug')
 
             // Set attribute data-slug to buttons for price and editing product
-            var btnPrice = document.getElementById("priceCall");
+            const btnPrice = document.getElementById("priceCall");
+
+            btnPrice.disabled = true;
 
             // Can use this to set dataset attribute instead
             btnPrice.setAttribute('data-slug', recipient);
+            const cancel_price = document.getElementById("cancel_price");
+            cancel_price.setAttribute('data-slug', recipient);
+
+            const initiate_update = document.getElementById("initiate_update");
+            initiate_update.setAttribute('data-slug', recipient);
 
             document.getElementById("minus_button").disabled = true;
             document.getElementById("plus_button").disabled = false;
@@ -26,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const unSuccess = document.getElementById("toastError")
             const failToast = bootstrap.Toast.getOrCreateInstance(unSuccess)
 
-            var editProd = document.getElementById("editCall");
+            const editProd = document.getElementById("editCall");
             editProd.setAttribute("href", `/edit_product/${recipient}`)
 
             const modalTitle = productInfoModal.querySelector('.modal-title')
@@ -63,6 +79,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 modalTitle.textContent = `${brand_name} ${product_name}: ${size}`
                 const existingPic = document.getElementById("centrePic")
+
+                // Update pic for update+price_modal
+                const update_pic = document.getElementById("update_pic")
+                update_pic.src = product_image[0];
+                update_pic.className = "rounded";
+                update_pic.setAttribute("width", "150px");
                 if (existingPic) {
                     existingPic.src = product_image[0]
                 } else {
@@ -77,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     picHold.append(pic)
                 }
                 document.getElementById("prodName").textContent = `${brand_name} ${product_name}: ${size}`
-                
+                document.getElementById("product_name").textContent = modalTitle.textContent;
                 // Display price of selected sale type in bold font, with retail price being default
                 const priceHold = document.getElementById("prodPrice")
                 
@@ -158,6 +180,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 const buttonHome = document.getElementById("buttonHolder");
                 const saleIdent = document.getElementById("saleID")
                 const singDiv = document.getElementById("singDiv");
+
+                // Set value of retail_price and wholesale_price of update_modal
+                document.getElementById("retail_price").value = retail_price;
+                document.getElementById("wholesale_price").value = wholesale_price;
 
                 if (singDiv) {
                     const retailButton = document.getElementById("retailbutton");
@@ -266,53 +292,93 @@ document.addEventListener("DOMContentLoaded", () => {
                 const holder = document.getElementById("quantleft");
                 var totalQuantity = (no_in_carton_bag * carton_bag_stock) + singles_stock;
                 holder.value = totalQuantity;
-
+                const all_prices = document.getElementById("price_container");
                 if (has_bulk) {
                     
                     buttonHome.append(vRule);
 
                     newBulkDiv.append(bulkText);
-                    for (const key in bulk) {
-                        if (key.startsWith("bulk_type")) {
-                            // Extract value of key to assign to dataset
-                            const element = bulk[key];
-    
-                            // Create button per bulk
-                            const bulkButton = document.createElement("input");
-                            bulkButton.type = "radio";
-                            bulkButton.className = "btn-check bulk";
-                            bulkButton.name = "saleType";
-                            bulkButton.autocomplete = "off";
-                            bulkButton.id = key;
-                            
-                            // Get num of items in bulk
-                            const num = parseInt(key.split("_")[2]);
-                            bulkButton.dataset.number = bulk["no_in_bulk_" + num];
+                    bulk.forEach(item => {
+                        // Extract value of key to assign to dataset
+                        const element = item["bulk_type"];
 
-                            // Get price of bulk
-                            bulkButton.dataset.price = bulk["bulk_price_" + num];
+                        // Create button per bulk item
+                        const bulkButton = document.createElement("input");
+                        bulkButton.type = "radio";
+                        bulkButton.className = "btn-check bulk";
+                        bulkButton.name = "saleType";
+                        bulkButton.autocomplete = "off";
+                        bulkButton.id = element;
+                        
+                        // Get num of items in bulk item
+                        bulkButton.dataset.number = item["no_in_bulk"];
 
-                            // Get image of bulk
-                            bulkButton.dataset.image = bulk["bulk_image_" + num][0];
+                        // Get price of bulk
+                        bulkButton.dataset.price = item["bulk_price"];
 
-                            bulkButton.value = `${element} (${bulk["no_in_bulk_" + num]})`
-                            
-                            // Test this whenever possible
-                            if (parseInt(bulkButton.dataset.number) > totalQuantity) {
-                                bulkButton.disabled = true;
-                            }
-    
-                            // Create label for button
-                            const am = document.createElement("label");
-                            const pm = document.createTextNode(element)
-                            am.setAttribute("for", bulkButton.id);
-                            am.appendChild(pm);
-                            am.className = "btn btn-outline-light me-2";
-    
-                            newBulkDiv.append(bulkButton);
-                            newBulkDiv.append(am);
+                        // Get image of bulk
+                        bulkButton.dataset.image = item["bulk_image"][0];
+
+                        bulkButton.value = `${element} (${item["no_in_bulk"]})`
+                        
+                        // Test this whenever possible
+                        if (parseInt(bulkButton.dataset.number) > totalQuantity) {
+                            bulkButton.disabled = true;
                         }
-                    }
+
+                        // Create label for button
+                        const am = document.createElement("label");
+                        const pm = document.createTextNode(element)
+                        am.setAttribute("for", bulkButton.id);
+                        am.appendChild(pm);
+                        am.className = "btn btn-outline-light me-2";
+
+                        newBulkDiv.append(bulkButton);
+                        newBulkDiv.append(am);
+
+                        // Create HTML elements per bulk
+                        const over_div = document.createElement("div");
+                        over_div.className = "row g-3 mb-2"
+                        
+                        // For the label
+                        const label_div = document.createElement("div");
+                        label_div.className = "col-auto";
+                        const bulk_label = document.createElement("label");
+                        bulk_label.className = "col-form-label";
+                        const label_text = document.createTextNode(`${element} Price:`)
+                        bulk_label.setAttribute("for", `${element}_price`);
+                        bulk_label.append(label_text)
+
+                        label_div.appendChild(bulk_label);
+                        over_div.appendChild(label_div);
+
+                        // For the input itself
+                        const input_over_div = document.createElement("div");
+                        input_over_div.className = "col-auto";
+
+                        const input_div = document.createElement("div");
+                        input_div.className = "input-group";
+                        const input_span = document.createElement("span");
+                        input_span.textContent = "₦"
+                        input_span.className = "input-group-text"
+
+                        const input_bulk_price = document.createElement("input");
+                        input_bulk_price.id = `${element}_price`;
+                        input_bulk_price.className = "form-control";
+                        input_bulk_price.type = "number";
+                        input_bulk_price.autocomplete = "off";
+                        input_bulk_price.placeholder = "0.00";
+                        input_bulk_price.name = "bulk_prices";
+                        input_bulk_price.value = item["bulk_price"];
+
+                        input_div.appendChild(input_span);
+                        input_div.appendChild(input_bulk_price);
+                        input_over_div.appendChild(input_div);
+
+                        over_div.appendChild(input_over_div);
+                        all_prices.append(over_div);
+
+                    });
                 }
                 
                 if (is_carton_bag != "none") {
@@ -351,6 +417,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     newBulkDiv.append(cartButton);
                     newBulkDiv.append(y);
+
+                    const over_div = document.createElement("div");
+                    over_div.className = "row g-3 mb-2"
+                    
+                    // For the label
+                    const label_div = document.createElement("div");
+                    label_div.className = "col-auto";
+                    const cartLabel = document.createElement("label");
+                    cartLabel.className = "col-form-label";
+                    const label_text = document.createTextNode(`${element} Price:`)
+                    cartLabel.setAttribute("for", `${element}_price`);
+                    cartLabel.append(label_text)
+
+                    label_div.appendChild(cartLabel);
+                    over_div.appendChild(label_div);
+
+                    // For the input itself
+                    const input_over_div = document.createElement("div");
+                    input_over_div.className = "col-auto";
+
+                    const input_div = document.createElement("div");
+                    input_div.className = "input-group";
+                    const input_span = document.createElement("span");
+                    input_span.textContent = "₦"
+                    input_span.className = "input-group-text"
+
+                    const cart_input = document.createElement("input");
+                    cart_input.id = `${element}_price`;
+                    cart_input.className = "form-control";
+                    cart_input.type = "number";
+                    cart_input.autocomplete = "off";
+                    cart_input.placeholder = "0.00";
+                    cart_input.name = "bulk_prices";
+                    cart_input.value = carton_bag_price;
+
+                    input_div.appendChild(input_span);
+                    input_div.appendChild(cart_input);
+                    input_over_div.appendChild(input_div);
+
+                    over_div.appendChild(input_over_div);
+                    all_prices.append(over_div);
                 }
 
                 buttonHome.append(newBulkDiv);
@@ -369,9 +476,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("ze_spinner").style.display = "none";
                 document.getElementById("product_content").style.display = "block";
                 document.getElementById("productInfoModalLabel").style.visibility = "visible";
+                btnPrice.disabled = false;
             })
             .catch(error => {
-                // failToast.show();
+                failToast.show();
                 console.error({"error": error});
             });
         })
@@ -956,7 +1064,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     // Customer no longer wants half, or half more
                     const currSaleType = document.querySelector("input[name=saleType]:checked");
                     if (isWhole.checked == false) {
-                        // Customer wants both whole and probably quarter quantities
+                        // Customer wants whole and probably quarter quantities
                         remainder = parseInt(document.getElementById("quantleft").value) - (parseInt(quantity.value) * parseInt(currSaleType.dataset.number));
 
                         // Free up quantity to check for quarter availability
@@ -1001,11 +1109,13 @@ document.addEventListener("DOMContentLoaded", () => {
                             }
                         }
                     } else {
-                        // Customer only wants halved quantities
+                        // Customer only wants whole quantities instead
+                        // alert("Whole quantities instead")
                         remainder = parseInt(document.getElementById("quantleft").value) - (1 * parseInt(currSaleType.dataset.number));
 
                         // Only possible if number is divisible by 4
                         if (parseInt(currSaleType.dataset.number) % 4 == 0) {
+                            // alert("Check first")
                             if ((remainder >= (parseInt(currSaleType.dataset.number) / 4)) && (quartButton.checked == true)) {
                                 // There definitely is enough for quarter
                                 // alert("True disable");
@@ -1031,6 +1141,9 @@ document.addEventListener("DOMContentLoaded", () => {
                                 isWhole.click();
                                 return;
                             }
+                        } else {
+                            // alert("Check second");
+                            isWhole.click();
                         }
                     }
                 }
@@ -1618,6 +1731,88 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("addToCart").style.display = "block";
             document.getElementById("load_button").style.display = "none";
         })
+    }
+
+    const prodPriceModal = document.getElementById("prodPriceModal")
+    if (prodPriceModal) {
+        
+        document.addEventListener("click", event => {
+            const element = event.target;
+
+            if (element.id == "initiate_update") {
+                document.getElementById("initiate_update").style.display = "none";
+                document.getElementById("load_button_two").style.display = "block";
+
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const neoSuccess = document.getElementById("toastPriceSuccess");
+                const successToast = bootstrap.Toast.getOrCreateInstance(neoSuccess)
+                const unSuccess = document.getElementById("toastError");
+                const failToast = bootstrap.Toast.getOrCreateInstance(unSuccess)
+
+                // Obtain data
+                const prod_retail_price = document.getElementById("retail_price").value;
+                const prod_wholesale_price = document.getElementById("wholesale_price").value;
+
+                var bulk_names = []
+
+                const bulk_prices = document.getElementById("price_container");
+                bulk_prices.querySelectorAll("input[name=bulk_prices").forEach(element => {
+                    bulk_names.push(element.id)
+                });
+
+                var info_data = {retail_price: prod_retail_price, wholesale_price: prod_wholesale_price,}
+
+                bulk_names.forEach(bulk_name => {
+                    info_data.bulk_name = document.getElementById(bulk_name).value;
+                });
+
+
+                // Place slash before url to ensure it picks from base url, not current page, if needed
+                fetch("/products/update_product_price/", {
+                    method: "POST",
+                    headers: {'X-CSRFToken': csrftoken,
+                                "Content-Type": "application/json"},
+                    mode: "same-origin",
+                    body: JSON.stringify(info_data),
+                })
+                .then((response) => {
+                    if (!response.ok) {
+                        failToast.show();
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json()})
+                .then(data => {
+                    const result = data.result
+                    if (result === "Successful") {
+                        // Successful update
+                        // Call update price toast
+
+                        // Set timeout to close modal
+                    } else {
+                        failToast.show();
+                    }
+                })
+                .catch(error => {
+                    failToast.show();
+                    console.error({"error": error});
+                });
+                
+            }
+        })
+
+        const toastPriceSuccess = document.getElementById("toastPriceSuccess");
+        toastPriceSuccess.addEventListener("show.bs.toast", () => {
+            var productName = document.querySelector('.modal-title').textContent;
+            document.getElementById("upd_prod").textContent = productName;
+        })
+
+        // Remove bulk & carton fields on close
+        prodPriceModal.addEventListener("hidden.bs.modal", () => {
+            // const bulk_prices = document.getElementById("price_container");
+            // bulk_prices.querySelectorAll("input[name=bulk_prices").forEach(element => {
+            //     element.parentElement.parentElement.parentElement.remove();
+            // });
+        });
     }
 });
 

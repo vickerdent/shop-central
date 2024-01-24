@@ -23,23 +23,27 @@
           <tbody>
             {% for txn in transactions %}
                 <tr>
-                <td>{{ txn.friendly_date }}</td>
-                <td>{{ txn.txn_type }}</td>
-                <td><a href="#" data-details="{{ txn.reference_no }}">{{ txn.name_of_buyer }}</a></td>
-                <td>{{ txn.staff_id }}</td>
-                <td>₦{{ txn.total_amount|intcomma }}</td>
-                <td>₦{{ txn.amount_paid|intcomma }}</td>
-                {% if txn.amount_owed < 0 %}
-                    <td>₦{{ txn.amount_owed|intcomma|cut:"-" }} (Change)</td>
-                {% elif txn.amount_owed == 0 %}
-                    <td>₦{{ txn.amount_owed|intcomma }}</td>
-                {% else %}
-                    <td>₦{{ txn.amount_owed|intcomma }} (Debt)</td>
-                {% endif %}
+                    <td>{{ txn.checkout_date|date:"D d M Y" }} {{ txn.checkout_date|time:"H:i" }}</td>
+                    <td>{{ txn.txn_type }}</td>
+                    <td><a href="#" data-details="{{ txn.reference_no }}">{{ txn.name_of_buyer }}</a></td>
+                    <td>{{ txn.staff_id }}</td>
+                    <td>₦{{ txn.total_amount|intcomma }}</td>
+                    <td>₦{{ txn.amount_paid|intcomma }}</td>
+                    {% if txn.txn_type == "Cash Payment" %}
+                        <td>N.A.</td>
+                    {% else %}
+                        {% if txn.amount_owed < 0 %}
+                            <td>₦{{ txn.amount_owed|intcomma|cut:"-" }} (Change)</td>
+                        {% elif txn.amount_owed == 0 %}
+                            <td>₦{{ txn.amount_owed|intcomma }}</td>
+                        {% else %}
+                            <td>₦{{ txn.amount_owed|intcomma }} (Debt)</td>
+                        {% endif %}
+                    {% endif %}
                 </tr>
             {% empty %}
                 <tr>
-                    No transactions carried out yet. <a href="{% url 'home' %}">Purchase</a> some products for customers to see them here.
+                    No transactions carried out yet today. <a href="{% url 'home' %}">Purchase</a> some products for customers to see them here.
                 </tr>
             {% endfor %}
           </tbody>
@@ -47,7 +51,35 @@
 </div>
 
 <div class="d-block d-md-none">
-    Only on little devices
+    {% for txn in transactions %}
+    <div class="me-3 mb-3 oneTransact">
+        <a class="link-offset-2 link-underline link-underline-opacity-0" href="#" data-details="{{ txn.reference_no }}">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ txn.name_of_buyer }}</h5>
+                    <h6 class="card-subtitle mb-2 text-body-secondary">Transaction Type: {{ txn.txn_type }}</h6>
+                    <h6 class="card-subtitle mb-2 text-body-secondary">Total Amount: ₦{{ txn.total_amount|intcomma }}  || Amount Paid: ₦{{ txn.amount_paid|intcomma }}</h6>
+                    <p class="card-text">Transaction Date: {{ txn.checkout_date|date:"D d M Y" }} {{ txn.checkout_date|time:"H:i" }}</p>
+                    <p class="card-text">
+                        Balance: {% if txn.txn_type == "Cash Payment" %}
+                        N.A.
+                        {% else %}
+                            {% if txn.amount_owed < 0 %}
+                                ₦{{ txn.amount_owed|intcomma|cut:"-" }} (Change)
+                            {% elif txn.amount_owed == 0 %}
+                                ₦{{ txn.amount_owed|intcomma }}
+                            {% else %}
+                                ₦{{ txn.amount_owed|intcomma }} (Debt)
+                            {% endif %}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% empty %}
+        No transactions carried out yet today. <a href="{% url 'home' %}">Purchase</a> some products for customers to see them here.
+    {% endfor %}
 </div>
 
 {% endblock %}

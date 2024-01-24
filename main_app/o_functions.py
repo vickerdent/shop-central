@@ -7,7 +7,7 @@ from utils import security_guard
 
 # Define the callback that specifies the sequence of operations to perform inside the transactions.
 # customer_name, amount_paid, reference_no
-def payment_callback(session, customer_name, transaction_doc, slugs_list, quants_list, debtor_doc=None):
+def payment_callback(session, customer_name, transaction_doc, slugs_list=None, quants_list=None, debtor_doc=None):
     """
     Callback function that specifies the sequence of 
     operations to perform inside a transaction
@@ -23,10 +23,11 @@ def payment_callback(session, customer_name, transaction_doc, slugs_list, quants
     products_collection = session.client.JDS.products
 
     # Update all products respectively in cart at checkout
-    for index, slug in enumerate(slugs_list):
-        products_collection.update_one({"slug": slug},
-                                       {"$inc": {"singles_stock": -int(float(quants_list[index]))}},
-                                       session=session)
+    if slugs_list and quants_list:
+        for index, slug in enumerate(slugs_list):
+            products_collection.update_one({"slug": slug},
+                                        {"$inc": {"singles_stock": -int(float(quants_list[index]))}},
+                                        session=session)
     
     # Delete cart from collection
     staff_carts_collection.delete_one({"name_of_buyer": customer_name, 

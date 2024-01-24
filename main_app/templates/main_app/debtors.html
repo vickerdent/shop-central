@@ -117,7 +117,7 @@
                   <h4 class="mb-0" id="debtor_name"></h4>
                   <p class="mb-0" id="debtor_details"></p>
                   <p class="mt-0" id="more_debtor_details"></p>
-                  <h5>₦<span id="amount_owed"></span></h5>
+                  <h5>Amount Owed: ₦<span id="amount_owed"></span></h5>
                   <input type="hidden" name="hidden_item_price" data-slug="{{ item.product_slug }}" data-customer="{{ cart.name_of_buyer }}" value="{{ item.product_price }}">
                 </div>
               </div>
@@ -145,45 +145,6 @@
                       <input type="number" class="form-control" id="amount_collected" placeholder="0.00">
                     </div>
                   </div>
-                </div>
-                <br>
-
-                <!-- Date -->
-                <div class="nativeDatePicker row g-3">
-                  <div class="col-auto">
-                    <label for="date_collected" class="col-form-label">Date Collected:</label>
-                  </div>
-                  <div class="col-auto">
-                    <input type="date" id="date_collected" name="date_collected" class="form-control" />
-                  </div>
-                </div>
-                <p class="fallbackLabel">Date Collected:</p>
-                <div class="fallbackDatePicker">
-                  <span>
-                    <label for="day">Day:</label>
-                    <select id="day" name="day"></select>
-                  </span>
-                  <span>
-                    <label for="month">Month:</label>
-                    <select id="month" name="month">
-                      <option selected>January</option>
-                      <option>February</option>
-                      <option>March</option>
-                      <option>April</option>
-                      <option>May</option>
-                      <option>June</option>
-                      <option>July</option>
-                      <option>August</option>
-                      <option>September</option>
-                      <option>October</option>
-                      <option>November</option>
-                      <option>December</option>
-                    </select>
-                  </span>
-                  <span>
-                    <label for="year">Year:</label>
-                    <select id="year" name="year"></select>
-                  </span>
                 </div>
               </div>
               <div id="make_payment_form">
@@ -228,7 +189,6 @@
           <h3 class="d-flex justify-content-center ms-5 me-5">Transaction Successful</h3>
           <p class="fs-5 d-flex justify-content-center">Tran. ID: <span class="span-space">.</span><span id="txnInfo"></span></p>
           <p class="fs-5 mt-0 d-flex justify-content-center">Ref. No.: <span class="span-space">.</span><span id="refNo"></span></p>
-          <p class="fs-5 d-flex justify-content-center">You can give the customer his/her goods.</p>
           <p class="fs-5 d-flex justify-content-center" id="descrip_text"></p>
           <p class="fs-5 d-flex justify-content-center" id="more_text"></p>
           <br>
@@ -247,11 +207,11 @@
     <div class="d-flex flex-wrap justify-content-start">
       {% for debtor in debtors %}
           <div class="me-3 mb-3 oneDebtor">
-            <a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-bs-toggle="modal" data-bs-target="#editDebtorModal" data-slug="{{ debtor.slug }}">
+            <a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-bs-toggle="modal" data-bs-target="#editDebtorModal" data-slug="{{ debtor.phone_no.0.number }}">
               <div class="card h-100">
                   <img src="{{ debtor.image.0 }}" class="card-img-top" alt="Product's Image" width="70">
                   <div class="card-body">
-                      {{ debtor.name|truncatechars:32 }} <br>
+                      {{ debtor.name }} || {{ debtor.phone_no.0.dialing_code }}{{ debtor.phone_no.0.number }} <br>
                       <strong>₦{{ debtor.amount_owed|intcomma }}</strong>
                   </div>
               </div>

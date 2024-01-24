@@ -23,7 +23,7 @@
             </div>
             <div class="modal-body text-light">
               <div class="d-flex justify-content-center">
-                <div id="ze_spinner" class="spinner-grow" style="width: 3rem; height: 3rem; margin: 150px;" role="status">
+                <div id="ze_spinner" class="spinner-grow" style="width: 3rem; height: 3rem; margin-right: 150px; margin-top: 200px; margin-left: 150px; margin-bottom: 300px;" role="status">
                 </div>
               </div>
               {% csrf_token %}
@@ -141,24 +141,69 @@
       </div>
     </div>
 
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+      <!-- Price Update -->
+      <div class="toast text-bg-success" role="alert" aria-live="assertive" aria-atomic="true" id="toastPriceSuccess">
+        <div class="toast-header">
+          <!-- <img src="" class="rounded me-2" alt="Our Logo"> -->
+          <strong class="me-auto">Jovimifah Destiny Store</strong>
+          <small class="text-body-secondary">Just now</small>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body text-light">
+          <span id="upd_prod"></span>'s price updated successfully.
+        </div>
+      </div>
+    </div>
+
     <!-- Price modal -->
     <div class="modal fade" id="prodPriceModal" aria-hidden="true" aria-labelledby="prodPriceModalLabel2" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-theme="dark">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5 text-light" id="prodPriceModalLabel2">Update Price</h1>
-            <button type="button" class="btn-close" data-bs-target="#productInfoModal" data-bs-toggle="modal" aria-label="Close"></button>
-          </div>
           <div class="modal-body text-light">
-            Hide this modal and show the first with the button below.
+            <div class="d-flex justify-content-center mb-2">
+              <img src="" alt="" id="update_pic">
+            </div>
+            <div class="d-flex justify-content-center mb-2">
+              <p class="fs-5" id="product_name"></p>
+            </div>
+            <div id="price_container">
+              <!-- Retail Price -->
+              <div class="row g-3 mb-2">
+                <div class="col-auto">
+                  <label for="amount_collected" class="col-form-label">Retail Price:</label>
+                </div>
+                <div class="col-auto">
+                  <div class="input-group">
+                    <span class="input-group-text">₦</span>
+                    <input type="number" class="form-control" id="retail_price" placeholder="0.00">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Wholesale Price -->
+              <div class="row g-3 mb-2">
+                <div class="col-auto">
+                  <label for="amount_collected" class="col-form-label">Wholesale Price:</label>
+                </div>
+                <div class="col-auto">
+                  <div class="input-group">
+                    <span class="input-group-text">₦</span>
+                    <input type="number" class="form-control" id="wholesale_price" placeholder="0.00">
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Bulk prices added after this line -->
+            </div>
           </div>
           <div class="modal-footer">
-              <a class="btn btn-light" data-bs-target="#productInfoModal" data-bs-toggle="modal">Update</a>
+              <button type="button" class="btn btn-light" id="initiate_update">Update</button>
               <button type="button" id="load_button_two" class="btn btn-light">
                 <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
                 <span role="status">Loading...</span>
               </button>
-              <button type="button" class="btn btn-secondary" data-bs-target="#productInfoModal" data-bs-toggle="modal">Cancel</button>
+              <button type="button" class="btn btn-secondary" data-bs-target="#productInfoModal" data-bs-toggle="modal" id="cancel_price">Cancel</button>
           </div>
         </div>
       </div>
