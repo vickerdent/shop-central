@@ -1760,7 +1760,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     bulk_names.push(element.id)
                 });
 
-                var info_data = {retail_price: prod_retail_price, wholesale_price: prod_wholesale_price,}
+                const info_data = {retail_price: prod_retail_price, wholesale_price: prod_wholesale_price,}
 
                 bulk_names.forEach(bulk_name => {
                     info_data.bulk_name = document.getElementById(bulk_name).value;
