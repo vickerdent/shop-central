@@ -783,27 +783,6 @@ def edit_product(request, slug):
         messages.error(request, "An internal error occurred. Please try again later.")
         return render(request, "main_app/404.html", {})
     
-def edit_product_price(request):
-    # then check if user is staff or admin
-    curr_user = user_collection.find_one({"email": request.user.email})
-
-    if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
-                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
-                         curr_user["address"], curr_user["state"], curr_user["image"],
-                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
-        
-        if a_user.is_admin or a_user.is_staff:
-            if request.method == "POST":
-                post_data = json.loads(request.body.decode("utf-8"))
-
-                cust_phone_no = post_data.get("d_phone_no")
-
-        else:
-            return JsonResponse(data={"result": False})
-    else:
-        return JsonResponse(data={"result": False})
-
 @login_required
 def debtors(request):
     # Get all debtors/buyers from DB
@@ -1312,6 +1291,30 @@ def update_product_price(request):
         if a_user.is_staff or a_user.is_admin:
             if request.method == "POST":
                 post_data = json.loads(request.body.decode("utf-8"))
+                product_slug = post_data.get("prod_slug")
+                retail_price = post_data.get("retail_price")
+                wholesale_price = post_data.get("wholesale_price")
+                carton_bag_price = post_data.get("cart_price")
+
+                fin_retail = Decimal(retail_price) + Decimal("0.00")
+                fin_wholesale_price = Decimal(wholesale_price) + Decimal("0.00")
+                if carton_bag_price != "NA":
+                    fin_carton_price = Decimal(carton_bag_price) + Decimal("0.00")
+                else:
+                    fin_carton_price = Decimal("0.00")
+
+                products_collection.update_one({"slug": product_slug},
+                                               {"$set": {
+                                                   "retail_price": str(fin_retail),
+                                                   "wholesale_price": str(fin_wholesale_price),
+                                                   "carton_bag_price": str(fin_carton_price) 
+                                               }})
+                
+                # Run loop through post data to pick bulk
+                
+                
+
+                return JsonResponse(data={"result": "Successful"})
 
         else:
             return JsonResponse(data={"result": False})

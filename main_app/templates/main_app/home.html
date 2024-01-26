@@ -171,12 +171,12 @@
               <!-- Retail Price -->
               <div class="row g-3 mb-2">
                 <div class="col-auto">
-                  <label for="amount_collected" class="col-form-label">Retail Price:</label>
+                  <label for="retail_price" class="col-form-label">Retail Price:</label>
                 </div>
                 <div class="col-auto">
                   <div class="input-group">
                     <span class="input-group-text">₦</span>
-                    <input type="number" class="form-control" id="retail_price" placeholder="0.00">
+                    <input type="number" class="form-control" id="retail_price" placeholder="0.00" autocomplete="off">
                   </div>
                 </div>
               </div>
@@ -184,22 +184,35 @@
               <!-- Wholesale Price -->
               <div class="row g-3 mb-2">
                 <div class="col-auto">
-                  <label for="amount_collected" class="col-form-label">Wholesale Price:</label>
+                  <label for="wholesale_price" class="col-form-label">Wholesale Price:</label>
                 </div>
                 <div class="col-auto">
                   <div class="input-group">
                     <span class="input-group-text">₦</span>
-                    <input type="number" class="form-control" id="wholesale_price" placeholder="0.00">
+                    <input type="number" class="form-control" id="wholesale_price" placeholder="0.00" autocomplete="off">
                   </div>
                 </div>
               </div>
               
               <!-- Bulk prices added after this line -->
+
+              <!-- Carton Price -->
+              <div class="row g-3 mb-2">
+                <div class="col-auto">
+                  <label for="carton_bag_price" class="col-form-label" id="carton_label">Carton Price:</label>
+                </div>
+                <div class="col-auto">
+                  <div class="input-group">
+                    <span class="input-group-text">₦</span>
+                    <input type="number" class="form-control" id="carton_bag_price" placeholder="0.00" autocomplete="off">
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div class="modal-footer">
               <button type="button" class="btn btn-light" id="initiate_update">Update</button>
-              <button type="button" id="load_button_two" class="btn btn-light">
+              <button type="button" id="load_button_two" class="btn btn-light" disabled>
                 <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
                 <span role="status">Loading...</span>
               </button>
