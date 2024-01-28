@@ -5,8 +5,10 @@ product = {"bulk_type_1": "Victor", "bulk_price_1": "Joshua", "no_in_bulk_1": "D
             "bulk_type_4": "Loise", "bulk_price_4": "Queen", "no_in_bulk_4": "Zebra", "bulk_image_4": "Giraffe"}
 
 # run through these to extract only bulk, then implement in views
-{'retail_price': '2000.00', 'wholesale_price': '1980.00', 'cart_price': '50000.00', 'Pack': '11600.00', 'Dozen': '23200.00'}
-{'retail_price': '80.00', 'wholesale_price': '80.00', 'cart_price': '18000.00', 'Roll': '750.00'}
+# run through post data, check if item in array matches both slug and item's true_sale_type
+# True sale type: Roll, Pack, retail_price;, wholesale_price, carton_bag_price etc.
+
+
 # for item in product["all_of"]:
 #     if item["human_2"] == "Queen":
 #         print("Found the human")

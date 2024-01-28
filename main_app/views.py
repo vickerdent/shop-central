@@ -622,6 +622,7 @@ def find_staff_cart(request):
         cartName = post_data.get("cartName")
         prodName = post_data.get("prodName")
         saleType = post_data.get("saleType").strip()
+        true_sale_type = post_data.get("true_sale_type")
         prodPrice = post_data.get("prodPrice")
         prodImage = post_data.get("prodImage")
         prodQuantity = post_data.get("prodQuantity")
@@ -653,6 +654,7 @@ def find_staff_cart(request):
                             # item["product_quantity_" + str(zehNum)] = float(prodQuantity)
                             updateResult = staff_carts_collection.update_one({"name_of_buyer": cartName}, 
                                                                 {"$set": {"items.$[elem].sale_type": saleType,
+                                                                          "items.$[elem].true_sale_type": true_sale_type,
                                                                           "items.$[elem].product_price": str(prodPrice),
                                                                           "items.$[elem].product_quantity": str(prodQuantity),
                                                                           "items.$[elem].total_product_quantity": str(totalProdQuantity),
@@ -671,6 +673,7 @@ def find_staff_cart(request):
             # Create dictionary for new item
             new_item = SON([("product_name", prodName),
                             ("sale_type", saleType),
+                            ("true_sale_type", true_sale_type),
                             ("product_price", str(prodPrice)),
                             ("product_image", prodImage),
                             ("product_quantity", str(prodQuantity)),
@@ -678,6 +681,7 @@ def find_staff_cart(request):
                             ("sub_total", str(finSub)),
                             ("product_slug", prodSlug)])
 
+            # SON is reportedly better than dict datatype
             # new_item = {"product_name_" + str(curr_num + 1): prodName,
             #             "sale_type_" + str(curr_num + 1): saleType,
             #             "product_price_" + str(curr_num + 1): prodPrice,
@@ -697,6 +701,7 @@ def find_staff_cart(request):
             # Create dictionary for new item
             new_item = SON([("product_name", prodName),
                             ("sale_type", saleType),
+                            ("true_sale_type", true_sale_type),
                             ("product_price", str(prodPrice)),
                             ("product_image", prodImage),
                             ("product_quantity", str(prodQuantity)),
@@ -1294,7 +1299,7 @@ def update_product_price(request):
                 product_slug = post_data.get("prod_slug")
                 retail_price = post_data.get("retail_price")
                 wholesale_price = post_data.get("wholesale_price")
-                carton_bag_price = post_data.get("cart_price")
+                carton_bag_price = post_data.get("carton_bag_price")
 
                 fin_retail = Decimal(retail_price) + Decimal("0.00")
                 fin_wholesale_price = Decimal(wholesale_price) + Decimal("0.00")
@@ -1307,11 +1312,72 @@ def update_product_price(request):
                                                {"$set": {
                                                    "retail_price": str(fin_retail),
                                                    "wholesale_price": str(fin_wholesale_price),
-                                                   "carton_bag_price": str(fin_carton_price) 
+                                                   "carton_bag_price": str(fin_carton_price),
+                                                   "price_modified_date": datetime.now()
                                                }})
                 
-                # Run loop through post data to pick bulk
-                
+                if len(post_data) > 4:
+                    # Run loop through post data to pick bulk
+                    for item in post_data:
+                        if not item.endswith("_price") and item != "prod_slug":
+                            # Condition only selects bulk prices
+                            products_collection.update_one({"slug": product_slug},
+                                                {"$set": {
+                                                    "bulk.$[elem].bulk_price": str(Decimal(post_data[item]) + Decimal("0.00"))
+                                                }},
+                                                array_filters=[{"elem.bulk_type": item}])
+
+                        if item != "prod_slug":
+                            # Run operation for product in staff_carts, and even buyer carts, when the time comes
+                            # Perform price updates first
+                            result = staff_carts_collection.update_many({"items.product_slug": product_slug},
+                                                               {"$set": {
+                                                                   "items.$[elem].product_price": str(Decimal(post_data[item]) + Decimal("0.00"))
+                                                               }},
+                                                               array_filters=[{"elem.product_slug": product_slug,
+                                                                               "elem.true_sale_type": item}])
+                else:
+                    for item in post_data:
+                        if item != "prod_slug":
+                            # Run operation for product in staff_carts, and even buyer carts, when the time comes
+                            # Perform price updates first
+                            result = staff_carts_collection.update_many({"items.product_slug": product_slug},
+                                                               {"$set": {
+                                                                   "items.$[elem].product_price": str(Decimal(post_data[item]) + Decimal("0.00"))
+                                                               }},
+                                                               array_filters=[{"elem.product_slug": product_slug,
+                                                                               "elem.true_sale_type": item}])
+                            
+                # Can now perform calculations for all product prices in all carts
+                all_carts = list(staff_carts_collection.find({}))
+                for cart in all_carts:
+                    for cart_item in cart["items"]:
+                        if cart_item["product_slug"] == product_slug:
+                            # Found item to work with
+                            ze_price = cart_item["product_price"]
+                            ze_quantity = cart_item["product_quantity"]
+
+                            # Calculate subtotal
+                            prev_subtotal = Decimal(cart_item["sub_total"])
+                            new_subtotal = Decimal(ze_price) * Decimal(ze_quantity)
+
+                    if new_subtotal:
+                        # Confirm variable exists. There can only be one product-update per cart per time
+                        old_cart_total = cart["total_amount"]
+                        old_cart_owed = cart["amount_owed"]
+
+                        new_cart_total = Decimal(old_cart_total) - prev_subtotal + new_subtotal
+
+                        # Update cart, using cart's buyer name
+                        staff_carts_collection.update_one({"name_of_buyer": cart["name_of_buyer"]},
+                                                          {"$set": {
+                                                              "items.$[elem].sub_total": str(new_subtotal),
+                                                              "total_amount": str(new_cart_total),
+                                                              "amount_owed": str(new_cart_total)
+                                                          }},
+                                                          array_filters=[{"elem.product_slug": product_slug}])
+
+                    
                 
 
                 return JsonResponse(data={"result": "Successful"})

@@ -201,6 +201,36 @@ document.addEventListener("DOMContentLoaded", () => {
                     wholesaleButton.dataset.price = wholesale_price;
                     wholesaleButton.dataset.image = product_image[0];
                     wholesaleButton.dataset.divisibility = is_divisible.toString();
+                    const discount_button = document.getElementById("discountSwitch");
+                    if (discount_button) {
+                        if (is_discount) {
+                            discount_button.style.display = "block";
+                        } else {
+                            discount_button.style.display = "none";
+                        }
+                    } else {
+                        if (is_discount) {
+                            const discountDiv = document.createElement("div");
+                            discountDiv.className = "form-check form-switch";
+                            discountDiv.id = "discounting";
+                            
+                            const discountButton = document.createElement("input");
+                            discountButton.type = "checkbox";
+                            discountButton.id = "discountSwitch";
+                            discountButton.className = "form-check-input";
+                            discountButton.setAttribute("role", "switch");
+
+                            const discountLabel = document.createElement("label");
+                            discountLabel.appendChild(document.createTextNode("Discount the Retail Price"));
+                            discountLabel.className = "form-check-label text-light"
+                            discountLabel.setAttribute("for", discountButton.id);
+
+                            discountDiv.appendChild(discountLabel);
+                            discountDiv.appendChild(discountButton);
+                            saleIdent.append(discountDiv);
+                        }
+                    }
+                    
                 } else {
                     if (is_discount) {
                         const discountDiv = document.createElement("div");
@@ -243,6 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     retailButton.id = "retailbutton";
                     retailButton.dataset.price = retail_price;
                     retailButton.value = "Pieces (Retail)";
+                    retailButton.dataset.truesale = "retail_price";
                     retailButton.dataset.image = product_image[0];
                     retailButton.dataset.number = "1"
                     retailButton.dataset.divisibility = is_divisible.toString();
@@ -266,6 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     wholesaleButton.id = "wholesalebutton";
                     wholesaleButton.dataset.price = wholesale_price;
                     wholesaleButton.value = "Pieces (Wholesale)";
+                    wholesaleButton.dataset.truesale = "wholesale_price";
                     wholesaleButton.dataset.image = product_image[0];
                     wholesaleButton.dataset.number = "1"
                     wholesaleButton.dataset.divisibility = is_divisible.toString();
@@ -325,6 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         bulkButton.dataset.image = item["bulk_image"][0];
 
                         bulkButton.value = `${element} (${item["no_in_bulk"]})`
+                        bulkButton.dataset.truesale = `${element}`
                         
                         // Test this whenever possible
                         if (parseInt(bulkButton.dataset.number) > totalQuantity) {
@@ -418,6 +451,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const y = document.createElement("label");
                     const z = document.createTextNode(element)
                     cartButton.value = element;
+                    cartButton.dataset.truesale = "carton_bag_price"
                     y.setAttribute("for", cartButton.id);
                     y.appendChild(z);
                     y.className = "btn btn-outline-light me-2";
@@ -1312,6 +1346,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // button is the add to cart button that adds item to customer's cart
                 document.getElementById("addToCart").style.display = "none";
                 document.getElementById("load_button").style.display = "block";
+                document.getElementById("cancel_buy").disabled = true;
 
                 const custName = document.getElementById("openCart");
                 
@@ -1328,12 +1363,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 const productImage = document.getElementById("retailbutton").dataset.image;
                 const sluger = document.getElementById("priceCall").dataset.slug;
                 const productPrice = document.getElementById("priceHold").value;
+                const truesale = currSaleType.dataset.truesale;
                 const productName = document.querySelector('.modal-title').textContent;
                 var totalProdQuant = parseFloat(currSaleType.dataset.number) * finQuantity
 
                 const cartData = {cartName: custName.value, prodName: productName,
                 saleType: currSaleType.value, prodPrice: productPrice, prodImage: productImage,
-                prodQuantity: finQuantity, totalProdQuantity: totalProdQuant, prodSlug: sluger};
+                prodQuantity: finQuantity, totalProdQuantity: totalProdQuant, prodSlug: sluger,
+                true_sale_type: truesale};
 
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
@@ -1712,6 +1749,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("productInfoModalLabel").style.visibility = "hidden";
             document.getElementById("addToCart").style.display = "block";
             document.getElementById("load_button").style.display = "none";
+            document.getElementById("cancel_buy").disabled = false;
         })
     }
 
@@ -1746,19 +1784,40 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        document.querySelector("#carton_bag_price").onkeyup = () => {
-            if (document.querySelector("#carton_bag_price").value.trim().length > 0 && parseFloat(document.querySelector("#carton_bag_price").value) > 0 && !(document.getElementById("carton_bag_price").value.startsWith("0"))) {
-                document.querySelector("#carton_bag_price").classList.remove("is-invalid");
+        document.getElementById("carton_bag_price").onkeyup = () => {
+            if (document.getElementById("carton_bag_price").value.trim().length > 0 && parseFloat(document.getElementById("carton_bag_price").value) > 0 && !(document.getElementById("carton_bag_price").value.startsWith("0"))) {
+                document.getElementById("carton_bag_price").classList.remove("is-invalid");
                 if (document.getElementById("retail_price").value.trim().length > 0) {
                     if (document.getElementById("wholesale_price").value.trim().length > 0) {
                         document.getElementById("initiate_update").disabled = false;
                     }
                 }
             } else {
-                document.querySelector("#carton_bag_price").classList.add('is-invalid');
+                document.getElementById("carton_bag_price").classList.add('is-invalid');
                 document.getElementById("initiate_update").disabled = true;
             }
         }
+
+        document.addEventListener("keyup", event => {
+            const element = event.target;
+            
+            if (element.name == "bulk_prices") {
+                if (element.value.trim().length > 0 && parseFloat(element.value) > 0 && !(element.value.startsWith("0"))) {
+                    element.classList.remove("is-invalid");
+                    if (document.getElementById("retail_price").value.trim().length > 0) {
+                        if (document.getElementById("wholesale_price").value.trim().length > 0) {
+                            if (document.getElementById("carton_bag_price").value.trim().length > 0) {
+                                document.getElementById("initiate_update").disabled = false;
+                            }
+                        }
+                    }
+                } else {
+                    element.classList.add("is-invalid");
+                    document.getElementById("initiate_update").disabled = true;
+                }
+            }
+
+        })
         
         document.addEventListener("click", event => {
             const element = event.target;
@@ -1796,19 +1855,24 @@ document.addEventListener("DOMContentLoaded", () => {
                 //     return false;
                 // }
 
-                for (let index = 0; index < bulk_prices.querySelector("input[name=bulk_prices").length; index++) {
-                    const element = bulk_prices.querySelector("input[name=bulk_prices")[index];
-                    if (element.value.trim().length < 1 || parseFloat(element.value) == 0) {
-                        element.classList.add('is-invalid');
-                        alert("Enter valid retail price");
-                        element.focus();
-                        return false;
+                const all_bulk = bulk_prices.querySelectorAll("input[name=bulk_prices");
+
+                for (let index = 0; index < all_bulk.length; index++) {
+                    const element = all_bulk[index];
+                    if (element) {
+                        if (element.value.trim().length < 1 || parseFloat(element.value) == 0) {
+                            element.classList.add('is-invalid');
+                            alert("Enter valid bulk price");
+                            element.focus();
+                            return false;
+                        }
                     }
                 }
                 
 
                 document.getElementById("initiate_update").style.display = "none";
                 document.getElementById("load_button_two").style.display = "block";
+                document.getElementById("cancel_price").disabled = true;
 
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 const neoSuccess = document.getElementById("toastPriceSuccess");
@@ -1834,7 +1898,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
 
                 const info_data = {prod_slug: the_product, retail_price: prod_retail_price,
-                wholesale_price: prod_wholesale_price, cart_price: prod_cart_price}
+                wholesale_price: prod_wholesale_price, carton_bag_price: prod_cart_price}
 
                 bulk_names.forEach(bulk_name => {
                     info_data[`${bulk_name}`] = document.querySelector(`input[data-type=${bulk_name}]`).value;
@@ -1862,7 +1926,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         // Call update price toast
                         successToast.show();
                         // Set timeout to close modal
-                        setTimeout(price_modal.hide(), 3000)
+                        price_modal.hide()
+                        location.reload();
                     } else {
                         failToast.show();
                     }
@@ -1885,6 +1950,7 @@ document.addEventListener("DOMContentLoaded", () => {
         prodPriceModal.addEventListener("hidden.bs.modal", () => {
             document.getElementById("initiate_update").style.display = "block";
             document.getElementById("load_button_two").style.display = "none";
+            document.getElementById("cancel_price").disabled = false;
         });
     }
 });

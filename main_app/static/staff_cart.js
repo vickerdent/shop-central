@@ -593,6 +593,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     // submit debtor information, then to transaction view
                     document.getElementById("submitDebt").style.display = "none";
                     document.getElementById("load_button").style.display = "block";
+                    document.getElementById("cancelDebtButton").disabled = true;
                     const cust_first_name = document.getElementById("first_name").value;
                     const cust_last_name = document.getElementById("last_name").value;
                     const cust_email = document.getElementById("email").value;
@@ -653,6 +654,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     // Debtor is old and only amount owed needs to be modified
                     document.getElementById("submitDebt").style.display = "none";
                     document.getElementById("load_button").style.display = "block";
+                    document.getElementById("cancelDebtButton").disabled = false;
                     const debtor_phone = document.getElementById("upd_act_phone").value;
                     const new_debt = document.getElementById("upd_act_new_amount").value;
                     const total_debt = document.getElementById("upd_act_total_debt").value;
@@ -761,6 +763,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             document.getElementById("submitDebt").style.display = "block";
             document.getElementById("load_button").style.display = "none";
+            document.getElementById("cancelDebtButton").disabled = false;
         });
     }
 
@@ -805,6 +808,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (element.id == "confirm_delete") {
                 document.getElementById("confirm_delete").style.display = "none";
                 document.getElementById("load_button_two").style.display = "block";
+                document.getElementById("confirm_cancel").disabled = true;
                 
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 const item_data = {item_slug: element.dataset.delslug,
@@ -866,6 +870,7 @@ document.addEventListener("DOMContentLoaded", () => {
         confirm_delete_modal.addEventListener("hidden.bs.modal", () => {
             document.getElementById("load_button_two").style.display = "none";
             document.getElementById("confirm_delete").style.display = "block";
+            document.getElementById("confirm_cancel").disabled = false;
         })
     }
 });
