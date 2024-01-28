@@ -1,4 +1,20 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // For search product feature
+    document.getElementById("search_debtors").addEventListener("input", function(event) {
+        const search_term = event.target.value.toLowerCase();
+        const all_products = document.querySelectorAll(".oneDebtor a div div");
+
+        all_products.forEach(element => {
+            const item_text = element.textContent.toLowerCase();
+
+            if (item_text.includes(search_term)) {
+                element.parentElement.parentElement.parentElement.style.display = "block";
+            } else {
+                element.parentElement.parentElement.parentElement.style.display = "none";
+            }
+        });
+    });
+
     const unSuccess = document.getElementById("toastError")
     const failToast = bootstrap.Toast.getOrCreateInstance(unSuccess)
 

@@ -521,7 +521,8 @@ class CarouselForm(forms.Form):
 
     car_image_3 = forms.ImageField(required=False, widget=forms.widgets.ClearableFileInput(
         attrs={"class":"form-control", "id": "car_image_3"}), label="Slide 3")
-    
+
+
 class EditProductForm(forms.Form):
     """Form to edit products already in MongoDB in the
     web application for use"""
@@ -547,14 +548,12 @@ class EditProductForm(forms.Form):
         ("bag", "Bag"),
     ]
 
-    
-
     brand_name = forms.CharField(label="Brand Name", required=True, max_length=150, widget=forms.widgets.TextInput(
-        attrs={"name": "brand_name", "class": "form-control", "autofocus": "true", 
+        attrs={"name": "brand_name", "class": "form-control", "autofocus": "true",
                "placeholder": "The Brand's Name"}), label_suffix="")
     
     product_name = forms.CharField(label="Product Name", required=True, max_length=150, widget=forms.widgets.TextInput(
-        attrs={"name": "product_name", "class": "form-control", 
+        attrs={"name": "product_name", "class": "form-control",
                "placeholder": "The Product's Name"}), label_suffix="")
     
     size = forms.CharField(label="Size", required=True, max_length=150, widget=forms.widgets.TextInput(

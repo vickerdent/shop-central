@@ -1,5 +1,21 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+    // For search product feature
+    document.getElementById("search_product").addEventListener("input", function(event) {
+        const search_term = event.target.value.toLowerCase();
+        const all_products = document.querySelectorAll(".oneProduct a div div");
+
+        all_products.forEach(element => {
+            const item_text = element.textContent.toLowerCase();
+
+            if (item_text.includes(search_term)) {
+                element.parentElement.parentElement.parentElement.style.display = "block";
+            } else {
+                element.parentElement.parentElement.parentElement.style.display = "none";
+            }
+        });
+    });
+
     const productInfoModal = document.getElementById('productInfoModal')
     if (productInfoModal) {
         productInfoModal.addEventListener('show.bs.modal', event => {

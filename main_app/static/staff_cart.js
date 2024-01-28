@@ -751,7 +751,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     element.style.display = "none";
                 }
             });
-        })
+        });
 
         // Remove info on close
         updateDebtorModal.addEventListener("hidden.bs.modal", () => {

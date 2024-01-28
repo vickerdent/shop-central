@@ -3,7 +3,6 @@ from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
 # from datetime import datetime, timedelta
 from email.message import EmailMessage
-from main_app.models import Transaction
 from infisical import InfisicalClient
 load_dotenv()
 

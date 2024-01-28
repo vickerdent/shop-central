@@ -249,45 +249,52 @@
         <span class="visually-hidden">Next</span>
         </button>
     </div> -->
-    <div class="d-flex flex-wrap justify-content-center">
+
+    {% if is_staff %}
+      <div class="row mb-3">
+        <div class="col-sm-7">
+          <input type="search" class="form-control" name="search_product" id="search_product" autocomplete="off" placeholder="Search products">
+        </div>
+      </div>
+      
+      <div class="d-flex flex-wrap justify-content-center">
         <!-- Available items (Items in stock) -->
         {% for item in inventory %}
-          {% if is_staff %}
-            {% if item.singles_stock > 0 %}
-              <div class="me-3 mb-3 oneProduct">
-                <a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-bs-toggle="modal" data-bs-target="#productInfoModal" data-slug="{{ item.slug }}">
-                  <div class="card h-100">
-                      <img src="{{ item.product_image.0 }}" class="card-img-top" alt="Product's Image" width="50">
-                      <div class="card-body">
-                          {{ item.name|truncatechars:32 }} <br>
-                          <strong>₦{{ item.retail_price|intcomma }}</strong>
-                      </div>
+          {% if item.singles_stock > 0 %}
+            <div class="me-3 mb-3 oneProduct">
+              <a class="link-offset-2 link-underline link-underline-opacity-0" href="#" role="button" data-bs-toggle="modal" data-bs-target="#productInfoModal" data-slug="{{ item.slug }}">
+                <div class="card h-100">
+                  <img src="{{ item.product_image.0 }}" class="card-img-top" alt="Product's Image" width="50">
+                  <div class="card-body">
+                    {{ item.name|truncatechars:36 }} <br>
+                    <strong>₦{{ item.retail_price|intcomma }}</strong>
                   </div>
-                </a>
-              </div>
-            {% endif %}
+                </div>
+              </a>
+            </div>
           {% endif %}
         {% empty %}
-            <div><p>No item found in inventory. Contact the site administrator for help.</p></div>
+          <div><p>No item found in inventory. Contact the site administrator for help.</p></div>
         {% endfor %}
 
         <!-- Unavailable items (items out of stock) -->
         {% for item in inventory %}
             {% if item.singles_stock == 0 %}
                 <a href="#" role="button">
-                  <div class="me-3 mb-3 nonProduct">
+                  <div class="me-3 mb-3 oneProduct">
                     <div class="card h-100">
-                        <img src="{{ item.product_image.0}}" class="card-img-top" alt="Product's Image" width="50">
-                        <div class="card-body">
-                            {{ item.name|truncatechars:20 }} <br>
-                            <strong>₦{{ item.retail_price|intcomma }}</strong> <br>
-                            Needs replacing.
-                        </div>
+                      <img src="{{ item.product_image.0}}" class="card-img-top" alt="Product's Image" width="50">
+                      <div class="card-body">
+                        {{ item.name|truncatechars:20 }} <br>
+                        <strong>₦{{ item.retail_price|intcomma }}</strong> <br>
+                        Needs replacing.
+                      </div>
                     </div>
                   </div>
                 </a>
             {% endif %}
         {% endfor %}
-    </div>
+      </div>
+    {% endif %}
 
 {% endblock %}

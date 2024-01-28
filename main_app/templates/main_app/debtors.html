@@ -204,6 +204,12 @@
       <a href="" class="btn btn-dark" role="button" data-bs-toggle="modal" data-bs-target="#addDebtorModal">Add Debtor</a>
     </div>
     <br>
+
+    <div class="row mb-3">
+      <div class="col-sm-7">
+        <input type="search" class="form-control" name="search_debtors" id="search_debtors" autocomplete="off" placeholder="Search debtors">
+      </div>
+    </div>
     <div class="d-flex flex-wrap justify-content-start">
       {% for debtor in debtors %}
           <div class="me-3 mb-3 oneDebtor">
