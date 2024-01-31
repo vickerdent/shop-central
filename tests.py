@@ -24,4 +24,3 @@ product = {"bulk_type_1": "Victor", "bulk_price_1": "Joshua", "no_in_bulk_1": "D
 
 # print(processed_phone)
 
-

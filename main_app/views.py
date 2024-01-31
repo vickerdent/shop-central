@@ -146,6 +146,9 @@ def sign_up(request):
             else:
                 messages.error(request, "An internal error occurred. Please try again later.")
                 return render(request, "main_app/signup.html", {"form": form})
+        else:
+            # messages.error(request, "Passwords are dissimilar. Please enter correct passwords.")
+            return render(request, "main_app/signup.html", {"form": form})
     else:
         form = SignUpForm()
         return render(request, "main_app/signup.html", {"form": form})
@@ -764,26 +767,46 @@ def edit_product(request, slug):
     curr_user = user_collection.find_one({"email": request.user.email})
 
     if curr_user:
+        # Proceed if user is a staff member
         a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
                          curr_user["email"], curr_user["gender"], curr_user["phone_no"],
                          curr_user["address"], curr_user["state"], curr_user["image"],
                          curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
         
         curr_product = products_collection.find_one({"slug": slug})
+
+        if curr_product:
+            # Define initial data from mongodb that should be preloaded
+            initial_data = {"brand_name": curr_product["brand_name"], "product_name": curr_product["product_name"],
+                            "size": curr_product["size"], "retail_price": curr_product["retail_price"],
+                            "wholesale_price": curr_product["wholesale_price"], "is_discount": curr_product["is_discount"],
+                            "discount_retail_price": curr_product["discount_retail_price"], "is_divisible": curr_product["is_divisible"],
+                            "has_bulk": curr_product["has_bulk"], "is_carton_bag": curr_product["is_carton_bag"],
+                            "carton_price": curr_product["carton_bag_price"], "no_in_carton": curr_product["no_in_carton_bag"],
+                            "carton_stock": curr_product["carton_bag_stock"], "is_carton_divisible": curr_product["is_carton_bag_divisible"],
+                            "bag_price": curr_product["carton_bag_price"], "no_in_bag": curr_product["no_in_carton_bag"],
+                            "bag_stock": curr_product["carton_bag_stock"], "is_bag_divisible": curr_product["is_carton_bag_divisible"],
+                            "singles_stock": curr_product["singles_stock"], "tags": curr_product["tags"], "description": curr_product["description"]}
+            
+            bulk_info = curr_product["bulk"]
+            if bulk_info != []:
+                extra_data = bulk_info
+
+            old_product_image = curr_product["product_image"][0]
         
-        form = EditProductForm(request.POST or None, request.FILES or None)
+            form = EditProductForm(request.POST or None, request.FILES or None, initial=initial_data)
 
-        BULK_CHOICES = ("Dozen", "Pack", "Packet", "Roll")
+            BULK_CHOICES = ("Dozen", "Pack", "Packet", "Roll")
 
-        if a_user.is_admin:
-            context = {"form": form, "is_admin": True, "is_staff": True, "bulk": BULK_CHOICES}
-            return render(request, "main_app/edit_product.html", context)
-        elif a_user.is_staff:
-            context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES}
-            return render(request, "main_app/edit_product.html", context)
-        else:
-            messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
-            return render(request, "main_app/400.html", {})
+            if a_user.is_admin:
+                context = {"form": form, "is_admin": True, "is_staff": True, "bulk": BULK_CHOICES}
+                return render(request, "main_app/edit_product.html", context)
+            elif a_user.is_staff:
+                context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES}
+                return render(request, "main_app/edit_product.html", context)
+            else:
+                messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
+                return render(request, "main_app/400.html", {})
     else:
         messages.error(request, "An internal error occurred. Please try again later.")
         return render(request, "main_app/404.html", {})
@@ -1189,8 +1212,12 @@ def make_payment(request):
                     
 @login_required
 def get_transactions(request):
-    # Get all transactions from DB
-    today = datetime.today()
+    # Get all transactions from DB by date
+    # start_date = request.GET.get("start_date")
+    # end_date = request.GET.get("end_date")
+    
+    today = datetime.today() # or now()
+
     # Reset time to the morning of the day
     time_difference = timedelta(seconds=today.second, hours=today.hour, minutes=today.minute,
                                 microseconds=today.microsecond)
@@ -1376,12 +1403,7 @@ def update_product_price(request):
                                                               "amount_owed": str(new_cart_total)
                                                           }},
                                                           array_filters=[{"elem.product_slug": product_slug}])
-
-                    
-                
-
                 return JsonResponse(data={"result": "Successful"})
-
         else:
             return JsonResponse(data={"result": False})
     else:

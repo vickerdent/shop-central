@@ -83,9 +83,9 @@
                   {% endif %}
                 {% endif %}
               {% endfor %}
+              <button class="btn btn-light" id="addDebtor" type="submit">Add Debtor</button>
+              <button type="button" class="btn btn-secondary"  data-bs-dismiss="modal">Cancel</button>
             </form>
-            <button class="btn btn-light" id="addDebtor" type="submit">Add Debtor</button>
-            <button type="button" class="btn btn-secondary"  data-bs-dismiss="modal">Cancel</button>
           </div>
         </div>
       </div>
@@ -205,7 +205,7 @@
     </div>
     <br>
 
-    <div class="row mb-3">
+    <div class="row mb-3 d-flex justify-content-center">
       <div class="col-sm-7">
         <input type="search" class="form-control" name="search_debtors" id="search_debtors" autocomplete="off" placeholder="Search debtors">
       </div>

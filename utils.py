@@ -3,13 +3,18 @@ from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
 # from datetime import datetime, timedelta
 from email.message import EmailMessage
-from infisical import InfisicalClient
+from infisical_client import ClientSettings, InfisicalClient, GetSecretOptions
 load_dotenv()
 
 #Get database connection
-security_guard = InfisicalClient(token=os.getenv("INFISICAL_URI"))
+security_guard = InfisicalClient(ClientSettings(
+    client_id=os.getenv("INFISICAL_CLIENT_ID"),
+    client_secret=os.getenv("INFISICAL_CLIENT_SECRET"),
+))
 
-uri = security_guard.get_secret("MONGODB_URI").secret_value
+uri = security_guard.getSecret(options=GetSecretOptions(environment="prod",
+                                                        project_id="shop_central",
+                                                        secret_name="MONGODB_URI")).secret_value
 
 client = pymongo.MongoClient(uri, server_api=ServerApi('1'))
 
@@ -58,8 +63,12 @@ def code_generator():
     return char_list
 
 def send_email_code(receiver: str):
-    email_sender = security_guard.get_secret("EMAIL_SENDER").secret_value
-    email_password = security_guard.get_secret("EMAIL_PASSWORD").secret_value
+    email_sender = security_guard.getSecret(options=GetSecretOptions(environment="prod",
+                                                        project_id="shop_central",
+                                                        secret_name="EMAIL_SENDER")).secret_value
+    email_password = security_guard.getSecret(options=GetSecretOptions(environment="prod",
+                                                        project_id="shop_central",
+                                                        secret_name="EMAIL_PASSWORD")).secret_value
     code = code_generator()
     new_user = user_collection.find_one({"email": receiver})
 
@@ -82,9 +91,6 @@ def send_email_code(receiver: str):
 
     context = ssl.create_default_context()
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as smtp:
+    with smtplib.SMTP_SSL("smtp-mail.outlook.com", 587, context=context) as smtp:
         smtp.login(email_sender, email_password)
         smtp.sendmail(email_sender, receiver, msg.as_string())
-
-if __name__ == "__main__":
-    code_generator()

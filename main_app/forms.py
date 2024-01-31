@@ -373,30 +373,7 @@ class AddProductForm(forms.Form):
 
     def __init__(self, *args, **kwargs) -> None:
         super(AddProductForm, self).__init__(*args, **kwargs)
-        # create empty fields at first
-        field_name = "bulk_name_1"
-        # self.fields[field_name] = forms.ChoiceField(required=False, choices=self.BULK_NAME_CHOICES, widget=forms.widgets.Select(
-        # attrs={"placeholder":"has bulk", "name": "bulk_name_1", "class":"form-select", "id": "bulk_name_1"}),
-        # label="Name of Bulk 1", label_suffix="")
         
-        field_name_2 = "bulk_price_1"
-        # self.fields[field_name_2] = forms.IntegerField(label="Price of Bulk 1", required=False, widget=forms.widgets.NumberInput(
-        # attrs={"name": "bulk_price_1", "class": "form-control", 
-        #        "placeholder":"bulk price", "id": "bulk_price_1"}), label_suffix="")
-        
-        field_name_3 = "no_in_bulk_1"
-        # self.fields[field_name_3] = forms.IntegerField(label="Number In Bulk 1", required=False, max_value=100, widget=forms.widgets.NumberInput(
-        # attrs={"name": "no_in_bulk_1", "class": "form-control", 
-        #        "placeholder":"no in bulk", "id": "no_in_bulk_1"}), label_suffix="")
-        
-        field_name_4 = "bulk_image_1"
-        # self.fields[field_name_4] = forms.ImageField(required=True, widget=forms.widgets.ClearableFileInput(
-        # attrs={"name": "bulk_image_1", "class":"form-control", "id": "bulk_image_1"}), label="Bulk 1's Image")
-
-        # self.field_order = ["brand_name", "product_name", "retail_price", "size", "product_image", "retail_price", "wholesale_price", 
-        #            "has_bulk", "bulk_name_1", "no_in_bulk_1", "bulk_price_1", "bulk_image_1", ]
-        
-
     def clean(self):
         super().clean()
         
@@ -546,19 +523,22 @@ class EditProductForm(forms.Form):
         ("none", "None"),
         ("carton", "Carton"),
         ("bag", "Bag"),
-    ]
+    ]   
 
     brand_name = forms.CharField(label="Brand Name", required=True, max_length=150, widget=forms.widgets.TextInput(
-        attrs={"name": "brand_name", "class": "form-control", "autofocus": "true",
+        attrs={"name": "brand_name", "class": "form-control", "autofocus": "true", 
                "placeholder": "The Brand's Name"}), label_suffix="")
     
     product_name = forms.CharField(label="Product Name", required=True, max_length=150, widget=forms.widgets.TextInput(
-        attrs={"name": "product_name", "class": "form-control",
+        attrs={"name": "product_name", "class": "form-control", 
                "placeholder": "The Product's Name"}), label_suffix="")
     
     size = forms.CharField(label="Size", required=True, max_length=150, widget=forms.widgets.TextInput(
         attrs={"name": "size", "class": "form-control", 
                "placeholder": "One Size"}), label_suffix="")
+    
+    product_image = forms.ImageField(required=False, widget=forms.widgets.ClearableFileInput(
+        attrs={"name": "product_image", "class":"form-control"}), label="Product's Image")
 
     retail_price = forms.IntegerField(label="Retail Price", required=True, widget=forms.widgets.NumberInput(
         attrs={"name": "retail_price", "class": "form-control", "id": "retail_price",
@@ -575,7 +555,9 @@ class EditProductForm(forms.Form):
     discount_retail_price = forms.IntegerField(label="Discounted Retail Price", required=False, widget=forms.widgets.NumberInput(
         attrs={"class": "form-control", "id": "discount_retail_price", "placeholder": "Discounted Retail Price"}), label_suffix="")
 
-    # Will add soon
+    is_divisible = forms.ChoiceField(required=True, choices=YES_NO_CHOICES, widget=forms.widgets.Select(
+        attrs={"placeholder":"is divisible", "class":"form-select", "id": "is_divisible"}),
+        label="Can Product Be Divided For Sale?", label_suffix="", initial=False)
 
     has_bulk = forms.ChoiceField(required=True, choices=YES_NO_CHOICES, widget=forms.widgets.Select(
         attrs={"placeholder":"has bulk", "class":"form-select", "id": "has_bulk"}),
@@ -614,7 +596,9 @@ class EditProductForm(forms.Form):
         attrs={"id": "carton_stock", "class": "form-control", 
                "placeholder":"The carton stock"}), label_suffix="")
     
-    # Will add soon
+    is_carton_divisible = forms.ChoiceField(required=True, choices=YES_NO_CHOICES, widget=forms.widgets.Select(
+        attrs={"placeholder":"is carton divisible", "class":"form-select", "id": "is_carton_divisible"}),
+        label="Can Carton Be Divided For Sale?", label_suffix="", initial=True)
     
     bag_price = forms.IntegerField(label="Price of Bag", required=False, widget=forms.widgets.NumberInput(
         attrs={"name": "bag_price", "class": "form-control", 
@@ -631,7 +615,9 @@ class EditProductForm(forms.Form):
         attrs={"id": "bag_stock", "class": "form-control", 
                "placeholder":"The bag stock"}), label_suffix="")
     
-    # Will add soon
+    is_bag_divisible = forms.ChoiceField(required=True, choices=YES_NO_CHOICES, widget=forms.widgets.Select(
+        attrs={"placeholder":"is bag divisible", "class":"form-select", "id": "is_bag_divisible"}),
+        label="Can Bag Be Divided For Sale?", label_suffix="", initial=True)
 
     singles_stock = forms.IntegerField(label="Number of Single Quantities in Stock", required=True, widget=forms.widgets.NumberInput(
         attrs={"name": "singles_stock", "class": "form-control", 
@@ -646,6 +632,122 @@ class EditProductForm(forms.Form):
     description = forms.CharField(label="Description", required=False, widget=TinyMCEWidget(attrs={
         "required": False, "cols": 30, "rows": 10
     }))
+
+    def __init__(self, *args, **kwargs):
+        extra_data = kwargs.pop('extra_data')
+        super(EditProductForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        super().clean()
+        
+        # raise validation for if_discount
+        is_discount = self.cleaned_data.get("is_discount")
+        if is_discount:
+            discount_retail_price = self.cleaned_data.get("discount_retail_price")
+
+            if is_discount == "True" and discount_retail_price == None:
+                self.add_error("discount_retail_price", "Discounted price required!")
+            elif is_discount == "True" and discount_retail_price < 1:
+                self.add_error("discount_retail_price", "Discounted price must be greater than 0!")
+            elif is_discount == "False" and discount_retail_price != None:
+                self.add_error("is_discount", "Product does not have a discount price!")
+
+        # Raise validation for carton/bag
+        is_carton_bag = self.cleaned_data.get("is_carton_bag")
+
+        carton_price = self.cleaned_data.get("carton_price")
+        no_in_carton = self.cleaned_data.get("no_in_carton")
+        carton_image = self.cleaned_data.get("carton_image")
+        carton_stock = self.cleaned_data.get("carton_stock")
+        is_carton_divisible = self.cleaned_data.get("is_carton_divisible")
+
+        bag_price = self.cleaned_data.get("bag_price")
+        no_in_bag = self.cleaned_data.get("no_in_bag")
+        bag_image = self.cleaned_data.get("bag_image")
+        bag_stock = self.cleaned_data.get("bag_stock")
+        is_bag_divisible = self.cleaned_data.get("is_bag_divisible")
+
+        if is_carton_bag:
+            if is_carton_bag == "carton" and carton_price == None:
+                self.add_error("carton_price", "Price of carton required!")
+            elif is_carton_bag == "carton" and carton_price < 1:
+                self.add_error("carton_price", "Price of Carton must be greater than 0!")
+            elif is_carton_bag == "carton" and no_in_carton == None:
+                self.add_error("no_in_carton", "Quantity in carton required!")
+            elif is_carton_bag == "carton" and no_in_carton < 1:
+                self.add_error("no_in_carton", "Number in Carton must be greater than 0!")
+            elif is_carton_bag == "carton" and carton_stock == None:
+                self.add_error("carton_stock", "Number of cartons in stock required!")
+            elif is_carton_bag == "carton" and carton_stock < 0:
+                self.add_error("carton_stock", "You can't have a negative stock!")
+            elif is_carton_bag == "bag" and is_carton_divisible == None:
+                self.add_error("bag_stock", "Carton's Divisibility required!")
+
+            if is_carton_bag == "bag" and bag_price == None:
+                self.add_error("bag_price", "Price of bag required!")
+            elif is_carton_bag == "bag" and bag_price < 1:
+                self.add_error("bag_price", "Price of bag must be greater than 0!")
+                #bags can be unquantifiable, e.g. rice, garri
+            # elif is_carton_bag == "bag" and no_in_bag == None:
+            #     self.add_error("no_in_bag", "Quantity in bag required!")
+            elif is_carton_bag == "bag" and no_in_bag <= 0:
+                self.add_error("no_in_bag", "Number in Bag must be greater than 0!")
+            elif is_carton_bag == "bag" and bag_stock == None:
+                self.add_error("bag_stock", "Number of bags in stock required!")
+            elif is_carton_bag == "bag" and bag_stock < 0:
+                self.add_error("bag_stock", "You can't have a negative stock!")
+            elif is_carton_bag == "bag" and is_bag_divisible == None:
+                self.add_error("bag_stock", "Carton's Divisibility required!")
+
+            if is_carton_bag == "none" and carton_price != None:
+                self.add_error("is_carton_bag", "Product does not have carton/bag!")
+            elif is_carton_bag == "none" and no_in_carton != None:
+                self.add_error("is_carton_bag", "Product does not have carton/bag!")
+            elif is_carton_bag == "none" and carton_image != None:
+                self.add_error("is_carton_bag", "Product does not have carton/bag!")
+            elif is_carton_bag == "none" and carton_stock != None:
+                self.add_error("is_carton_bag", "Product does not have carton/bag!")
+            elif is_carton_bag == "none" and is_carton_divisible != None:
+                self.add_error("is_carton_bag", "Product does not have carton/bag!")
+            elif is_carton_bag == "none" and bag_price != None:
+                self.add_error("is_carton_bag", "Product does not have carton/bag!")
+            elif is_carton_bag == "none" and no_in_bag != None:
+                self.add_error("is_carton_bag", "Product does not have carton/bag!")
+            elif is_carton_bag == "none" and bag_image != None:
+                self.add_error("is_carton_bag", "Product does not have carton/bag!")
+            elif is_carton_bag == "none" and bag_stock != None:
+                self.add_error("is_carton_bag", "Product does not have carton/bag!")
+            elif is_carton_bag == "none" and is_bag_divisible != None:
+                self.add_error("is_carton_bag", "Product does not have carton/bag!")
+
+        return self.cleaned_data
+    
+    def get_size_fields(self):
+        # to be used when editing product fields and all,
+        # though may not be necessary since invoking mongodb
+        for field_name in self.fields:
+            if field_name.startswith("size_") or field_name.startswith("size_image_"):
+                yield self[field_name]
+    
+
+    def clean_retail_price(self):
+        data = self.cleaned_data["retail_price"]
+        if data < 1:
+            raise forms.ValidationError("Retail price must be greater than 0!")
+        return data
+    
+    def clean_wholesale_price(self):
+        data = self.cleaned_data["wholesale_price"]
+        if data < 1:
+            raise forms.ValidationError("Wholesale price must be greater than 0!")
+        return data
+            
+    def clean_singles_stock(self):
+        data = self.cleaned_data["singles_stock"]
+        if data < 0:
+            raise forms.ValidationError("You can't have a negative stock!")
+        return data
+
 
 class AddDebtorForm(forms.Form):
     """

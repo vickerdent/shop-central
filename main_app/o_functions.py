@@ -3,7 +3,7 @@ import os, ssl, smtplib
 from dotenv import load_dotenv
 
 load_dotenv()
-from utils import security_guard
+from utils import security_guard, GetSecretOptions
 
 # Define the callback that specifies the sequence of operations to perform inside the transactions.
 # customer_name, amount_paid, reference_no
@@ -94,8 +94,12 @@ def strip_id(id_num: str) -> str:
 humans = ("Male", "Female")
 
 def send_email_resetpassword(subject, body, receiver: str):
-    email_sender = security_guard.get_secret("EMAIL_SENDER").secret_value
-    email_password = security_guard.get_secret("EMAIL_PASSWORD").secret_value
+    email_sender = security_guard.getSecret(options=GetSecretOptions(environment="prod",
+                                                        project_id="shop_central",
+                                                        secret_name="EMAIL_SENDER")).secret_value
+    email_password = security_guard.getSecret(options=GetSecretOptions(environment="prod",
+                                                        project_id="shop_central",
+                                                        secret_name="EMAIL_PASSWORD")).secret_value
 
     msg = EmailMessage()
     msg["From"]  = email_sender

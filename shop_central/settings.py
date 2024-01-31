@@ -17,7 +17,7 @@ load_dotenv()
 from django.core.management.utils import get_random_secret_key
 
 # Get secret connection
-from utils import security_guard
+from utils import security_guard, GetSecretOptions
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -101,7 +101,9 @@ WSGI_APPLICATION = 'shop_central.wsgi.application'
 import urllib.parse as up
 
 up.uses_netloc.append("postgres")
-url = up.urlparse(security_guard.get_secret("POSTGRES_URI").secret_value)
+url = up.urlparse(security_guard.getSecret(options=GetSecretOptions(environment="prod",
+                                                        project_id="",
+                                                        secret_name="POSTGRES_URI")).secret_value)
 
 DATABASES = {
     'default': {
@@ -166,9 +168,15 @@ CACHES = {
 
 BACKBLAZE_CONFIG = {
     # however you want to securely retrieve these values
-    "application_key_id": security_guard.get_secret("BACKBLAZE_APPLICATION_KEY_ID").secret_value,
-    "application_key": security_guard.get_secret("BACKBLAZE_APPLICATION_KEY").secret_value,
-    "bucket": security_guard.get_secret("BACKBLAZE_BUCKET").secret_value,
+    "application_key_id": security_guard.getSecret(options=GetSecretOptions(environment="prod",
+                                                        project_id="shop_central",
+                                                        secret_name="BACKBLAZE_APPLICATION_KEY_ID")).secret_value,
+    "application_key": security_guard.getSecret(options=GetSecretOptions(environment="prod",
+                                                        project_id="shop_central",
+                                                        secret_name="BACKBLAZE_APPLICATION_KEY")).secret_value,
+    "bucket": security_guard.getSecret(options=GetSecretOptions(environment="prod",
+                                                        project_id="shop_central",
+                                                        secret_name="BACKBLAZE_BUCKET")).secret_value,
 }
 
 # Default primary key field type
