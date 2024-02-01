@@ -562,20 +562,6 @@ class EditProductForm(forms.Form):
     has_bulk = forms.ChoiceField(required=True, choices=YES_NO_CHOICES, widget=forms.widgets.Select(
         attrs={"placeholder":"has bulk", "class":"form-select", "id": "has_bulk"}),
         label="Does Product Have Bulk?", label_suffix="")
-    
-    bulk_type_1 = forms.CharField(required=False, widget=DataListInput(
-        attrs={"class":"form-control", "id": "bulk_type_1", "autocomplete": "off"}),
-        label="Type of Bulk 1", label_suffix="")
-
-    bulk_price_1 = forms.IntegerField(label="Price of Bulk 1", required=False, widget=forms.widgets.NumberInput(
-        attrs={"class": "form-control", "placeholder": "bulk price", "id": "bulk_price_1"}), label_suffix="")
-
-    no_in_bulk_1 = forms.IntegerField(label="Number In Bulk 1", required=False, max_value=100, widget=forms.widgets.NumberInput(
-        attrs={"class": "form-control", 
-               "placeholder": "no in bulk", "id": "no_in_bulk_1"}), label_suffix="")
-
-    bulk_image_1 = forms.ImageField(required=False, widget=forms.widgets.ClearableFileInput(
-        attrs={"class":"form-control", "id": "bulk_image_1"}), label="Bulk 1's Image")
 
     is_carton_bag = forms.ChoiceField(required=True, choices=CARTON_BAG_CHOICES, widget=forms.widgets.Select(
         attrs={"placeholder":"is carton or bag", "class":"form-select", "id": "is_carton_bag"}),
@@ -634,8 +620,25 @@ class EditProductForm(forms.Form):
     }))
 
     def __init__(self, *args, **kwargs):
-        extra_data = kwargs.pop('extra_data')
+        extra = kwargs.pop('extra')
         super(EditProductForm, self).__init__(*args, **kwargs)
+
+        for i, item in enumerate(extra):
+            # Each item has 4 key-value pairs
+            self.fields["bulk_type_" + i] = forms.CharField(required=False, widget=DataListInput(
+                attrs={"class":"form-control", "id": "bulk_type_" + i, "autocomplete": "off"}),
+                label="Type of Bulk " + i, label_suffix="", initial=item["bulk_type"])
+
+            self.fields["bulk_price_" + i] = forms.IntegerField(label="Price of Bulk " + i, required=False,
+                widget=forms.widgets.NumberInput(attrs={"class": "form-control", "placeholder": "bulk price",
+                "id": "bulk_price_" + i}), label_suffix="", initial=item["bulk_price"])
+            
+            self.fields["no_in_bulk_" + i] = forms.IntegerField(label="Number In Bulk " + i, required=False,
+                max_value=100, widget=forms.widgets.NumberInput(attrs={"class": "form-control", 
+               "placeholder": "no in bulk", "id": "no_in_bulk_" + i}), label_suffix="", initial=item["no_in_bulk"])
+            
+            self.fields["bulk_image_" + i] = forms.ImageField(required=False, widget=forms.widgets.ClearableFileInput(
+                attrs={"class":"form-control", "id": "bulk_image_" + i}), label="Bulk " + i + "'s Image")
 
     def clean(self):
         super().clean()

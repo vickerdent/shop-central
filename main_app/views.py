@@ -766,6 +766,8 @@ def edit_product(request, slug):
     # Check if user is admin or staff
     curr_user = user_collection.find_one({"email": request.user.email})
 
+    BULK_CHOICES = ("Dozen", "Pack", "Packet", "Roll")
+
     if curr_user:
         # Proceed if user is a staff member
         a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
@@ -791,18 +793,47 @@ def edit_product(request, slug):
             bulk_info = curr_product["bulk"]
             if bulk_info != []:
                 extra_data = bulk_info
+            else:
+                extra_data = []
 
             old_product_image = curr_product["product_image"][0]
+            old_product_name = curr_product["brand_name"] + " " + curr_product["product_name"] + ": " + curr_product["size"]
         
-            form = EditProductForm(request.POST or None, request.FILES or None, initial=initial_data)
+            form = EditProductForm(request.POST or None, request.FILES or None, initial=initial_data, extra=extra_data)
 
-            BULK_CHOICES = ("Dozen", "Pack", "Packet", "Roll")
+            if form.is_valid():
+                brand_name = form.cleaned_data["brand_name"]
+                product_name = form.cleaned_data["product_name"]
+                size = form.cleaned_data["size"]
+                product_image = request.FILES.get("product_image")
+                retail_price = form.cleaned_data["retail_price"]
+                wholesale_price = form.cleaned_data["wholesale_price"]
+                is_discount = form.cleaned_data["is_discount"]
+                discount_retail_price = form.cleaned_data.get("discount_retail_price")
+                is_divisible = form.cleaned_data["is_divisible"]
+                has_bulk = form.cleaned_data["has_bulk"]
+                is_carton_bag = form.cleaned_data["is_carton_bag"]
+                carton_price = form.cleaned_data.get("carton_price")
+                no_in_carton = form.cleaned_data.get("no_in_carton")
+                carton_image = request.FILES.get("carton_image", False)
+                carton_stock = form.cleaned_data.get("carton_stock")
+                is_carton_divisible = form.cleaned_data.get("is_carton_divisible")
+                bag_price = form.cleaned_data.get("bag_price")
+                no_in_bag = form.cleaned_data.get("no_in_bag")
+                bag_image = request.FILES.get("bag_image", False)
+                bag_stock = form.cleaned_data.get("bag_stock")
+                is_bag_divisible = form.cleaned_data.get("is_bag_divisible")
+                singles_stock = form.cleaned_data["singles_stock"]
+                tags = form.cleaned_data["tags"]
+                description = form.cleaned_data.get("description")
 
             if a_user.is_admin:
-                context = {"form": form, "is_admin": True, "is_staff": True, "bulk": BULK_CHOICES}
+                context = {"form": form, "p_image": old_product_image, "is_admin": True,
+                           "is_staff": True, "p_name": old_product_name, "bulk": BULK_CHOICES}
                 return render(request, "main_app/edit_product.html", context)
             elif a_user.is_staff:
-                context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES}
+                context = {"form": form, "p_image": old_product_image, "is_staff": True,
+                           "p_name": old_product_name, "bulk": BULK_CHOICES}
                 return render(request, "main_app/edit_product.html", context)
             else:
                 messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
