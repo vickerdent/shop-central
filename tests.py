@@ -24,3 +24,24 @@ product = {"bulk_type_1": "Victor", "bulk_price_1": "Joshua", "no_in_bulk_1": "D
 
 # print(processed_phone)
 
+from email.message import EmailMessage
+import ssl, smtplib
+
+email_sender = "jovimifah@gmail.com"
+email_password = "ffmnmarbseefxrtw"
+
+receiver = "vickerdenzy@outlook.com"
+subject = "Testing This Thing"
+body = "Mega test is on going"
+
+msg = EmailMessage()
+msg["From"]  = email_sender
+msg["To"] = receiver
+msg["subject"] = subject
+msg.set_content(body)
+
+context = ssl.create_default_context()
+
+with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as smtp:
+    smtp.login(email_sender, email_password)
+    smtp.sendmail(email_sender, receiver, msg.as_string())

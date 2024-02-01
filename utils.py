@@ -69,6 +69,9 @@ def send_email_code(receiver: str):
     email_password = security_guard.getSecret(options=GetSecretOptions(environment="prod",
                                                         project_id="shop_central",
                                                         secret_name="EMAIL_PASSWORD")).secret_value
+    
+    print(email_sender)
+    print(email_password)
     code = code_generator()
     new_user = user_collection.find_one({"email": receiver})
 
@@ -91,6 +94,6 @@ def send_email_code(receiver: str):
 
     context = ssl.create_default_context()
 
-    with smtplib.SMTP_SSL("smtp-mail.outlook.com", 587, context=context) as smtp:
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as smtp:
         smtp.login(email_sender, email_password)
         smtp.sendmail(email_sender, receiver, msg.as_string())
