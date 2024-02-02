@@ -17,7 +17,6 @@ load_dotenv()
 from django.core.management.utils import get_random_secret_key
 
 # Get secret connection
-from utils import security_guard, GetSecretOptions
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -101,9 +100,7 @@ WSGI_APPLICATION = 'shop_central.wsgi.application'
 import urllib.parse as up
 
 up.uses_netloc.append("postgres")
-url = up.urlparse(security_guard.getSecret(options=GetSecretOptions(environment="prod",
-                                                        project_id="",
-                                                        secret_name="POSTGRES_URI")).secret_value)
+url = up.urlparse(os.getenv("POSTGRES_URI"))
 
 DATABASES = {
     'default': {
@@ -168,15 +165,9 @@ CACHES = {
 
 BACKBLAZE_CONFIG = {
     # however you want to securely retrieve these values
-    "application_key_id": security_guard.getSecret(options=GetSecretOptions(environment="prod",
-                                                        project_id="shop_central",
-                                                        secret_name="BACKBLAZE_APPLICATION_KEY_ID")).secret_value,
-    "application_key": security_guard.getSecret(options=GetSecretOptions(environment="prod",
-                                                        project_id="shop_central",
-                                                        secret_name="BACKBLAZE_APPLICATION_KEY")).secret_value,
-    "bucket": security_guard.getSecret(options=GetSecretOptions(environment="prod",
-                                                        project_id="shop_central",
-                                                        secret_name="BACKBLAZE_BUCKET")).secret_value,
+    "application_key_id": os.getenv("BACKBLAZE_APPLICATION_KEY_ID"),
+    "application_key": os.getenv("BACKBLAZE_APPLICATION_KEY"),
+    "bucket": os.getenv("BACKBLAZE_BUCKET"),
 }
 
 # Default primary key field type

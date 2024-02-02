@@ -575,6 +575,7 @@ def resend_code(request):
     
     new_accounts_collection.delete_one({"email": request.user.email})
     send_email_code(request.user.email)
+    
     messages.info(request, "Confirmation Code has been sent")
     return redirect("confirm_code")
 
@@ -792,8 +793,10 @@ def edit_product(request, slug):
             
             bulk_info = curr_product["bulk"]
             if bulk_info != []:
+                print("non-empty")
                 extra_data = bulk_info
             else:
+                print("empty")
                 extra_data = []
 
             old_product_image = curr_product["product_image"][0]

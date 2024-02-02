@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const failToast = bootstrap.Toast.getOrCreateInstance(unSuccess)
 
             const editProd = document.getElementById("editCall");
-            editProd.setAttribute("href", `/edit_product/${recipient}`)
+            editProd.setAttribute("href", `products/edit_product/${recipient}`)
 
             const modalTitle = productInfoModal.querySelector('.modal-title')
 

@@ -1,14 +1,14 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    formal = document.getElementById("super_form");
+    const formal = document.getElementById("super_form");
 
     formal.addEventListener("submit", submission);
 
-    var all_bulk = document.querySelector("#bulk_holder");
-    var has_bulk = document.querySelector("#has_bulk").value;
-    var breaker = document.querySelector("#separator");
-    var m_button = document.querySelector("#minus_button");
+    const all_bulk = document.querySelector("#bulk_holder");
+    const has_bulk = document.querySelector("#has_bulk").value;
+    const breaker = document.querySelector("#separator");
+    const m_button = document.querySelector("#minus_button");
 
     // also add styling to remove bottom margin
     all_bulk.style.display = "none";
@@ -48,96 +48,114 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     var is_carton_bag = document.querySelector("#is_carton_bag").value;
-    var carton_price = document.querySelector("#carton_price");
-    var bag_price = document.querySelector("#bag_price");
-    var no_in_carton = document.querySelector("#no_in_carton");
-    var no_in_bag = document.querySelector("#no_in_bag");
-    var carton_image = document.querySelector("#carton_image");
-    var bag_image = document.querySelector("#bag_image");
-    var carton_stock = document.querySelector("#carton_stock");
-    var bag_stock = document.querySelector("#bag_stock");
+    const carton_price = document.querySelector("#carton_price");
+    const bag_price = document.querySelector("#bag_price");
+    const no_in_carton = document.querySelector("#no_in_carton");
+    const no_in_bag = document.querySelector("#no_in_bag");
+    const carton_image = document.querySelector("#carton_image");
+    const bag_image = document.querySelector("#bag_image");
+    const carton_stock = document.querySelector("#carton_stock");
+    const bag_stock = document.querySelector("#bag_stock");
+    const carton_divis = document.querySelector("#is_carton_divisible");
+    const bag_divis = document.querySelector("#is_bag_divisible");
 
-    carton_price.disabled = true;
-    no_in_carton.disabled = true;
-    carton_image.disabled = true;
-    carton_stock.disabled = true;
-    bag_price.disabled = true;
-    no_in_bag.disabled = true;
-    bag_image.disabled = true;
-    bag_stock.disabled = true;
+    carton_price.required = false;
+    no_in_carton.required = false;
+    carton_image.required = false;
+    carton_stock.required = false;
+    bag_price.required = false;
+    no_in_bag.required = false;
+    bag_image.required = false;
+    bag_stock.required = false;
+    carton_divis.required = false;
+    bag_divis.required = false;
 
     carton_price.parentElement.parentElement.style.display = "none";
     no_in_carton.parentElement.style.display = "none";
     carton_image.parentElement.style.display = "none";
     carton_stock.parentElement.style.display = "none";
+    carton_divis.parentElement.style.display = "none";
     bag_price.parentElement.parentElement.style.display = "none";
     no_in_bag.parentElement.style.display = "none";
     bag_image.parentElement.style.display = "none";
     bag_stock.parentElement.style.display = "none";
+    bag_divis.parentElement.style.display = "none";
 
     if (is_carton_bag === "carton") {
-        carton_price.disabled = false;
-        no_in_carton.disabled = false;
-        carton_image.disabled = false;
-        carton_stock.disabled = false;
+        carton_price.required = true;
+        no_in_carton.required = true;
+        carton_image.required = false;
+        carton_stock.required = true;
+        carton_divis.required = true;
 
         carton_price.parentElement.parentElement.style.display = "";
         no_in_carton.parentElement.style.display = "";
         carton_image.parentElement.style.display = "";
         carton_stock.parentElement.style.display = "";
+        carton_divis.parentElement.style.display = "";
         
     } else if (is_carton_bag === "bag") {
-        bag_price.disabled = false;
-        no_in_bag.disabled = false;
-        bag_image.disabled = false;
-        bag_stock.disabled = false;
+        bag_price.required = true;
+        no_in_bag.required = true;
+        bag_image.required = false;
+        bag_stock.required = true;
+        bag_divis.required = true;
 
         bag_price.parentElement.parentElement.style.display = "";
         no_in_bag.parentElement.style.display = "";
         bag_image.parentElement.style.display = "";
         bag_stock.parentElement.style.display = "";
+        bag_divis.parentElement.style.display = "";
     }
 
     document.querySelector("#is_carton_bag").onchange = function() {
         var select = this.value;
-        carton_price.disabled = true;
-        no_in_carton.disabled = true;
-        carton_image.disabled = true;
-        carton_stock.disabled = true;
-        bag_price.disabled = true;
-        no_in_bag.disabled = true;
-        bag_image.disabled = true;
-        bag_stock.disabled = true;
+        carton_price.required = false;
+        no_in_carton.required = false;
+        carton_image.required = false;
+        carton_stock.required = false;
+        carton_divis.required = false;
+        bag_price.required = false;
+        no_in_bag.required = false;
+        bag_image.required = false;
+        bag_stock.required = false;
+        bag_divis.required = false;
 
         carton_price.parentElement.parentElement.style.display = "none";
         no_in_carton.parentElement.style.display = "none";
         carton_image.parentElement.style.display = "none";
         carton_stock.parentElement.style.display = "none";
+        carton_divis.parentElement.style.display = "none";
         bag_price.parentElement.parentElement.style.display = "none";
         no_in_bag.parentElement.style.display = "none";
         bag_image.parentElement.style.display = "none";
         bag_stock.parentElement.style.display = "none";
+        bag_divis.parentElement.style.display = "none";
 
         if (select === "carton") {
-            carton_price.disabled = false;
-            no_in_carton.disabled = false;
-            carton_image.disabled = false;
-            carton_stock.disabled = false;
+            carton_price.required = true;
+            no_in_carton.required = true;
+            carton_image.required = false;
+            carton_stock.required = true;
+            carton_divis.required = true;
 
             carton_price.parentElement.parentElement.style.display = "";
             no_in_carton.parentElement.style.display = "";
             carton_image.parentElement.style.display = "";
             carton_stock.parentElement.style.display = "";
+            carton_divis.parentElement.style.display = "";
         } else if (select === "bag") {
-            bag_price.disabled = false;
-            no_in_bag.disabled = false;
-            bag_image.disabled = false;
-            bag_stock.disabled = false;
+            bag_price.required = true;
+            no_in_bag.required = true;
+            bag_image.required = false;
+            bag_stock.required = true;
+            bag_divis.required = true;
 
             bag_price.parentElement.parentElement.style.display = "";
             no_in_bag.parentElement.style.display = "";
             bag_image.parentElement.style.display = "";
             bag_stock.parentElement.style.display = "";
+            bag_divis.parentElement.style.display = "";
         }
     };
 
@@ -149,16 +167,19 @@ document.addEventListener("DOMContentLoaded", () => {
     if (is_discount === "True") {
         discount_price.disabled = false;
         discount_price.parentElement.parentElement.style.display = "";
+        discount_price.required = true;
     }
 
     document.querySelector("#is_discount").onchange = function() {
         var variable = this.value;
         discount_price.disabled = true;
         discount_price.parentElement.parentElement.style.display = "none";
+        discount_price.required = false;
 
         if (variable === "True") {
             discount_price.disabled = false;
             discount_price.parentElement.parentElement.style.display = "";
+            discount_price.required = true;
         }
     };
 
@@ -235,7 +256,7 @@ function add_bulk() {
 
     const naira_hold = document.createElement("span");
     naira_hold.className = "input-group-text";
-    naira_hold.innerHTML = "₦";
+    naira_hold.textContent = "₦";
 
     const special_hold_2 = document.createElement("div");
     special_hold_2.className = "input-group mb-3";
@@ -380,9 +401,35 @@ function remove_bulk() {
 function submission(event) {
     // Future: Run validation to ensure types of bulk are unique
 
+    var is_carton_bag = document.querySelector("#is_carton_bag").value;
+    const carton_price = document.querySelector("#carton_price");
+    const bag_price = document.querySelector("#bag_price");
+    const no_in_carton = document.querySelector("#no_in_carton");
+    const no_in_bag = document.querySelector("#no_in_bag");
+    const carton_image = document.querySelector("#carton_image");
+    const bag_image = document.querySelector("#bag_image");
+    const carton_stock = document.querySelector("#carton_stock");
+    const bag_stock = document.querySelector("#bag_stock");
+    const carton_divis = document.querySelector("#is_carton_divisible");
+    const bag_divis = document.querySelector("#is_bag_divisible");
+
+    if (is_carton_bag == "none") {
+        carton_price.value = "";
+        bag_price.value = "";
+        no_in_carton.value = "";
+        no_in_bag.value = "";
+        carton_image.value = "";
+        bag_image.value = "";
+        carton_stock.value = "";
+        bag_stock.value = "";
+        carton_divis.value = ""
+    } else if () {
+        
+    }
+
     bulk_prices.forEach(element => {
         if (document.getElementById("has_bulk").value === "True") {
-            first_try = document.getElementById(element);
+            const first_try = document.getElementById(element);
             comparison = document.getElementById("retail_price");
             if (parseInt(first_try.value) <= parseInt(comparison.value)) {
                 first_try.focus();
@@ -396,7 +443,7 @@ function submission(event) {
 
     nos_in_bulk.forEach(element => {
         if (document.getElementById("has_bulk").value === "True") {
-            second_try = document.getElementById(element);
+            const second_try = document.getElementById(element);
             if (parseInt(second_try.value) < 1) {
                 second_try.focus();
                 alert("Number in Bulk must be greater than 0!");
@@ -413,5 +460,13 @@ function submission(event) {
         document.getElementById("bulk_price_1").value = "";
         document.getElementById("no_in_bulk_1").value = "";
         document.getElementById("bulk_image_1").value = "";
+    }
+}
+
+function validity() {
+    document.getElementById(this.id).onkeyup = () => {
+        if (this.value.length > 0) {
+            this.classList.remove("is-invalid")
+        }
     }
 }

@@ -3,18 +3,10 @@ from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
 # from datetime import datetime, timedelta
 from email.message import EmailMessage
-from infisical_client import ClientSettings, InfisicalClient, GetSecretOptions
 load_dotenv()
 
 #Get database connection
-security_guard = InfisicalClient(ClientSettings(
-    client_id=os.getenv("INFISICAL_CLIENT_ID"),
-    client_secret=os.getenv("INFISICAL_CLIENT_SECRET"),
-))
-
-uri = security_guard.getSecret(options=GetSecretOptions(environment="prod",
-                                                        project_id="shop_central",
-                                                        secret_name="MONGODB_URI")).secret_value
+uri = os.getenv("MONGODB_URI")
 
 client = pymongo.MongoClient(uri, server_api=ServerApi('1'))
 
@@ -63,12 +55,8 @@ def code_generator():
     return char_list
 
 def send_email_code(receiver: str):
-    email_sender = security_guard.getSecret(options=GetSecretOptions(environment="prod",
-                                                        project_id="shop_central",
-                                                        secret_name="EMAIL_SENDER")).secret_value
-    email_password = security_guard.getSecret(options=GetSecretOptions(environment="prod",
-                                                        project_id="shop_central",
-                                                        secret_name="EMAIL_PASSWORD")).secret_value
+    email_sender = os.getenv("EMAIL_SENDER")
+    email_password = os.getenv("EMAIL_PASSWORD")
     
     print(email_sender)
     print(email_password)
