@@ -1,5 +1,62 @@
 
+const bulk_types = [];
+const bulk_prices = [];
+const nos_in_bulk = [];
+const bulk_images = [];
+const buttoners = [];
+
 document.addEventListener("DOMContentLoaded", () => {
+
+    const m_button = document.querySelector("#minus_button");
+    if (m_button) {
+        m_button.style.display = "none";
+    }
+    
+    // Points to do:
+    // Remove the button in the first button hold div
+    // Change id of second button (and other button hold divs)
+    // Reflect like so here in buttoners array
+
+    // Check if product has bulk and how many
+    const bulk_num = document.querySelectorAll("input[data-numbering=type_num]")
+
+    if (bulk_num.length > 0) {
+        // if no of bulk values is at least one, then add each to array list for
+        // manipulation by plus and minus buttons
+        for (let index = 0; index < bulk_num.length; index++) {
+            const element = bulk_num[index];
+            buttoners.push(`button_hold_${index + 1}`)
+            bulk_types.push(`bulk_type_${index + 1}`)
+            bulk_prices.push(`bulk_price_${index + 1}`)
+            nos_in_bulk.push(`no_in_bulk_${index + 1}`)
+            bulk_images.push(`bulk_image_${index + 1}`)
+        }
+
+        // There's also going to be multiple plus and minus buttons too, plus the line break/break line
+        const all_buttons = document.querySelectorAll("button[data-destruction=yes]");
+        const all_breaks = document.querySelectorAll("br[data-destruction=yes]");
+
+        all_buttons.forEach(element => {
+            if (element.dataset.exemption != "yes") {
+                element.remove();
+            }
+        });
+
+        all_breaks.forEach(element => {
+            if (element.dataset.exemption != "yes") {
+                element.remove();
+            }
+        });
+
+
+    } else {
+        // Else assume normal behaviour as in add_depend.js
+        buttoners.push("button_hold_1")
+        bulk_types.push("bulk_type_1")
+        bulk_prices.push("bulk_price_1")
+        nos_in_bulk.push("no_in_bulk_1")
+        bulk_images.push("bulk_image_1")
+    }
 
     const formal = document.getElementById("super_form");
 
@@ -8,12 +65,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const all_bulk = document.querySelector("#bulk_holder");
     const has_bulk = document.querySelector("#has_bulk").value;
     const breaker = document.querySelector("#separator");
-    const m_button = document.querySelector("#minus_button");
+    
 
-    // also add styling to remove bottom margin
+    // also add styling to remove bottom margin, if it exists
     all_bulk.style.display = "none";
-    breaker.className = "d-none";
-    m_button.style.display = "none";
+    if (breaker) {
+        breaker.className = "d-none";
+    }
+
     document.getElementById("bulk_type_1").required = false;
     document.getElementById("bulk_price_1").required = false;
     document.getElementById("no_in_bulk_1").required = false;
@@ -185,12 +244,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
-var bulk_types = ["bulk_type_1"];
-var bulk_prices = ["bulk_price_1"];
-var nos_in_bulk = ["no_in_bulk_1"];
-var bulk_images = ["bulk_image_1"];
-var buttoners = ["button_hold_1"];
-
 function add_bulk() {
     var bulktype = document.getElementById(bulk_types[bulk_types.length - 1]);
 
@@ -358,6 +411,9 @@ function add_bulk() {
     var buttonid = "button_hold_" + n;
     sec_temp_hold.id = buttonid;
     buttoners.push(buttonid);
+
+    // Append will remove it from where it was, which is why I had
+    // to clone the inputs previously before appending, to leave the original inputs
     sec_temp_hold.append(line_break);
     sec_temp_hold.append(p_button);
     sec_temp_hold.append(m_button);
@@ -373,6 +429,8 @@ function remove_bulk() {
 
     p_button.style.marginRight = "5px";
 
+    // At this point, buttoners array will be something like:
+    // ["button_hold_1", "button_hold_2"]
     // Find the second-to-the-last div for buttons, and append, then pop the last id in array
     const temporary_hold = document.getElementById(buttoners[buttoners.length - 2]);
     temporary_hold.appendChild(line_break);
@@ -422,9 +480,21 @@ function submission(event) {
         bag_image.value = "";
         carton_stock.value = "";
         bag_stock.value = "";
-        carton_divis.value = ""
-    } else if () {
-        
+        carton_divis.value = "False";
+        bag_divis.value = "False";
+    } else if (is_carton_bag == "carton") {
+        bag_price.value = "";
+        no_in_bag.value = "";
+        bag_image.value = "";
+        bag_stock.value = "";
+        bag_divis.value = "False";
+    } else {
+        // Carton_bag is "bag"
+        carton_price.value = "";
+        no_in_carton.value = "";
+        carton_image.value = "";
+        carton_stock.value = "";
+        carton_divis.value = "False";
     }
 
     bulk_prices.forEach(element => {

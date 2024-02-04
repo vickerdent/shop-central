@@ -621,26 +621,8 @@ class EditProductForm(forms.Form):
     }))
 
     def __init__(self, *args, **kwargs):
-        extra = kwargs.pop('extra')
+        self.extra = kwargs.pop('extra')
         super(EditProductForm, self).__init__(*args, **kwargs)
-
-        for i, item in enumerate(extra):
-            # Each item has 4 key-value pairs
-            # print(item)
-            self.fields["bulk_type_" + str(i + 1)] = forms.CharField(required=False, widget=DataListInput(
-                attrs={"class":"form-control", "id": "bulk_type_" + str(i + 1), "autocomplete": "off"}),
-                label="Type of Bulk " + str(i + 1), label_suffix="", initial=item["bulk_type"])
-
-            self.fields["bulk_price_" + str(i + 1)] = forms.IntegerField(label="Price of Bulk " + str(i + 1), required=False,
-                widget=forms.widgets.NumberInput(attrs={"class": "form-control", "placeholder": "bulk price",
-                "id": "bulk_price_" + str(i + 1)}), label_suffix="", initial=item["bulk_price"])
-            
-            self.fields["no_in_bulk_" + str(i + 1)] = forms.IntegerField(label="Number In Bulk " + str(i + 1), required=False,
-                max_value=500, widget=forms.widgets.NumberInput(attrs={"class": "form-control", 
-               "placeholder": "no in bulk", "id": "no_in_bulk_" + str(i + 1)}), label_suffix="", initial=item["no_in_bulk"])
-            
-            self.fields["bulk_image_" + str(i + 1)] = forms.ImageField(required=False, widget=forms.widgets.ClearableFileInput(
-                attrs={"class":"form-control", "id": "bulk_image_" + str(i + 1)}), label="Bulk " + str(i + 1) + "'s Image")
 
     def clean(self):
         super().clean()

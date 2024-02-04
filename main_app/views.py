@@ -54,7 +54,7 @@ def home(request):
             return render(request, "main_app/home.html", {"is_admin": True, "is_staff": True, 
                                                           "inventory": inventory, "noOfCarts": noOfCarts})
         elif a_user.is_staff:
-            return render(request, "main_app/home.html", {"is_staff": True, "inventory": inventory, "carts": noOfCarts})
+            return render(request, "main_app/home.html", {"is_staff": True, "inventory": inventory, "noOfCarts": noOfCarts})
         else:
             return render(request, "main_app/home.html", {"inventory": inventory})
         
@@ -776,7 +776,17 @@ def edit_product(request, slug):
                          curr_user["address"], curr_user["state"], curr_user["image"],
                          curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
         
+        all_carts = list(staff_carts_collection.find({"staff_id": request.user.email}))
+        noOfCarts = len(all_carts)
+
         curr_product = products_collection.find_one({"slug": slug})
+
+        all_tags = ""
+        for tag in curr_product["tags"]:
+            if tag == curr_product["tags"][-1]:
+                all_tags += tag
+                continue
+            all_tags += tag + ", "
 
         if curr_product:
             # Define initial data from mongodb that should be preloaded
@@ -785,11 +795,15 @@ def edit_product(request, slug):
                             "wholesale_price": curr_product["wholesale_price"], "is_discount": curr_product["is_discount"],
                             "discount_retail_price": curr_product["discount_retail_price"], "is_divisible": curr_product["is_divisible"],
                             "has_bulk": curr_product["has_bulk"], "is_carton_bag": curr_product["is_carton_bag"],
-                            "carton_price": curr_product["carton_bag_price"], "no_in_carton": curr_product["no_in_carton_bag"],
-                            "carton_stock": curr_product["carton_bag_stock"], "is_carton_divisible": curr_product["is_carton_bag_divisible"],
-                            "bag_price": curr_product["carton_bag_price"], "no_in_bag": curr_product["no_in_carton_bag"],
-                            "bag_stock": curr_product["carton_bag_stock"], "is_bag_divisible": curr_product["is_carton_bag_divisible"],
-                            "singles_stock": curr_product["singles_stock"], "tags": curr_product["tags"], "description": curr_product["description"]}
+                            "carton_price": curr_product["carton_bag_price"] if curr_product["is_carton_bag"] == "carton" else "",
+                            "no_in_carton": curr_product["no_in_carton_bag"] if curr_product["is_carton_bag"] == "carton" else "",
+                            "carton_stock": curr_product["carton_bag_stock"] if curr_product["is_carton_bag"] == "carton" else "",
+                            "is_carton_divisible": curr_product["is_carton_bag_divisible"] if curr_product["is_carton_bag"] == "carton" else "False",
+                            "bag_price": curr_product["carton_bag_price"] if curr_product["is_carton_bag"] == "bag" else "",
+                            "no_in_bag": curr_product["no_in_carton_bag"] if curr_product["is_carton_bag"] == "bag" else "",
+                            "bag_stock": curr_product["carton_bag_stock"] if curr_product["is_carton_bag"] == "bag" else "",
+                            "is_bag_divisible": curr_product["is_carton_bag_divisible"] if curr_product["is_carton_bag"] == "bag" else "",
+                            "singles_stock": curr_product["singles_stock"], "tags": all_tags, "description": curr_product["description"]}
             
             bulk_info = curr_product["bulk"]
             if bulk_info != []:
@@ -831,12 +845,12 @@ def edit_product(request, slug):
                 description = form.cleaned_data.get("description")
 
             if a_user.is_admin:
-                context = {"form": form, "p_image": old_product_image, "is_admin": True,
+                context = {"form": form, "p_image": old_product_image, "is_admin": True, "noOfCarts": noOfCarts,
                            "is_staff": True, "p_name": old_product_name, "bulk": BULK_CHOICES}
                 return render(request, "main_app/edit_product.html", context)
             elif a_user.is_staff:
                 context = {"form": form, "p_image": old_product_image, "is_staff": True,
-                           "p_name": old_product_name, "bulk": BULK_CHOICES}
+                           "p_name": old_product_name, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
                 return render(request, "main_app/edit_product.html", context)
             else:
                 messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
@@ -919,7 +933,7 @@ def debtors(request):
                                                           "debtors": full_list, "noOfCarts": noOfCarts})
         elif a_user.is_staff:
             return render(request, "main_app/debtors.html", {"is_staff": True, "debtors": full_list,
-                                                             "form": form, "carts": noOfCarts})
+                                                             "form": form, "noOfCarts": noOfCarts})
         else:
             messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
             return render(request, "main_app/400.html", {})
@@ -1283,7 +1297,7 @@ def get_transactions(request):
                                                           "transactions": full_list, "noOfCarts": noOfCarts})
         elif a_user.is_staff:
             return render(request, "main_app/transactions.html", {"is_staff": True, "transactions": full_list,
-                                                            "carts": noOfCarts})
+                                                            "noOfCarts": noOfCarts})
         else:
             messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
             return render(request, "main_app/400.html", {})
@@ -1412,6 +1426,9 @@ def update_product_price(request):
                 # Can now perform calculations for all product prices in all carts
                 all_carts = list(staff_carts_collection.find({}))
                 for cart in all_carts:
+                    new_subtotal = Decimal("0.00")
+                    prev_subtotal = Decimal("0.00")
+                    
                     for cart_item in cart["items"]:
                         if cart_item["product_slug"] == product_slug:
                             # Found item to work with
@@ -1425,7 +1442,6 @@ def update_product_price(request):
                     if new_subtotal:
                         # Confirm variable exists. There can only be one product-update per cart per time
                         old_cart_total = cart["total_amount"]
-                        old_cart_owed = cart["amount_owed"]
 
                         new_cart_total = Decimal(old_cart_total) - prev_subtotal + new_subtotal
 

@@ -1,14 +1,20 @@
 
+const bulk_types = ["bulk_type_1"];
+const bulk_prices = ["bulk_price_1"];
+const nos_in_bulk = ["no_in_bulk_1"];
+const bulk_images = ["bulk_image_1"];
+const buttoners = ["button_hold_1"];
+
 document.addEventListener("DOMContentLoaded", () => {
 
     const formal = document.getElementById("super_form");
 
     formal.addEventListener("submit", submission);
 
-    var all_bulk = document.querySelector("#bulk_holder");
-    var has_bulk = document.querySelector("#has_bulk").value;
-    var breaker = document.querySelector("#separator");
-    var m_button = document.querySelector("#minus_button");
+    const all_bulk = document.querySelector("#bulk_holder");
+    const has_bulk = document.querySelector("#has_bulk").value;
+    const breaker = document.querySelector("#separator");
+    const m_button = document.querySelector("#minus_button");
 
     // also add styling to remove bottom margin
     all_bulk.style.display = "none";
@@ -48,16 +54,16 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     var is_carton_bag = document.querySelector("#is_carton_bag").value;
-    var carton_price = document.querySelector("#carton_price");
-    var bag_price = document.querySelector("#bag_price");
-    var no_in_carton = document.querySelector("#no_in_carton");
-    var no_in_bag = document.querySelector("#no_in_bag");
-    var carton_image = document.querySelector("#carton_image");
-    var bag_image = document.querySelector("#bag_image");
-    var carton_stock = document.querySelector("#carton_stock");
-    var bag_stock = document.querySelector("#bag_stock");
-    var carton_divis = document.querySelector("#is_carton_divisible");
-    var bag_divis = document.querySelector("#is_bag_divisible");
+    const carton_price = document.querySelector("#carton_price");
+    const bag_price = document.querySelector("#bag_price");
+    const no_in_carton = document.querySelector("#no_in_carton");
+    const no_in_bag = document.querySelector("#no_in_bag");
+    const carton_image = document.querySelector("#carton_image");
+    const bag_image = document.querySelector("#bag_image");
+    const carton_stock = document.querySelector("#carton_stock");
+    const bag_stock = document.querySelector("#bag_stock");
+    const carton_divis = document.querySelector("#is_carton_divisible");
+    const bag_divis = document.querySelector("#is_bag_divisible");
 
     carton_price.required = false;
     no_in_carton.required = false;
@@ -184,12 +190,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
 });
-
-var bulk_types = ["bulk_type_1"];
-var bulk_prices = ["bulk_price_1"];
-var nos_in_bulk = ["no_in_bulk_1"];
-var bulk_images = ["bulk_image_1"];
-var buttoners = ["button_hold_1"];
 
 function add_bulk() {
     var bulktype = document.getElementById(bulk_types[bulk_types.length - 1]);
@@ -399,6 +399,44 @@ function remove_bulk() {
 
 // Validation from front end
 function submission(event) {
+
+    var is_carton_bag = document.querySelector("#is_carton_bag").value;
+    const carton_price = document.querySelector("#carton_price");
+    const bag_price = document.querySelector("#bag_price");
+    const no_in_carton = document.querySelector("#no_in_carton");
+    const no_in_bag = document.querySelector("#no_in_bag");
+    const carton_image = document.querySelector("#carton_image");
+    const bag_image = document.querySelector("#bag_image");
+    const carton_stock = document.querySelector("#carton_stock");
+    const bag_stock = document.querySelector("#bag_stock");
+    const carton_divis = document.querySelector("#is_carton_divisible");
+    const bag_divis = document.querySelector("#is_bag_divisible");
+
+    if (is_carton_bag == "none") {
+        carton_price.value = "";
+        bag_price.value = "";
+        no_in_carton.value = "";
+        no_in_bag.value = "";
+        carton_image.value = "";
+        bag_image.value = "";
+        carton_stock.value = "";
+        bag_stock.value = "";
+        carton_divis.value = "False";
+        bag_divis.value = "False";
+    } else if (is_carton_bag == "carton") {
+        bag_price.value = "";
+        no_in_bag.value = "";
+        bag_image.value = "";
+        bag_stock.value = "";
+        bag_divis.value = "False";
+    } else {
+        // Carton_bag is "bag"
+        carton_price.value = "";
+        no_in_carton.value = "";
+        carton_image.value = "";
+        carton_stock.value = "";
+        carton_divis.value = "False";
+    }
     // Future: Run validation to ensure types of bulk are unique
 
     bulk_prices.forEach(element => {

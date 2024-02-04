@@ -1,12 +1,12 @@
 {% extends 'main_app/base.html' %}
 
 {% block title %} Edit Product {% endblock %}
-<!-- Continue here -->
+<!-- Continue here 2180809914-->
 {% block content%}
 {% load static %}
 <script src="{% static 'edit_depend.js' %}"></script>
 
-<div>
+<div class="container">
     <h2>Edit Product</h2>
     <div class="d-flex justify-content-center mb-2">
         <img src="{{ p_image }}" alt="Product's Image" id="the_product_image" class="rounded" width="200px">
@@ -115,19 +115,20 @@
             </div>
         </div>
         <div id="bulk_holder">
+            {% for piece in form.extra %}
             <div class="row justify-content-evenly">
                 <div class="col-md-4">
                     <div class="mb-3">
-                        {{ form.bulk_type_1.label_tag }}
-                        {{ form.bulk_type_1 }}
+                        <label for="bulk_type_{{ forloop.counter }}">Type of Bulk {{ forloop.counter }}</label>
+                        <input name="bulk_type_{{ forloop.counter }}" id="bulk_type_{{ forloop.counter }}" value="{{ piece.bulk_type }}" autocomplete="off" list="bulk_type_" class="form-control" data-numbering="type_num">
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="input-group mb-3">
                         <span class="input-group-text">₦</span>
                         <div class="form-floating">
-                            {{ form.bulk_price_1 }}
-                            {{ form.bulk_price_1.label_tag }}
+                            <input type="number" name="bulk_price_{{ forloop.counter }}" id="bulk_price_{{ forloop.counter }}" value="{{ piece.bulk_price }}" class="form-control"  placeholder="bulk price">
+                            <label for="bulk_price_{{ forloop.counter }}">Price of Bulk {{ forloop.counter }}</label>
                         </div>
                     </div>
                 </div>
@@ -137,16 +138,61 @@
             <div class="row justify-content-evenly">
                 <div class="col-md-4">
                     <div class="form-floating mb-3">
-                        {{ form.no_in_bulk_1 }}
-                        {{ form.no_in_bulk_1.label_tag }}
+                        <input type="number" name="no_in_bulk_{{ forloop.counter }}" id="no_in_bulk_{{ forloop.counter }}" value="{{ piece.no_in_bulk }}" class="form-control"  placeholder="no in bulk">
+                        <label for="no_in_bulk_{{ forloop.counter }}">Number In Bulk {{ forloop.counter }}</label>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="mb-3">
-                        {{ form.bulk_image_1.label_tag }}
-                        {{ form.bulk_image_1 }}
+                        <label for="bulk_image_{{ forloop.counter }}">Bulk {{ forloop.counter }}'s Image</label>
+                        <input type="file" name="bulk_image_{{ forloop.counter }}" id="bulk_image_{{ forloop.counter }}" class="form-control">
                     </div>
                 </div>
+                <!-- The temporary hold in question -->
+                <div class="col-md-2" id="button_hold_{{ forloop.counter }}">
+                    <br class="d-none d-lg-block" id="the_break" data-destruction="yes" {% if forloop.last %} data-exemption="yes" {% endif %}>
+                    <button type="button" class="btn btn-success" id="plus_button" onclick="add_bulk()" data-destruction="yes" {% if forloop.last %} data-exemption="yes" {% endif %}>
+                        <img src="{% static 'app_media/plus-item2.png' %}" alt="Trash Bin" width="24" height="24">
+                    </button>
+                    <button type="button" class="btn btn-danger" id="minus_button" onclick="remove_bulk()" data-destruction="yes" {% if forloop.last %} data-exemption="yes" {% endif %}>
+                        <img src="{% static 'app_media/delete-bin.png' %}" alt="Trash Bin" width="24" height="24">
+                    </button>
+                </div>
+            </div>
+            {% empty %}
+            <div class="row justify-content-evenly">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="bulk_type_1">Type of Bulk 1</label>
+                        <input name="bulk_type_1" id="bulk_type_1" value="{{ piece.bulk_type }}" autocomplete="off" list="bulk_type_" class="form-control">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">₦</span>
+                        <div class="form-floating">
+                            <input type="number" name="bulk_price_1" id="bulk_price_1" value="{{ piece.bulk_price }}" class="form-control"  placeholder="bulk price">
+                            <label for="bulk_price_1">Price of Bulk 1</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                </div>
+            </div>
+            <div class="row justify-content-evenly">
+                <div class="col-md-4">
+                    <div class="form-floating mb-3">
+                        <input type="number" name="no_in_bulk_1" id="no_in_bulk_1" value="{{ piece.no_in_bulk }}" class="form-control"  placeholder="no in bulk">
+                        <label for="no_in_bulk_1">Number In Bulk 1</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="bulk_image_1">Bulk 1's Image</label>
+                        <input type="file" name="bulk_image_1" id="bulk_image_1" class="form-control">
+                    </div>
+                </div>
+                <!-- The temporary hold in question -->
                 <div class="col-md-2" id="button_hold_1">
                     <br class="d-none d-lg-block" id="the_break">
                     <button type="button" class="btn btn-success" id="plus_button" onclick="add_bulk()">
@@ -157,6 +203,7 @@
                     </button>
                 </div>
             </div>
+            {% endfor %}
         </div>
         <br class="d-lg-none" id="separator">
         <div class="row g-2">
