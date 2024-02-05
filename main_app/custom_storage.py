@@ -9,7 +9,7 @@ class MediaStorage(BackblazeB2Storage):
 
 
 def delete_image(file_path):
-    """Delete Previous Image OF USER
+    """Delete Previous Image OF USER/OBJECT
       from storage"""
 
     # instantiate storage class to use
@@ -143,13 +143,13 @@ def default_carton_image():
     Function to use a default image for
     cartons of products
     """
-    profile_pic = MediaStorage()
+    generic_pic = MediaStorage()
 
     # Check to ensure image exists
-    if profile_pic.exists("app_defaults/carton_frame.png"):
+    if generic_pic.exists("app_defaults/carton_frame.png"):
         # Get the file url
-        the_path = profile_pic.path("app_defaults/carton_frame.png")
-        pic_url = profile_pic.url(the_path)
+        the_path = generic_pic.path("app_defaults/carton_frame.png")
+        pic_url = generic_pic.url(the_path)
         
         return pic_url, the_path
 
@@ -158,13 +158,13 @@ def default_bag_image():
     Function to use a default image for
     bags of products
     """
-    profile_pic = MediaStorage()
+    generic_pic = MediaStorage()
 
     # Check to ensure image exists
-    if profile_pic.exists("app_defaults/bag_frame.png"):
+    if generic_pic.exists("app_defaults/bag_frame.png"):
         # Get the file url
-        the_path = profile_pic.path("app_defaults/bag_frame.png")
-        pic_url = profile_pic.url(the_path)
+        the_path = generic_pic.path("app_defaults/bag_frame.png")
+        pic_url = generic_pic.url(the_path)
         
         return pic_url, the_path
 

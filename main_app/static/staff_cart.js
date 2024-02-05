@@ -832,6 +832,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const result = data.result
                     if (result === "Successful") {
                         // Successful deletion
+                        const noOfCarts = document.getElementById("noOfCarts");
                         const confirm_delete = bootstrap.Modal.getInstance(document.getElementById('confirm_delete_modal'));
                         const del_item = document.querySelector(`a[data-slug=${element.dataset.delslug}][data-customer=${element.dataset.delcustomer}]`);
                         var item_sub_total = parseFloat(document.querySelector(`input[name=hidden_item_sub_total][data-slug=${element.dataset.delslug}][data-customer=${element.dataset.delcustomer}]`).value);
@@ -848,7 +849,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         document.querySelector(`span[data-customerowed=${element.dataset.delcustomer}]`).textContent = editPrice(new_cart_total.toString());
                         document.querySelector(`button[type=button][data-customer=${element.dataset.delcustomer}]`).dataset.amount = new_cart_total;
                         if (new_cart_total == 0) {
+                            // Remove entire cart from list
                             del_item.parentElement.parentElement.parentElement.parentElement.parentElement.remove();
+                            noOfCarts.textContent = parseInt(document.querySelector("#noOfCustomers").value) - 1
                         } else {
                             del_item.parentElement.parentElement.parentElement.style.animationPlayState = "running";
                             del_item.parentElement.parentElement.parentElement.addEventListener("animationend", () => {

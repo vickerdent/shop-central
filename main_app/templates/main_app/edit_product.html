@@ -138,7 +138,7 @@
             <div class="row justify-content-evenly">
                 <div class="col-md-4">
                     <div class="form-floating mb-3">
-                        <input type="number" name="no_in_bulk_{{ forloop.counter }}" id="no_in_bulk_{{ forloop.counter }}" value="{{ piece.no_in_bulk }}" class="form-control"  placeholder="no in bulk">
+                        <input type="number" name="no_in_bulk_{{ forloop.counter }}" id="no_in_bulk_{{ forloop.counter }}" value="{{ piece.no_in_bulk }}" max="500" class="form-control"  placeholder="no in bulk">
                         <label for="no_in_bulk_{{ forloop.counter }}">Number In Bulk {{ forloop.counter }}</label>
                     </div>
                 </div>
@@ -164,14 +164,14 @@
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label for="bulk_type_1">Type of Bulk 1</label>
-                        <input name="bulk_type_1" id="bulk_type_1" value="{{ piece.bulk_type }}" autocomplete="off" list="bulk_type_" class="form-control">
+                        <input name="bulk_type_1" id="bulk_type_1" autocomplete="off" list="bulk_type_" class="form-control">
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="input-group mb-3">
                         <span class="input-group-text">₦</span>
                         <div class="form-floating">
-                            <input type="number" name="bulk_price_1" id="bulk_price_1" value="{{ piece.bulk_price }}" class="form-control"  placeholder="bulk price">
+                            <input type="number" name="bulk_price_1" id="bulk_price_1" class="form-control"  placeholder="bulk price">
                             <label for="bulk_price_1">Price of Bulk 1</label>
                         </div>
                     </div>
@@ -182,7 +182,7 @@
             <div class="row justify-content-evenly">
                 <div class="col-md-4">
                     <div class="form-floating mb-3">
-                        <input type="number" name="no_in_bulk_1" id="no_in_bulk_1" value="{{ piece.no_in_bulk }}" class="form-control"  placeholder="no in bulk">
+                        <input type="number" name="no_in_bulk_1" id="no_in_bulk_1" max="500" class="form-control"  placeholder="no in bulk">
                         <label for="no_in_bulk_1">Number In Bulk 1</label>
                     </div>
                 </div>

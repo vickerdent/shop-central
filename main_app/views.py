@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from bson.son import SON
 import pymongo, json
 from decimal import Decimal
+import pprint
 
 from .o_functions import humans, payment_callback, standardize_phone, strip_id
 from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, \
@@ -20,6 +21,38 @@ from .custom_storage import handle_user_image, default_user_image, compress_imag
         handle_product_image
 from utils import user_collection, send_email_code, new_accounts_collection, products_collection, \
       staff_carts_collection, transactions_collection, debtors_collection, code_generator, client
+
+
+def calculate_subtotal(product_slug):
+    all_carts = list(staff_carts_collection.find({}))
+    for cart in all_carts:
+        new_subtotal = Decimal("0.00")
+        prev_subtotal = Decimal("0.00")
+        
+        for cart_item in cart["items"]:
+            if cart_item["product_slug"] == product_slug:
+                # Found item to work with
+                ze_price = cart_item["product_price"]
+                ze_quantity = cart_item["product_quantity"]
+
+                # Calculate subtotal
+                prev_subtotal = Decimal(cart_item["sub_total"])
+                new_subtotal = Decimal(ze_price) * Decimal(ze_quantity)
+
+        if new_subtotal:
+            # Confirm variable exists. There can only be one product-update per cart per time
+            old_cart_total = cart["total_amount"]
+
+            new_cart_total = Decimal(old_cart_total) - prev_subtotal + new_subtotal
+
+            # Update cart, using cart's buyer name
+            staff_carts_collection.update_one({"name_of_buyer": cart["name_of_buyer"]},
+                                                {"$set": {
+                                                    "items.$[elem].sub_total": str(new_subtotal),
+                                                    "total_amount": str(new_cart_total),
+                                                    "amount_owed": str(new_cart_total)
+                                                }},
+                                                array_filters=[{"elem.product_slug": product_slug}])
 
 # Create your views here.
 @login_required
@@ -315,10 +348,10 @@ def add_product(request):
             # Check that product does not already exist
             product_id = slugify(brand_name + " " + product_name + " " + size)
 
-            # Request all products that match the brand name and place in list
+            # Check for product that matches the product's slug
             product_check = products_collection.find_one({"slug": product_id})
 
-            # Run for loop and call: 
+            # Push exception:
             if product_check:
                 messages.error(request, "Product already exists in database!")
 
@@ -671,7 +704,7 @@ def find_staff_cart(request):
                             if updateResult.modified_count == 1:
                                 return JsonResponse(data={"result": 1})
                             else:
-                                print("Error here")
+                                # print("Error here")
                                 return JsonResponse(data={"result": False})
 
             # Create dictionary for new item
@@ -694,6 +727,8 @@ def find_staff_cart(request):
             #             "product_slug_" + str(curr_num + 1): prodSlug}
 
             # Add dictionary to list of items: {"product_name": prodName, "sale_type": saleType}
+            # print(total_amount)
+            # print(finSub)
             staff_carts_collection.update_one({"name_of_buyer": cartName},
                                             {"$push": {"items": new_item},
                                             "$set": {"amount_owed": str(total_amount + finSub),
@@ -719,7 +754,7 @@ def find_staff_cart(request):
 
             return JsonResponse(data={"result": True})
     else:
-        print("Error here instead")
+        # print("Error here instead")
         return JsonResponse(data={"result": False})
     
 # Create view to check if given product is in cart already
@@ -781,15 +816,15 @@ def edit_product(request, slug):
 
         curr_product = products_collection.find_one({"slug": slug})
 
-        all_tags = ""
-        for tag in curr_product["tags"]:
-            if tag == curr_product["tags"][-1]:
-                all_tags += tag
-                continue
-            all_tags += tag + ", "
-
         if curr_product:
             # Define initial data from mongodb that should be preloaded
+            all_tags = ""
+            for tag in curr_product["tags"]:
+                if tag == curr_product["tags"][-1]:
+                    all_tags += tag
+                    continue
+                all_tags += tag + ", "
+
             initial_data = {"brand_name": curr_product["brand_name"], "product_name": curr_product["product_name"],
                             "size": curr_product["size"], "retail_price": curr_product["retail_price"],
                             "wholesale_price": curr_product["wholesale_price"], "is_discount": curr_product["is_discount"],
@@ -807,10 +842,10 @@ def edit_product(request, slug):
             
             bulk_info = curr_product["bulk"]
             if bulk_info != []:
-                print("non-empty")
+                # print("non-empty")
                 extra_data = bulk_info
             else:
-                print("empty")
+                # print("empty")
                 extra_data = []
 
             old_product_image = curr_product["product_image"][0]
@@ -844,6 +879,214 @@ def edit_product(request, slug):
                 tags = form.cleaned_data["tags"]
                 description = form.cleaned_data.get("description")
 
+                # Start preparing info for same product in staff carts
+                new_prices = {"retail_price": retail_price, "wholesale_price": wholesale_price}
+
+                # Process bulk info, if any
+                i = 1
+                bulk_type = "bulk_type_" + str(i)
+                bulk_price = "bulk_price_" + str(i)
+                no_in_bulk = "no_in_bulk_" + str(i)
+                bulk_image = "bulk_image_" + str(i)
+
+                bulk = []
+
+                if has_bulk == "True":
+                    while request.POST.get(bulk_type):
+                        # Check through bulk items, if bulk_type or bulk_price already exists
+                        for item in bulk:
+                            if request.POST.get(bulk_type) in item.values():
+                                messages.warning(request, "You can't have duplicate bulk types!")
+
+                                if a_user.is_admin:
+                                    context = {"form": form, "is_admin": True, "is_staff": True,
+                                            "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
+                                    return render(request, "main_app/add_product.html", context)
+                                elif a_user.is_staff:
+                                    context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
+                                    return render(request, "main_app/add_product.html", context)
+
+                            if request.POST.get(bulk_price) in item.values():
+                                messages.warning(request, "You can't have duplicate bulk prices!")
+
+                                if a_user.is_admin:
+                                    context = {"form": form, "is_admin": True, "is_staff": True,
+                                            "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
+                                    return render(request, "main_app/add_product.html", context)
+                                elif a_user.is_staff:
+                                    context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
+                                    return render(request, "main_app/add_product.html", context)
+                        
+                        # At this point, duplicates have been handled
+                        # Handle images next
+
+                        # Check if corresponding bulk_image exists, else use default image
+                        if request.FILES.get(bulk_image):
+                            # Image was uploaded
+                            image = request.FILES[bulk_image]
+
+                            # add function to delete previous image from bucket
+                            if curr_product["bulk"][i - 1]["bulk_image"] != "app_defaults/bulk_frame.png":
+                                delete_image(curr_product["bulk"][i - 1]["bulk_image"])
+
+                            # process image: change name and compress it
+                            img_num = int(bulk_image.split("_")[2])
+                            image_id = slugify(brand_name + " " + product_name + " " + size + " " + bulk_image + " " + str(img_num))
+                            image.name = change_image_name(image, image_id)
+                            compressed_image = compress_image(image)
+                        
+                            # upload compressed image and obtain its url and path
+                            image_url, image_path = handle_product_image(compressed_image)
+
+                            # Add obtained image's uri to bulk_image's dictionary
+                            image_info = [image_url, image_path]
+                        else:
+                            # No corresponding image, so use default
+                            image_url, image_path = default_bulk_image()
+                            image_info = [image_url, image_path]
+                        
+                        bulk_item = {
+                            "bulk_type": request.POST.get(bulk_type),
+                            "bulk_price": str(Decimal(request.POST.get(bulk_price)) + Decimal("0.00")),
+                            "no_in_bulk": int(request.POST.get(no_in_bulk)),
+                            "bulk_image": image_info
+                        }
+
+                        new_prices[request.POST.get(bulk_type)] = str(Decimal(request.POST.get(bulk_price)) + Decimal("0.00"))
+
+                        bulk.append(bulk_item)
+
+                        i += 1
+                        # Check for next bulk info in request
+                        bulk_type = "bulk_type_" + str(i)
+                        bulk_price = "bulk_price_" + str(i)
+                        no_in_bulk = "no_in_bulk_" + str(i)
+                        bulk_image = "bulk_image_" + str(i)
+                        
+        
+                # Process product image as well, if it exists
+                # Let change to image be effected only to products and staff carts / user carts
+                current_time = datetime.now()
+                the_image = curr_product["product_image"]
+                neo_product_id = slugify(brand_name + " " + product_name + " " + size)
+                if product_image:
+                    if neo_product_id == slug:
+                        product_id = slug + str(current_time)
+                    else:
+                        product_id = neo_product_id
+
+                    product_image.name = change_image_name(product_image, product_id)
+
+                    product_img_url, product_img_path = handle_product_image(compress_image(product_image))
+                    the_image = [product_img_url, product_img_path]
+
+                # Determine if carton or bag and process accordingly
+                is_carton_bag_divisible = False
+
+                if is_carton_bag == "carton":
+                    carton_bag_price = carton_price
+                    no_in_carton_bag = no_in_carton
+                    carton_bag_stock = carton_stock
+                    if is_carton_divisible == "True":
+                        is_carton_bag_divisible = True
+                elif is_carton_bag == "bag":
+                    carton_bag_price = bag_price
+                    no_in_carton_bag = no_in_bag
+                    carton_bag_stock = bag_stock
+                    if is_bag_divisible == "True":
+                        is_carton_bag_divisible = True
+                else:
+                    carton_bag_price = 0
+                    no_in_carton_bag = 0
+                    carton_bag_stock = 0
+
+                new_prices["carton_bag_price"] = carton_bag_price
+
+                # Determine if image was uploaded for carton/bag and process accordingly
+                if carton_image:
+                    # process image not as before, but in order to replace
+                    # add function to delete previous image from bucket
+                    if curr_product["carton_bag_image"][1] != "app_defaults/carton_frame.png":
+                        delete_image(curr_product["carton_bag_image"][1])
+
+                    carton_image_id = slugify(brand_name + " " + product_name + " " + size + " " + "carton" + " " + "image")
+                    carton_image.name = change_image_name(carton_image, carton_image_id)
+                    carton_img_url, carton_img_path = handle_product_image(compress_image(carton_image))
+                    carton_bag_image = [carton_img_url, carton_img_path]
+                elif bag_image:
+                    # process image as before
+                    # add function to delete previous image from bucket
+                    if curr_product["carton_bag_image"][1] != "app_defaults/carton_frame.png":
+                        delete_image(curr_product["carton_bag_image"][1])
+
+                    bag_image_id = slugify(brand_name + " " + product_name + " " + size + " " + "bag" + " " + "image")
+                    bag_image.name = change_image_name(bag_image, bag_image_id)
+                    bag_img_url, bag_img_path = handle_product_image(compress_image(bag_image))
+                    carton_bag_image = [bag_img_url, bag_img_path]
+                else:
+                    if is_carton_bag != "none":
+                        img_url, img_path = default_carton_image()
+                        carton_bag_image = [img_url, img_path]
+                    else:
+                        carton_bag_image = None
+
+                # Use bool value for is_discount and has_bulk
+                if is_discount == "True":
+                    discount_fact = True
+                else:
+                    discount_fact = False
+
+                if has_bulk == "True":
+                    bulk_fact = True
+                else:
+                    bulk_fact = False
+
+                if is_divisible == "True":
+                    divisible_fact = True
+                else:
+                    divisible_fact = False
+
+                new_tags = str(tags).split(", ")
+
+                correct_product = Product(brand_name, product_name, size, the_image, new_tags,
+                                  retail_price, wholesale_price, discount_fact, discount_retail_price if discount_fact else 0,
+                                  bulk_fact, bulk, is_carton_bag, carton_bag_price, no_in_carton_bag, carton_bag_image,
+                                  current_time, singles_stock, carton_bag_stock, description, neo_product_id, divisible_fact,
+                                  is_carton_bag_divisible
+                                  )
+                
+                products_collection.update_one({"slug": slug},
+                                               {"$set": correct_product.to_dict()})
+                
+                # Run loop through new_prices variable to update products in staff carts, and buyer carts
+                # Also change the slug as well this time
+                for each_price in new_prices:
+                    staff_carts_collection.update_many({"items.product_slug": slug},
+                                                               {"$set": {
+                                                                   "items.$[elem].product_price": str(Decimal(new_prices[each_price]) + Decimal("0.00")),
+                                                                   "items.$[elem].product_slug": neo_product_id,
+                                                                   "items.$[elem].product_name": correct_product.name,
+                                                               }},
+                                                               array_filters=[{"elem.product_slug": slug,
+                                                                               "elem.true_sale_type": each_price}])
+                
+                # Can now perform calculations for all product prices in all carts
+                # Remember that product_slug has most likely changed.
+                calculate_subtotal(neo_product_id)
+                
+                # All done. Proceed to redirect
+                messages.success(request, "Product updated succesfully.")
+                return redirect("home")
+            else:
+                # Form isn't valid. Return to page with mostly filled data
+                if a_user.is_admin:
+                    context = {"form": form, "p_image": old_product_image, "is_admin": True, "noOfCarts": noOfCarts,
+                            "is_staff": True, "p_name": old_product_name, "bulk": BULK_CHOICES}
+                    return render(request, "main_app/edit_product.html", context)
+                elif a_user.is_staff:
+                    context = {"form": form, "p_image": old_product_image, "is_staff": True,
+                            "p_name": old_product_name, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
+                    return render(request, "main_app/edit_product.html", context)
             if a_user.is_admin:
                 context = {"form": form, "p_image": old_product_image, "is_admin": True, "noOfCarts": noOfCarts,
                            "is_staff": True, "p_name": old_product_name, "bulk": BULK_CHOICES}
@@ -1405,7 +1648,7 @@ def update_product_price(request):
                         if item != "prod_slug":
                             # Run operation for product in staff_carts, and even buyer carts, when the time comes
                             # Perform price updates first
-                            result = staff_carts_collection.update_many({"items.product_slug": product_slug},
+                            staff_carts_collection.update_many({"items.product_slug": product_slug},
                                                                {"$set": {
                                                                    "items.$[elem].product_price": str(Decimal(post_data[item]) + Decimal("0.00"))
                                                                }},
@@ -1416,7 +1659,7 @@ def update_product_price(request):
                         if item != "prod_slug":
                             # Run operation for product in staff_carts, and even buyer carts, when the time comes
                             # Perform price updates first
-                            result = staff_carts_collection.update_many({"items.product_slug": product_slug},
+                            staff_carts_collection.update_many({"items.product_slug": product_slug},
                                                                {"$set": {
                                                                    "items.$[elem].product_price": str(Decimal(post_data[item]) + Decimal("0.00"))
                                                                }},
@@ -1424,35 +1667,8 @@ def update_product_price(request):
                                                                                "elem.true_sale_type": item}])
                             
                 # Can now perform calculations for all product prices in all carts
-                all_carts = list(staff_carts_collection.find({}))
-                for cart in all_carts:
-                    new_subtotal = Decimal("0.00")
-                    prev_subtotal = Decimal("0.00")
-                    
-                    for cart_item in cart["items"]:
-                        if cart_item["product_slug"] == product_slug:
-                            # Found item to work with
-                            ze_price = cart_item["product_price"]
-                            ze_quantity = cart_item["product_quantity"]
+                calculate_subtotal(product_slug)
 
-                            # Calculate subtotal
-                            prev_subtotal = Decimal(cart_item["sub_total"])
-                            new_subtotal = Decimal(ze_price) * Decimal(ze_quantity)
-
-                    if new_subtotal:
-                        # Confirm variable exists. There can only be one product-update per cart per time
-                        old_cart_total = cart["total_amount"]
-
-                        new_cart_total = Decimal(old_cart_total) - prev_subtotal + new_subtotal
-
-                        # Update cart, using cart's buyer name
-                        staff_carts_collection.update_one({"name_of_buyer": cart["name_of_buyer"]},
-                                                          {"$set": {
-                                                              "items.$[elem].sub_total": str(new_subtotal),
-                                                              "total_amount": str(new_cart_total),
-                                                              "amount_owed": str(new_cart_total)
-                                                          }},
-                                                          array_filters=[{"elem.product_slug": product_slug}])
                 return JsonResponse(data={"result": "Successful"})
         else:
             return JsonResponse(data={"result": False})
