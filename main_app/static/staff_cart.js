@@ -42,6 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const pay_amount = document.getElementById(`amountPaid_${idNum}`)
         if (pay_amount) {
             document.getElementById(`amountPaid_${idNum}`).onkeyup = () => {
+                document.getElementById(`amountPaid_${idNum}`).value = ensure_two_sf(document.getElementById(`amountPaid_${idNum}`).value);
+                // document.getElementById(`amountPaid_${idNum}`).setSelectionRange(end_of_value, end_of_value)
                 if (document.getElementById(`amountPaid_${idNum}`).value.length > 0 && (!(document.getElementById(`amountPaid_${idNum}`).value.startsWith("0")) || (document.getElementById(`amountPaid_${idNum}`).value.startsWith("0") && document.getElementById(`amountPaid_${idNum}`).value.length == 1)) && parseFloat(document.getElementById(`amountPaid_${idNum}`).value) >= 0) {
                     document.getElementById(`purchaseOrder_${idNum}`).disabled = false;
                     var moneyBrought = parseFloat(document.getElementById(`amountPaid_${idNum}`).value);
@@ -52,8 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         document.getElementById(`owed_${idNum}`).textContent = editPrice("0.00")
                     } else {
                         document.getElementById(`owed_${idNum}`).textContent = editPrice(strAmount)
-                    }
-                    
+                    }                    
                 } else {
                     document.getElementById(`purchaseOrder_${idNum}`).disabled = true;
                     var moneyBrought = parseFloat(0);
@@ -843,7 +844,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         document.querySelector(`span[data-customertotal=${element.dataset.delcustomer}]`).textContent = editPrice(new_cart_total.toString());
                         
                         // Also set amount owed (hidden and shown) as well as button data attribute
-                        document.querySelector(`input[type=number][data-customer=${element.dataset.delcustomer}]`).value = "";
+                        document.querySelector(`input[type=text][data-customer=${element.dataset.delcustomer}]`).value = "";
                         document.querySelector(`button[type=button][data-customer=${element.dataset.delcustomer}]`).disabled = true;
                         document.querySelector(`input[name=hidden_amount_owed][data-customer=${element.dataset.delcustomer}]`).value = new_cart_total;
                         document.querySelector(`span[data-customerowed=${element.dataset.delcustomer}]`).textContent = editPrice(new_cart_total.toString());
@@ -852,6 +853,9 @@ document.addEventListener("DOMContentLoaded", () => {
                             // Remove entire cart from list
                             del_item.parentElement.parentElement.parentElement.parentElement.parentElement.remove();
                             noOfCarts.textContent = parseInt(document.querySelector("#noOfCustomers").value) - 1
+                            if (noOfCarts.textContent == "0") {
+                                noOfCarts.remove()
+                            }
                         } else {
                             del_item.parentElement.parentElement.parentElement.style.animationPlayState = "running";
                             del_item.parentElement.parentElement.parentElement.addEventListener("animationend", () => {
@@ -912,6 +916,23 @@ function humanize_float(d_float) {
     } else {
         // Variable has no point in it
         return d_float
+    }
+}
+
+function ensure_two_sf(value) {
+    var point = value.indexOf(".")
+    if (value.includes(".")) {
+        // There's a point in value. Apply limits
+        var main_value = value.slice(0, point)
+        var kobo_cent = value.slice(point + 1)
+        var new_kobo_cent = kobo_cent
+        if (kobo_cent.length > 2) {
+            // Attempting to extend bounds
+            new_kobo_cent = kobo_cent.slice(0, 2)
+        }
+        return main_value + "." + new_kobo_cent
+    } else {
+        return value
     }
 }
 

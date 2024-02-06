@@ -10,7 +10,6 @@ from django.http import JsonResponse
 from bson.son import SON
 import pymongo, json
 from decimal import Decimal
-import pprint
 
 from .o_functions import humans, payment_callback, standardize_phone, strip_id
 from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, \
@@ -38,6 +37,7 @@ def calculate_subtotal(product_slug):
                 # Calculate subtotal
                 prev_subtotal = Decimal(cart_item["sub_total"])
                 new_subtotal = Decimal(ze_price) * Decimal(ze_quantity)
+                new_subtotal = new_subtotal.quantize(Decimal("1.00"))
 
         if new_subtotal:
             # Confirm variable exists. There can only be one product-update per cart per time
@@ -941,9 +941,14 @@ def edit_product(request, slug):
                             # Add obtained image's uri to bulk_image's dictionary
                             image_info = [image_url, image_path]
                         else:
-                            # No corresponding image, so use default
+                            # No corresponding image, so use what was the previous one
                             image_url, image_path = default_bulk_image()
                             image_info = [image_url, image_path]
+                            
+                            for item in curr_product["bulk"]:
+                                if item["bulk_type"] == request.POST.get(bulk_type):
+                                    image_info = item["bulk_image"]
+                            
                         
                         bulk_item = {
                             "bulk_type": request.POST.get(bulk_type),
@@ -1059,13 +1064,14 @@ def edit_product(request, slug):
                                                {"$set": correct_product.to_dict()})
                 
                 # Run loop through new_prices variable to update products in staff carts, and buyer carts
-                # Also change the slug as well this time
+                # Also change the slug as well as the name and image this time
                 for each_price in new_prices:
                     staff_carts_collection.update_many({"items.product_slug": slug},
                                                                {"$set": {
                                                                    "items.$[elem].product_price": str(Decimal(new_prices[each_price]) + Decimal("0.00")),
                                                                    "items.$[elem].product_slug": neo_product_id,
                                                                    "items.$[elem].product_name": correct_product.name,
+                                                                   "items.$[elem].product_image": correct_product.product_image[0],
                                                                }},
                                                                array_filters=[{"elem.product_slug": slug,
                                                                                "elem.true_sale_type": each_price}])

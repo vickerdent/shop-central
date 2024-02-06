@@ -316,7 +316,7 @@
             <h5 class="me-2">Amount Paid:</h5>
             <div class="input-group input-group-sm payable">
               <span class="input-group-text" id="inputGroup-sizing-sm">₦</span>
-              <input type="number" class="form-control" name="amoutPaid_{{ forloop.counter }}" data-customer="{{ cart.name_of_buyer }}" id="amountPaid_{{ forloop.counter }}">
+              <input type="text" inputmode="numeric" class="form-control" name="amoutPaid_{{ forloop.counter }}" data-customer="{{ cart.name_of_buyer }}" id="amountPaid_{{ forloop.counter }}" style="text-align: right;">
             </div>
           </div>
           <button type="button" id="purchaseOrder_{{ forloop.counter }}" class="btn btn-light purchases" 

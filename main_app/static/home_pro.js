@@ -1773,6 +1773,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (prodPriceModal) {
 
         document.getElementById("retail_price").onkeyup = () => {
+            document.getElementById(`retail_price`).value = ensure_two_sf(document.getElementById(`retail_price`).value);
             if (document.getElementById("retail_price").value.trim().length > 0 && parseFloat(document.getElementById("retail_price").value) > 0 && !(document.getElementById("retail_price").value.startsWith("0"))) {
                 document.getElementById("retail_price").classList.remove("is-invalid");
                 if (document.getElementById("wholesale_price").value.trim().length > 0) {
@@ -1787,6 +1788,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         document.getElementById("wholesale_price").onkeyup = () => {
+            document.getElementById(`wholesale_price`).value = ensure_two_sf(document.getElementById(`wholesale_price`).value);
             if (document.getElementById("wholesale_price").value.trim().length > 0 && parseFloat(document.getElementById("wholesale_price").value) > 0 && !(document.getElementById("wholesale_price").value.startsWith("0"))) {
                 document.getElementById("wholesale_price").classList.remove("is-invalid");
                 if (document.getElementById("retail_price").value.trim().length > 0) {
@@ -1801,6 +1803,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         document.getElementById("carton_bag_price").onkeyup = () => {
+            document.getElementById(`carton_bag_price`).value = ensure_two_sf(document.getElementById(`carton_bag_price`).value);
             if (document.getElementById("carton_bag_price").value.trim().length > 0 && parseFloat(document.getElementById("carton_bag_price").value) > 0 && !(document.getElementById("carton_bag_price").value.startsWith("0"))) {
                 document.getElementById("carton_bag_price").classList.remove("is-invalid");
                 if (document.getElementById("retail_price").value.trim().length > 0) {
@@ -1818,6 +1821,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const element = event.target;
             
             if (element.name == "bulk_prices") {
+                element.value = ensure_two_sf(element.value);
                 if (element.value.trim().length > 0 && parseFloat(element.value) > 0 && !(element.value.startsWith("0"))) {
                     element.classList.remove("is-invalid");
                     if (document.getElementById("retail_price").value.trim().length > 0) {
@@ -1970,6 +1974,23 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+function ensure_two_sf(value) {
+    var point = value.indexOf(".")
+    if (value.includes(".")) {
+        // There's a point in value. Apply limits
+        var main_value = value.slice(0, point)
+        var kobo_cent = value.slice(point + 1)
+        var new_kobo_cent = kobo_cent
+        if (kobo_cent.length > 2) {
+            // Attempting to extend bounds
+            new_kobo_cent = kobo_cent.slice(0, 2)
+        }
+        return main_value + "." + new_kobo_cent
+    } else {
+        return value
+    }
+}
 
 function editPrice(dPrice) {
     var point = dPrice.indexOf(".")
