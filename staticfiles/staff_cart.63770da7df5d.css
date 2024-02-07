@@ -1,0 +1,71 @@
+#exception {
+    text-align: center;
+}
+
+#descrip_text {
+    display: none;
+}
+
+#update_debtor_div {
+    display: none;
+}
+
+#debtor_content {
+    display: none;
+}
+
+#load_button {
+    display: none;
+}
+
+#load_button_two {
+    display: none;
+}
+
+#load_payment {
+    display: none;
+}
+
+.payable {
+    width: 150px;
+    height: 7px;
+}
+
+.owable {
+    color: red;
+}
+
+.span-space {
+    visibility: hidden;
+}
+
+@keyframes hide {
+    0% {
+        opacity: 1;
+        height: 100%;
+        line-height: 100%;
+        margin-bottom: 10px;
+    }
+
+    75% {
+        opacity: 0;
+        height: 100%;
+        line-height: 100%;
+        margin-bottom: 10px;
+    }
+
+    100% {
+        opacity: 0;
+        height: 0px;
+        line-height: 0px;
+        margin-bottom: 0px;
+    }
+}
+
+.an-item {
+    margin-bottom: 10px;
+    animation-name: hide;
+    animation-duration: 1.3s;
+    animation-fill-mode: forwards;
+    animation-play-state: paused;
+}
