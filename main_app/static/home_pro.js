@@ -541,6 +541,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (totalQuantity) {
                         
                     }
+
+                    // Disable quantity buttons if needed
+                    
                     isWhole.disabled = true;
                     halfButton.disabled = true;
                     quartButton.disabled = true;
