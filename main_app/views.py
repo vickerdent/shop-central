@@ -926,8 +926,8 @@ def edit_product(request, slug):
                             image = request.FILES[bulk_image]
 
                             # add function to delete previous image from bucket
-                            if curr_product["bulk"][i - 1]["bulk_image"] != "app_defaults/bulk_frame.png":
-                                delete_image(curr_product["bulk"][i - 1]["bulk_image"])
+                            if curr_product["bulk"][i - 1]["bulk_image"][1] != "app_defaults/bulk_frame.png":
+                                delete_image(curr_product["bulk"][i - 1]["bulk_image"][1])
 
                             # process image: change name and compress it
                             img_num = int(bulk_image.split("_")[2])
@@ -944,7 +944,7 @@ def edit_product(request, slug):
                             # No corresponding image, so use what was the previous one
                             image_url, image_path = default_bulk_image()
                             image_info = [image_url, image_path]
-                            
+
                             for item in curr_product["bulk"]:
                                 if item["bulk_type"] == request.POST.get(bulk_type):
                                     image_info = item["bulk_image"]
