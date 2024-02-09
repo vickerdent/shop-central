@@ -78,17 +78,27 @@ TEMPLATES = [
     },
 ]
 
-# from django.forms.renderers import TemplatesSetting
-
-# class CustomFormRenderer(TemplatesSetting):
-#     form_template_name = "main_app\form_snippet.html"
-
-
-# FORM_RENDERER = "shop_central.settings.CustomFormRenderer"
+# ==============================================================================
+# SECURITY SETTINGS
+# ==============================================================================
 
 CSRF_USE_SESSIONS = True
 
 CSRF_COOKIE_HTTPONLY = True
+
+CSRF_TRUSTED_ORIGINS = [os.getenv("CSRF_ORIGIN")]
+
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
+
+SECURE_HSTS_SECONDS = 60 * 60 * 24 * 7 * 52  # one year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_SSL_REDIRECT = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+SESSION_COOKIE_SECURE = True
 
 WSGI_APPLICATION = 'shop_central.wsgi.application'
 
