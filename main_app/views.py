@@ -640,7 +640,6 @@ def find_product(request, slug):
     if the_product:
         return JsonResponse(the_product)
 
-@login_required
 def open_staff_carts(request):
     # Get all carts from mongodb belonging to particular user
     all_carts = list(staff_carts_collection.find({"staff_id": request.user.email}))
@@ -650,7 +649,6 @@ def open_staff_carts(request):
     
     return JsonResponse({"carts": cart_names})
 
-@login_required
 def find_staff_cart(request):
     # Gotta be POST
     if request.method == "POST":
@@ -758,7 +756,6 @@ def find_staff_cart(request):
         return JsonResponse(data={"result": False})
     
 # Create view to check if given product is in cart already
-@login_required
 def check_product_in_cart(request, slug):
     # Check through all carts belonging to user in mongo, if product is already in
     all_carts = list(staff_carts_collection.find({"staff_id": request.user.email}))
@@ -1190,7 +1187,6 @@ def debtors(request):
         messages.error(request, "An internal error occurred. Please try again later.")
         return render(request, "main_app/404.html", {})
 
-@login_required
 def add_debtor(request):
     # then check if user is staff or admin
     curr_user = user_collection.find_one({"email": request.user.email})
@@ -1272,8 +1268,11 @@ def add_debtor(request):
 
                 return JsonResponse(data={"result": "New Debtor", "txn_id": str(new_txn["_id"]), "ref_no": reference_no,
                                           "debt": str(amount_owed)})
-            
-@login_required
+        else:
+            return JsonResponse(data={"result": False})
+    else:
+        return JsonResponse(data={"result": False})
+
 def update_debtor(request):
     # then check if user is staff or admin
     curr_user = user_collection.find_one({"email": request.user.email})
@@ -1381,7 +1380,6 @@ def update_debtor(request):
     else:
         return JsonResponse(data={"result": False})
 
-@login_required
 def get_debtors(request):
     # then check if user is staff or admin
     curr_user = user_collection.find_one({"email": request.user.email})
@@ -1418,7 +1416,6 @@ def get_the_debtor(request, slug):
     else:
         return JsonResponse(data={"result": False})
 
-@login_required
 def make_payment(request):
     # then check if user is staff or admin
     curr_user = user_collection.find_one({"email": request.user.email})
@@ -1600,13 +1597,10 @@ def delete_item(request):
                     
                     return JsonResponse(data={"result": "Successful"})
         else:
-            messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
-            return render(request, "main_app/400.html", {})
+            return JsonResponse(data={"result": False})
     else:
-        messages.error(request, "An internal error occurred. Please try again later.")
-        return render(request, "main_app/404.html", {})
-    
-@login_required
+        return JsonResponse(data={"result": False})
+
 def update_product_price(request):
      # then check if user is staff or admin
     curr_user = user_collection.find_one({"email": request.user.email})

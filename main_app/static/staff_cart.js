@@ -13,6 +13,10 @@ document.addEventListener("DOMContentLoaded", () => {
     .then(data => {
         document.getElementById("noOfCustomers").value = data.carts.length
     })
+    .catch(error => {
+        failToast.show();
+        console.error({"error": error});
+    });
 
     const quantities = document.getElementsByClassName("item-quantity")
     for (let index = 0; index < quantities.length; index++) {
@@ -307,6 +311,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     failToast.show();
                 }
             })
+            .catch(error => {
+                failToast.show();
+                console.error({"error": error});
+            });
 
             // Update the modal's content.
             document.getElementById("amount_owed").value = `₦${editPrice(debtAmt)}`;
