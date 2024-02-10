@@ -3,6 +3,7 @@ from django.utils.text import slugify
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib import messages
 from datetime import datetime, timedelta
 from django.conf import settings
@@ -55,6 +56,7 @@ def calculate_subtotal(product_slug):
                                                 array_filters=[{"elem.product_slug": product_slug}])
 
 # Create your views here.
+@ensure_csrf_cookie
 @login_required
 def home(request):
     # Get all products from DB
@@ -650,6 +652,7 @@ def open_staff_carts(request):
     
     return JsonResponse({"carts": cart_names})
 
+@ensure_csrf_cookie
 @login_required
 def find_staff_cart(request):
     # Gotta be POST
@@ -770,6 +773,7 @@ def check_product_in_cart(request, slug):
 
     return JsonResponse(data={"result": False})
 
+@ensure_csrf_cookie
 @login_required
 def staff_carts(request):
     # Check if user is admin or staff
@@ -1190,6 +1194,7 @@ def debtors(request):
         messages.error(request, "An internal error occurred. Please try again later.")
         return render(request, "main_app/404.html", {})
 
+@ensure_csrf_cookie
 @login_required
 def add_debtor(request):
     # then check if user is staff or admin
@@ -1272,7 +1277,8 @@ def add_debtor(request):
 
                 return JsonResponse(data={"result": "New Debtor", "txn_id": str(new_txn["_id"]), "ref_no": reference_no,
                                           "debt": str(amount_owed)})
-            
+
+@ensure_csrf_cookie
 @login_required
 def update_debtor(request):
     # then check if user is staff or admin
@@ -1418,6 +1424,7 @@ def get_the_debtor(request, slug):
     else:
         return JsonResponse(data={"result": False})
 
+@ensure_csrf_cookie
 @login_required
 def make_payment(request):
     # then check if user is staff or admin
@@ -1554,6 +1561,7 @@ def get_transactions(request):
         messages.error(request, "An internal error occurred. Please try again later.")
         return render(request, "main_app/404.html", {})
 
+@ensure_csrf_cookie
 def delete_item(request):
     # then check if user is staff or admin
     curr_user = user_collection.find_one({"email": request.user.email})
@@ -1605,7 +1613,8 @@ def delete_item(request):
     else:
         messages.error(request, "An internal error occurred. Please try again later.")
         return render(request, "main_app/404.html", {})
-    
+
+@ensure_csrf_cookie
 @login_required
 def update_product_price(request):
      # then check if user is staff or admin

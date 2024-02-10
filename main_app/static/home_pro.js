@@ -538,9 +538,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Disable quantity buttons if not feasible, set quantity to value: 1
                 if (element.dataset.divisibility == "false") {
                     // For isWhole, check that it's available. Select half if selected
-                    if (totalQuantity) {
-                        
-                    }
 
                     // Disable quantity buttons if needed
                     
@@ -1438,7 +1435,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 })
                 .catch(error => {
-                    // failToast.show();
+                    failToast.show();
                     console.error({"error": error});
                 });
 
