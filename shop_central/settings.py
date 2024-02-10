@@ -49,13 +49,16 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    "django.middleware.cache.UpdateCacheMiddleware",
     'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.cache.FetchFromCacheMiddleware",
 ]
 
 ROOT_URLCONF = 'shop_central.urls'
@@ -80,13 +83,13 @@ TEMPLATES = [
 # SECURITY SETTINGS
 # ==============================================================================
 
-CSRF_USE_SESSIONS = True
+CSRF_USE_SESSIONS = False
 
-CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False
 
 CSRF_TRUSTED_ORIGINS = [os.getenv("CSRF_ORIGIN")]
 
-CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = False
 
 SECURE_HSTS_SECONDS = 60 * 60 * 24 * 7 * 52  # one year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
