@@ -114,7 +114,7 @@ class ChangePasswordForm(PasswordChangeForm):
         model = User
         fields = ("old_password", "new_password1", "new_password2")
 
-    def __init__(self, user: AbstractBaseUser | None, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, user: AbstractBaseUser, *args: Any, **kwargs: Any) -> None:
         super(PasswordChangeForm, self).__init__(user, *args, **kwargs)
 
         self.fields['old_password'].widget.attrs['class'] = 'form-control'
@@ -205,7 +205,7 @@ class NewPasswordForm(SetPasswordForm):
     the web application.
     """
 
-    def __init__(self, user: AbstractBaseUser | None, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, user: AbstractBaseUser, *args: Any, **kwargs: Any) -> None:
         super().__init__(user, *args, **kwargs)
 
         self.fields['new_password1'].widget.attrs['class'] = 'form-control'
