@@ -843,20 +843,20 @@ document.addEventListener("DOMContentLoaded", () => {
                         // Successful deletion
                         const noOfCarts = document.getElementById("noOfCarts");
                         const confirm_delete = bootstrap.Modal.getInstance(document.getElementById('confirm_delete_modal'));
-                        const del_item = document.querySelector(`a[data-slug=${element.dataset.delslug}][data-customer=${element.dataset.delcustomer}]`);
-                        var item_sub_total = parseFloat(document.querySelector(`input[name=hidden_item_sub_total][data-slug=${element.dataset.delslug}][data-customer=${element.dataset.delcustomer}]`).value);
-                        var cart_total = parseFloat(document.querySelector(`input[name=hidden_total_amount][data-customer=${element.dataset.delcustomer}]`).value);
+                        const del_item = document.querySelector(`a[data-slug=${element.dataset.delslug}][data-customer="${element.dataset.delcustomer}"]`);
+                        var item_sub_total = parseFloat(document.querySelector(`input[name=hidden_item_sub_total][data-slug=${element.dataset.delslug}][data-customer="${element.dataset.delcustomer}"]`).value);
+                        var cart_total = parseFloat(document.querySelector(`input[name=hidden_total_amount][data-customer="${element.dataset.delcustomer}"]`).value);
                         var new_cart_total = cart_total - item_sub_total
                         // Set new cart total (hidden and shown)
-                        document.querySelector(`input[name=hidden_total_amount][data-customer=${element.dataset.delcustomer}]`).value = new_cart_total;
-                        document.querySelector(`span[data-customertotal=${element.dataset.delcustomer}]`).textContent = editPrice(new_cart_total.toString());
+                        document.querySelector(`input[name=hidden_total_amount][data-customer="${element.dataset.delcustomer}"]`).value = new_cart_total;
+                        document.querySelector(`span[data-customertotal="${element.dataset.delcustomer}"]`).textContent = editPrice(new_cart_total.toString());
                         
                         // Also set amount owed (hidden and shown) as well as button data attribute
-                        document.querySelector(`input[type=text][data-customer=${element.dataset.delcustomer}]`).value = "";
-                        document.querySelector(`button[type=button][data-customer=${element.dataset.delcustomer}]`).disabled = true;
-                        document.querySelector(`input[name=hidden_amount_owed][data-customer=${element.dataset.delcustomer}]`).value = new_cart_total;
-                        document.querySelector(`span[data-customerowed=${element.dataset.delcustomer}]`).textContent = editPrice(new_cart_total.toString());
-                        document.querySelector(`button[type=button][data-customer=${element.dataset.delcustomer}]`).dataset.amount = new_cart_total;
+                        document.querySelector(`input[type=text][data-customer="${element.dataset.delcustomer}"]`).value = "";
+                        document.querySelector(`button[type=button][data-customer="${element.dataset.delcustomer}"]`).disabled = true;
+                        document.querySelector(`input[name=hidden_amount_owed][data-customer="${element.dataset.delcustomer}"]`).value = new_cart_total;
+                        document.querySelector(`span[data-customerowed="${element.dataset.delcustomer}"]`).textContent = editPrice(new_cart_total.toString());
+                        document.querySelector(`button[type=button][data-customer="${element.dataset.delcustomer}"]`).dataset.amount = new_cart_total;
                         if (new_cart_total == 0) {
                             // Remove entire cart from list
                             del_item.parentElement.parentElement.parentElement.parentElement.parentElement.remove();
@@ -876,7 +876,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 })
                 .catch(error => {
-                    // failToast.show();
+                    failToast.show();
                     console.error({"error": error});
                 });
             }
