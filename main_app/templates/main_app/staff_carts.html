@@ -22,7 +22,7 @@
           </div>
           <br>
           <div id="infoLand">
-            <h3 class="d-flex justify-content-center ms-5 me-5">Order Purchase Summary</h3>
+            <h4 class="d-flex justify-content-center ms-5 me-5">Order Purchase Summary</h4>
             <br>
             <p id="custName" class="mb-0 d-flex justify-content-center fs-5"></p>
             <input type="hidden" id="hiddenCustName">
@@ -42,7 +42,7 @@
               </div>
             </div>
             <br>
-            <h4 class="d-flex justify-content-center">Proceed to pay order?</h4>
+            <h5 class="d-flex justify-content-center">Proceed to pay order?</h5>
           </div>
         </div>
         <div class="modal-footer">
@@ -248,8 +248,8 @@
           from <span id="cust_name" class="fw-bold"></span>'s cart?
         </div>
         <div class="modal-footer">
-            <a href="#" role="button" class="btn btn-light" id="confirm_delete" data-bs-dismiss="modal">Delete</a>
-            <button type="button" id="load_button_two" class="btn btn-light">
+            <a role="button" class="btn btn-light" id="confirm_delete">Delete</a>
+            <button type="button" id="load_button_two" class="btn btn-light" disabled>
               <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
               <span role="status">Loading...</span>
             </button>
@@ -291,7 +291,7 @@
                   <div class="flex-grow-1 ms-3">
                     {{ item.product_name }} <br>
                     <strong>Sale Type:</strong> {{ item.sale_type }}  <strong>Quantity:</strong> <span class="item-quantity">{{ item.product_quantity }}</span> <br>
-                    <h5><strong>₦{{ item.product_price|intcomma }}</strong></h5>
+                    <h5><strong>₦{{ item.product_price|floatformat:"2g" }}</strong></h5>
                     <input type="hidden" name="hidden_item_price" data-slug="{{ item.product_slug }}" data-customer="{{ cart.name_of_buyer }}" value="{{ item.product_price }}">
                   </div>
                 </div>
@@ -300,7 +300,7 @@
                 </a>
               </div>
               <div class="card-footer text-end text-bg-secondary">
-                Sub-total = ₦{{ item.sub_total|intcomma }}
+                Sub-total = ₦{{ item.sub_total|floatformat:"2g" }}
                 <input type="hidden" name="hidden_item_sub_total" data-slug="{{ item.product_slug }}" data-customer="{{ cart.name_of_buyer }}" value="{{ item.sub_total }}">
               </div>
             </div>
@@ -308,9 +308,9 @@
           {% endfor %}
         </div>
         <div class="card-footer text-bg-secondary text-end">
-          <h5>Total Amount Due: ₦<span data-customertotal="{{ cart.name_of_buyer }}">{{ cart.total_amount|intcomma }}</span></h5>
+          <h5>Total Amount Due: ₦<span data-customertotal="{{ cart.name_of_buyer }}">{{ cart.total_amount|floatformat:"2g" }}</span></h5>
           <input type="hidden" id="totalAmount_{{ forloop.counter }}" name="hidden_total_amount" data-customer="{{ cart.name_of_buyer }}" value="{{ cart.total_amount }}">
-          <h5>Total Amount Owed: <span class="owable" >₦<span id="owed_{{ forloop.counter }}" data-customerowed="{{ cart.name_of_buyer }}">{{ cart.amount_owed|intcomma }}</span></span></h5>
+          <h5>Total Amount Owed: <span class="owable" >₦<span id="owed_{{ forloop.counter }}" data-customerowed="{{ cart.name_of_buyer }}">{{ cart.amount_owed|floatformat:"2g" }}</span></span></h5>
           <input type="hidden" id="amountOwed_{{ forloop.counter }}" name="hidden_amount_owed" data-customer="{{ cart.name_of_buyer }}" value="{{ cart.amount_owed }}">
           <div class="d-flex justify-content-end mb-2">
             <h5 class="me-2">Amount Paid:</h5>

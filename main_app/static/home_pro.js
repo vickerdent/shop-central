@@ -420,7 +420,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         input_bulk_price.id = `${element}_price`;
                         input_bulk_price.setAttribute("data-type", element);
                         input_bulk_price.className = "form-control";
-                        input_bulk_price.type = "number";
+                        input_bulk_price.type = "text";
+                        input_bulk_price.setAttribute("inputmode", "numeric");
                         input_bulk_price.autocomplete = "off";
                         input_bulk_price.placeholder = "0.00";
                         input_bulk_price.name = "bulk_prices";
@@ -505,6 +506,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     quantLeft.textContent = `${totalQuantity} available`;
                 }
+                if (is_divisible) {
+                    document.getElementById("isWhole").disabled = false;
+                }
                 document.getElementById("ze_spinner").style.display = "none";
                 document.getElementById("product_content").style.display = "block";
                 document.getElementById("productInfoModalLabel").style.visibility = "visible";
@@ -536,29 +540,34 @@ document.addEventListener("DOMContentLoaded", () => {
                 // console.log(`Before change: ${document.getElementById("priceHold").value}`);
 
                 // Disable quantity buttons if not feasible, set quantity to value: 1
-                if (element.dataset.divisibility == "false") {
-                    // For isWhole, check that it's available. Select half if selected
-
-                    // Disable quantity buttons if needed
-                    
-                    isWhole.disabled = true;
-                    halfButton.disabled = true;
-                    quartButton.disabled = true;
-                    document.getElementById("minus_button").disabled = true;
-                    document.getElementById("plus_button").disabled = false;
-                } else {
-                    isWhole.disabled = false;
-                    halfButton.disabled = false;
-                    quartButton.disabled = false;
-                    document.getElementById("minus_button").disabled = true;
-                    document.getElementById("plus_button").disabled = false;
-                }
 
                 if ((parseInt(element.dataset.number) % 2) != 0) {
+                    isWhole.disabled = false;
                     halfButton.disabled = true;
                 }
                 if ((parseInt(element.dataset.number) % 4) != 0) {
+                    isWhole.disabled = false;
                     quartButton.disabled = true;
+                }
+
+                if (element.id == "retailbutton" || element.id == "wholesalebutton" || element.id == "cartButton") {
+                    if (element.dataset.divisibility == "false") {
+                        // For isWhole, check that it's available. Select half if selected
+
+                        // Disable quantity buttons if needed
+                        
+                        isWhole.disabled = true;
+                        halfButton.disabled = true;
+                        quartButton.disabled = true;
+                        document.getElementById("minus_button").disabled = true;
+                        document.getElementById("plus_button").disabled = false;
+                    } else {
+                        isWhole.disabled = false;
+                        halfButton.disabled = false;
+                        quartButton.disabled = false;
+                        document.getElementById("minus_button").disabled = true;
+                        document.getElementById("plus_button").disabled = false;
+                    }
                 }
 
                 // Cartons have rules that bind them and only them

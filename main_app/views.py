@@ -780,12 +780,15 @@ def staff_carts(request):
         
         all_carts = list(staff_carts_collection.find({"staff_id": a_user.email}))
         noOfCarts = len(all_carts)
+
+        plenty_val = 1000
+        small_val = "100.00"
         
         if a_user.is_admin:
-            context = {"is_admin": True, "is_staff": True, "carts": all_carts, "noOfCarts": noOfCarts}
+            context = {"is_admin": True, "is_staff": True, "carts": all_carts, "noOfCarts": noOfCarts, "val1": plenty_val, "val2": small_val}
             return render(request, "main_app/staff_carts.html", context)
         elif a_user.is_staff:
-            context = {"is_staff": True, "carts": all_carts}
+            context = {"is_staff": True, "carts": all_carts, "noOfCarts": noOfCarts}
             return render(request, "main_app/staff_carts.html", context)
         else:
             messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
