@@ -9,7 +9,9 @@
 <div class="container">
     <h2>Edit Product</h2>
     <div class="d-flex justify-content-center mb-2">
+        {% cache c_timeout prod_pic %}
         <img src="{{ p_image }}" alt="Product's Image" id="the_product_image" class="rounded" width="200px">
+        {% endcache %}
     </div>
     <div class="d-flex justify-content-center mb-2">
         <p class="fs-5" id="the_product_name">{{ p_name }}</p>

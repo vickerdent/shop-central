@@ -3,6 +3,7 @@
 {% block title %} Home {% endblock %}
 
 {% block content %}
+{% load cache %}
 {% load static %}
 {% load humanize %}
 
@@ -265,7 +266,9 @@
             <div class="me-3 mb-3 oneProduct">
               <a class="link-offset-2 link-underline link-underline-opacity-0" role="button" data-bs-toggle="modal" data-bs-target="#productInfoModal" data-slug="{{ item.slug }}">
                 <div class="card h-100">
-                  <img src="{{ item.product_image.0 }}" class="card-img-top" alt="Product's Image" width="50">
+                  {% cache c_timeout prod_pic %}
+                    <img src="{{ item.product_image.0 }}" class="card-img-top" alt="Product's Image" width="50">
+                  {% endcache %}
                   <div class="card-body">
                     {{ item.name|truncatechars:36 }} <br>
                     <strong>₦{{ item.retail_price|intcomma }}</strong>
@@ -284,7 +287,9 @@
                 <a role="button">
                   <div class="me-3 mb-3 oneProduct">
                     <div class="card h-100">
-                      <img src="{{ item.product_image.0}}" class="card-img-top" alt="Product's Image" width="50">
+                      {% cache c_timeout prod_pic %}
+                        <img src="{{ item.product_image.0}}" class="card-img-top" alt="Product's Image" width="50">
+                      {% endcache %}
                       <div class="card-body">
                         {{ item.name|truncatechars:20 }} <br>
                         <strong>₦{{ item.retail_price|intcomma }}</strong> <br>

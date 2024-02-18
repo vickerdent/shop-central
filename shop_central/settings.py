@@ -170,7 +170,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 CACHES = {
-    "default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"},
+    "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},
     "django-backblaze-b2": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},
 }
 

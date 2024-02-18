@@ -85,13 +85,13 @@ def home(request):
         
         if a_user.is_admin:
             return render(request, "main_app/home.html", {"is_admin": True, "is_staff": True, 
-                                                          "inventory": inventory, "noOfCarts": noOfCarts})
+                                                          "inventory": inventory, "noOfCarts": noOfCarts, "c_timeout": 6000})
         elif a_user.is_staff:
-            return render(request, "main_app/home.html", {"is_staff": True, "inventory": inventory, "noOfCarts": noOfCarts})
+            return render(request, "main_app/home.html", {"is_staff": True, "inventory": inventory, "noOfCarts": noOfCarts, "c_timeout": 6000})
         else:
-            return render(request, "main_app/home.html", {"inventory": inventory})
+            return render(request, "main_app/home.html", {"inventory": inventory, "c_timeout": 6000})
         
-    return render(request, "main_app/home.html", {"inventory": inventory})
+    return render(request, "main_app/home.html", {"inventory": inventory, "c_timeout": 6000})
 
 def login_user(request):
     # check if user is already logged in
@@ -780,15 +780,12 @@ def staff_carts(request):
         
         all_carts = list(staff_carts_collection.find({"staff_id": a_user.email}))
         noOfCarts = len(all_carts)
-
-        plenty_val = 1000
-        small_val = "100.00"
         
         if a_user.is_admin:
-            context = {"is_admin": True, "is_staff": True, "carts": all_carts, "noOfCarts": noOfCarts, "val1": plenty_val, "val2": small_val}
+            context = {"is_admin": True, "is_staff": True, "carts": all_carts, "noOfCarts": noOfCarts, "c_timeout": 6000}
             return render(request, "main_app/staff_carts.html", context)
         elif a_user.is_staff:
-            context = {"is_staff": True, "carts": all_carts, "noOfCarts": noOfCarts}
+            context = {"is_staff": True, "carts": all_carts, "noOfCarts": noOfCarts, "c_timeout": 6000}
             return render(request, "main_app/staff_carts.html", context)
         else:
             messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
@@ -900,10 +897,11 @@ def edit_product(request, slug):
 
                                 if a_user.is_admin:
                                     context = {"form": form, "is_admin": True, "is_staff": True,
-                                            "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
+                                            "p_name": old_product_name, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts, "c_timeout": 6000}
                                     return render(request, "main_app/add_product.html", context)
                                 elif a_user.is_staff:
-                                    context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
+                                    context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES,
+                                               "p_name": old_product_name, "noOfCarts": noOfCarts, "c_timeout": 6000}
                                     return render(request, "main_app/add_product.html", context)
 
                             if request.POST.get(bulk_price) in item.values():
@@ -911,10 +909,11 @@ def edit_product(request, slug):
 
                                 if a_user.is_admin:
                                     context = {"form": form, "is_admin": True, "is_staff": True,
-                                            "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
+                                            "p_name": old_product_name, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts, "c_timeout": 6000}
                                     return render(request, "main_app/add_product.html", context)
                                 elif a_user.is_staff:
-                                    context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
+                                    context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES,
+                                               "p_name": old_product_name, "noOfCarts": noOfCarts, "c_timeout": 6000}
                                     return render(request, "main_app/add_product.html", context)
                         
                         # At this point, duplicates have been handled
@@ -1087,19 +1086,19 @@ def edit_product(request, slug):
                 # Form isn't valid. Return to page with mostly filled data
                 if a_user.is_admin:
                     context = {"form": form, "p_image": old_product_image, "is_admin": True, "noOfCarts": noOfCarts,
-                            "is_staff": True, "p_name": old_product_name, "bulk": BULK_CHOICES}
+                            "is_staff": True, "p_name": old_product_name, "bulk": BULK_CHOICES, "c_timeout": 6000}
                     return render(request, "main_app/edit_product.html", context)
                 elif a_user.is_staff:
                     context = {"form": form, "p_image": old_product_image, "is_staff": True,
-                            "p_name": old_product_name, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
+                            "p_name": old_product_name, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts, "c_timeout": 6000}
                     return render(request, "main_app/edit_product.html", context)
             if a_user.is_admin:
                 context = {"form": form, "p_image": old_product_image, "is_admin": True, "noOfCarts": noOfCarts,
-                           "is_staff": True, "p_name": old_product_name, "bulk": BULK_CHOICES}
+                           "is_staff": True, "p_name": old_product_name, "bulk": BULK_CHOICES, "c_timeout": 6000}
                 return render(request, "main_app/edit_product.html", context)
             elif a_user.is_staff:
                 context = {"form": form, "p_image": old_product_image, "is_staff": True,
-                           "p_name": old_product_name, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
+                           "p_name": old_product_name, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts, "c_timeout": 6000}
                 return render(request, "main_app/edit_product.html", context)
             else:
                 messages.error(request, "You're not permitted to view this page. Contact a staff or admin")

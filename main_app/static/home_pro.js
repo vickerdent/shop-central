@@ -556,17 +556,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Disable quantity buttons if not feasible, set quantity to value: 1
                 if ((parseInt(element.dataset.number) % 4) != 0) {
                     quartButton.disabled = true;
+                } else {
+                    quartButton.disabled = false;
                 }
                 if ((parseInt(element.dataset.number) % 2) != 0) {
                     isWhole.disabled = true;
                     halfButton.disabled = true;
+                } else {
+                    isWhole.disabled = false;
+                    halfButton.disabled = false;
                 }
 
                 // To disable plus button
-                // if (parseInt(element.dataset.number) == 0) {
-                //     isWhole.disabled = true;
-                //     halfButton.disabled = true;
-                // }
+                if (parseInt(element.dataset.number) == parseInt(document.getElementById("quantleft").value)) {
+                    document.getElementById("plus_button").disabled = true;
+                }
 
                 // Provide condition for special products
                 if (special_products.includes(document.getElementById("p_name").value)) {
