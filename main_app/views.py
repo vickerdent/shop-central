@@ -12,9 +12,9 @@ import pymongo, json
 from decimal import Decimal
 
 from .o_functions import humans, payment_callback, standardize_phone, strip_id
-from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, \
+from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, TestProductForm, \
     EditProfileImageForm, EditNameForm, AddProductForm, CarouselForm, EditProductForm, AddDebtorForm
-from .models import TheUser, Buyer, Product, StaffCart, Carousel, Transaction, ProductLite
+from .models import TheUser, Buyer, Product, StaffCart, Carousel, Transaction, ProductLite, TestProduct
 from .custom_storage import handle_user_image, default_user_image, compress_image, \
     change_image_name, delete_image, default_bulk_image, default_carton_image, \
         handle_product_image
@@ -92,6 +92,19 @@ def home(request):
             return render(request, "main_app/home.html", {"inventory": inventory, "c_timeout": 6000})
         
     return render(request, "main_app/home.html", {"inventory": inventory, "c_timeout": 6000})
+
+def test_view(request):
+    form = TestProductForm(request.POST or None, request.FILES or None)
+
+    if form.is_valid():
+
+        form.save()
+        return redirect("testing_view")
+    
+    all_products = TestProduct.objects.all()
+
+    return render(request, "main_app/test_view.html", {"form": form, "products": all_products})
+
 
 def login_user(request):
     # check if user is already logged in

@@ -1,0 +1,47 @@
+{% extends 'main_app/base.html' %}
+{% block title %} {{ search }} {% endblock %}
+{% block content%}
+{% load static %}
+<!-- Continue here -->
+
+<div>
+  {% for item in products %}
+    <img src="{{ item.pro_image.url }}" alt="" width="140px">
+    {{ item.pro_name }}
+    {{ item.pro_size }}
+  {% endfor %}
+</div>
+
+<form method="post" action="" enctype="multipart/form-data">
+  {% csrf_token %}
+  {% if form.errors %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+      Your form has errors:
+      {% for field in form %}
+          {% if field.errors %}
+              {{field.errors}}
+          {% endif %}
+      {% endfor %}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {% endif %}
+
+  {% for field in form %}
+    {% if field.html_name == "pro_image" %}
+      <div class="mb-3">
+        {{ form.pro_image.label_tag }}
+        {{ form.pro_image }}
+      </div>
+    {% else %}
+      <div class="form-floating mb-3">
+        {{ field }}
+        {{ field.label_tag }}
+      </div>
+    {% endif %}
+  {% endfor %}
+  <br>
+  <button type="submit" class="btn btn-dark">Submit</button>
+</form>
+
+
+{% endblock %}

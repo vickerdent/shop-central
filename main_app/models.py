@@ -1,5 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
+from django.db import models
+from .custom_storage import MediaStorage
 
 # Create your models here.
 class Human:
@@ -175,6 +177,12 @@ class Product:
             "description": self.descripton,
             "slug": self.slug
         }
+
+class TestProduct(models.Model):
+    pro_name = models.CharField(max_length=100)
+    pro_size = models.CharField(max_length = 14)
+    pro_price = models.DecimalField(max_digits=8, decimal_places=2)
+    pro_image = models.FileField(upload_to="test_folder", storage=MediaStorage)
     
 class ProductLite:
     """

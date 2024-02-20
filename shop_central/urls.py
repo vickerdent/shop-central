@@ -20,5 +20,6 @@ from django.urls import path, include
 urlpatterns = [
     path("", include("main_app.urls")),
     path("tinymce/", include("tinymce.urls")),
+    path('', include('django_backblaze_b2.urls')),
     path('admin/', admin.site.urls),
 ]

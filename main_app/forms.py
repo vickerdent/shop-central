@@ -6,14 +6,18 @@ from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm, \
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 from django import forms
+from django.core.files.base import File
+from django.db.models.base import Model
+from django.forms import ModelForm
 from django.contrib.auth.tokens import default_token_generator
+from django.forms.utils import ErrorList
 from django.forms.widgets import TextInput
 from django.template import loader
 from django.contrib.sites.shortcuts import get_current_site
 from .o_functions import send_email_resetpassword
+from .models import TestProduct
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
-from tinymce import models as tinymce_models
 from tinymce.widgets import TinyMCE
 
 UserModel = get_user_model()
@@ -791,6 +795,30 @@ class AddDebtorForm(forms.Form):
                "autocomplete": "off"}), label_suffix="")
     
     
+class TestProductForm(ModelForm):
+    class Meta:
+        model = TestProduct
+        fields = ["pro_name", "pro_size", "pro_price", "pro_image"]
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super(ModelForm, self).__init__(*args, **kwargs)
 
+        self.fields['pro_name'].widget.attrs['class'] = 'form-control'
+        self.fields['pro_name'].widget.attrs['placeholder'] = 'pro_name'
+        self.fields['pro_name'].widget.attrs['autocomplete'] = 'off'
+        self.fields['pro_name'].label = 'Product Name'
+        self.fields['pro_name'].label_suffix = ""
 
+        self.fields['pro_size'].widget.attrs['class'] = 'form-control'
+        self.fields['pro_size'].widget.attrs['placeholder'] = 'pro_size'
+        self.fields['pro_size'].widget.attrs['autocomplete'] = 'off'
+        self.fields['pro_size'].label = 'Product Size'
+        self.fields['pro_size'].label_suffix = ""
+
+        self.fields['pro_price'].widget.attrs['class'] = 'form-control'
+        self.fields['pro_price'].widget.attrs['placeholder'] = 'pro_price'
+        self.fields['pro_price'].widget.attrs['autocomplete'] = 'off'
+        self.fields['pro_price'].label = 'Product Price'
+        self.fields['pro_price'].label_suffix = ""
+
+        

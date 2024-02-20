@@ -23,14 +23,14 @@
         {% for field in form %}
         {% if "dialing" in field.html_name %}
             <div class="input-group mb-3">
-            <div class="form-floating mb-3">
-                {{ field }}
-                {{ field.label_tag }}
-            </div>
-            <div class="form-floating mb-3">
-                {{ form.phone_number }}
-                {{ form.phone_number.label_tag }}
-            </div>
+                <div class="form-floating mb-3">
+                    {{ field }}
+                    {{ field.label_tag }}
+                </div>
+                <div class="form-floating mb-3">
+                    {{ form.phone_number }}
+                    {{ form.phone_number.label_tag }}
+                </div>
             </div>
         {% else %}
             {% if "phone" not in field.html_name %}
