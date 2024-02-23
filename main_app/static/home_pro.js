@@ -212,6 +212,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     wholesaleButton.dataset.price = wholesale_price;
                     wholesaleButton.dataset.image = product_image[0];
                     wholesaleButton.dataset.divisibility = is_divisible.toString();
+
+                    if (is_divisible === false) {
+                        halfButton.disabled = true;
+                        quartButton.disabled = true;
+    
+                        retailButton.dataset.number = 1
+                        wholesaleButton.dataset.number = 1
+                    } else {
+                        retailButton.dataset.number = 4
+                        wholesaleButton.dataset.number = 4
+    
+                        halfButton.disabled = false;
+                        quartButton.disabled = false;
+                    }
+                    
                     const discount_button = document.getElementById("discountSwitch");
                     if (discount_button) {
                         if (is_discount) {
@@ -318,23 +333,23 @@ document.addEventListener("DOMContentLoaded", () => {
                     n.appendChild(o);
                     n.className = "btn btn-outline-light";
 
+                    if (is_divisible === false) {
+                        halfButton.disabled = true;
+                        quartButton.disabled = true;
+    
+                        retailButton.dataset.number = 1
+                        wholesaleButton.dataset.number = 1
+                    } else {
+                        retailButton.dataset.number = 4
+                        wholesaleButton.dataset.number = 4
+    
+                        halfButton.disabled = false;
+                        quartButton.disabled = false;
+                    }
+
                     newSingDiv.appendChild(wholesaleButton);
                     newSingDiv.appendChild(n);
                     buttonHome.append(newSingDiv);
-                }
-
-                const ret_button = document.getElementById("wholesalebutton");
-                const whole_button = document.getElementById("retailbutton");
-
-                if (is_divisible === false) {
-                    halfButton.disabled = true;
-                    quartButton.disabled = true;
-                } else {
-                    ret_button.dataset.number = 96
-                    whole_button.dataset.number = 96
-
-                    halfButton.disabled = false;
-                    quartButton.disabled = false;
                 }
 
                 document.getElementById("p_name").value = product_name;

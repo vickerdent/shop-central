@@ -8,16 +8,18 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.http import JsonResponse
 from bson.son import SON
-import pymongo, json, urllib.request
+import pymongo, json
 from decimal import Decimal
+from urllib.request import urlopen
+from shutil import copyfileobj
 
 # Disable on production once cloudflare is up
 from django.core.cache import cache
 
 from .o_functions import humans, payment_callback, standardize_phone, strip_id
-from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, TestProductForm, \
+from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, \
     EditProfileImageForm, EditNameForm, AddProductForm, CarouselForm, EditProductForm, AddDebtorForm
-from .models import TheUser, Buyer, Product, StaffCart, Carousel, Transaction, ProductLite, TestProduct
+from .models import TheUser, Buyer, Product, StaffCart, Carousel, Transaction, ProductLite
 from .custom_storage import handle_user_image, default_user_image, compress_image, \
     change_image_name, delete_image, default_bulk_image, default_carton_image, \
         handle_product_image
@@ -73,11 +75,13 @@ def home(request):
             # Cache doesn't exist
             # Retrieve image from url
             img_url = product["product_image"][0]
+            file_path = "media/cached_files/" + product["slug"] + ".jpg"
 
             # Store in temporary variable
-            img_path, http_message = urllib.request.urlretrieve(img_url, "media/cached_files/" + product["slug"] + ".jpg")
+            with urlopen(img_url) as in_stream, open(file_path, "wb") as filing:
+                copyfileobj(in_stream, filing)
 
-            prod_image = cache.get_or_set(product["slug"], img_path, 10000)
+            prod_image = cache.get_or_set(product["slug"], file_path, 10000)
 
         item = ProductLite(product["brand_name"], product["product_name"], product["size"], [prod_image, product["product_image"][1]],
                        product["retail_price"], product["singles_stock"], product["slug"])
@@ -112,29 +116,8 @@ def home(request):
     return render(request, "main_app/home.html", {"inventory": inventory})
 
 def test_view(request):
-    # Try to get cache first
-    img_1 = cache.get("img_1")
-    if not img_1:
-        print(img_1)
-        # Cache doesn't exist
-        # Retrieve image from url
-        img_url = "https://f005.backblazeb2.com/file/shop-central/product_images/bama-mayosauce-17ml-carton-image.jpg"
-
-        # Store in temporary variable
-        img_path, http_message = urllib.request.urlretrieve(img_url, "media/cached_files/img1.jpg")
-
-        img_1 = cache.get_or_set("img_1", img_path, 6000)
-
-    img_2 = cache.get("img_2")
-    if not img_2:
-        print(img_2)
-        img_url_2 = "https://f005.backblazeb2.com/file/shop-central/product_images/chivita-happy-hour-125ml.jpg"
-
-        img_path, http_message  = urllib.request.urlretrieve(img_url_2, "media/cached_files/img2.jpg")
-
-        img_2 = cache.get_or_set("img_2", img_path, 6000)
-
-    return render(request, "main_app/test_view.html", {"img_1": img_1, "img_2": img_2})
+    
+    return render(request, "main_app/test_view.html", {})
 
 
 def login_user(request):

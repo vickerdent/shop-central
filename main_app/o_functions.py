@@ -24,6 +24,9 @@ def payment_callback(session, customer_name, transaction_doc, slugs_list=None, q
     # Update all products respectively in cart at checkout
     if slugs_list and quants_list:
         for index, slug in enumerate(slugs_list):
+            print(slugs_list)
+            print(quants_list)
+            print(quants_list[index])
             products_collection.update_one({"slug": slug},
                                         {"$inc": {"singles_stock": -int(float(quants_list[index]))}},
                                         session=session)
