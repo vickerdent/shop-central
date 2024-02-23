@@ -146,17 +146,25 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                     return response.json()})
                 .then(data => {
-                    document.getElementById("noOfCustomers").value = data.carts.length
-                    const dataList = document.createElement("datalist");
-                    dataList.id = "cartList";
-                    data.carts.forEach(element => {
-                        // Compare with current options and skip if possible
-                        const option = document.createElement("option");
-                        option.value = element;
-                        dataList.appendChild(option);
-                    });
-                    document.getElementById("custInfo").appendChild(dataList)
+                    if (data.carts != false) {
+                        document.getElementById("noOfCustomers").value = data.carts.length
+                        const dataList = document.createElement("datalist");
+                        dataList.id = "cartList";
+                        data.carts.forEach(element => {
+                            // Compare with current options and skip if possible
+                            const option = document.createElement("option");
+                            option.value = element;
+                            dataList.appendChild(option);
+                        });
+                        document.getElementById("custInfo").appendChild(dataList)
+                    } else {
+                        failToast.show();
+                    }
                 })
+                .catch(error => {
+                    failToast.show();
+                    console.error({"error": error});
+                });
 
                 // Check if product is in any customer's list and display appropriate warning
                 const sluger = document.getElementById("priceCall").dataset.slug;
@@ -187,8 +195,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if (result === true) {
                         cartWarning.append(wrapper)
+                    } else {
+                        failToast.show();
                     }
                 })
+                .catch(error => {
+                    failToast.show();
+                    console.error({"error": error});
+                });
 
                 // place buttons for singles (retail and wholesale) in div,
                 // with the other bulk and carton buttons in a separate div together

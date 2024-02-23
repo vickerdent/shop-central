@@ -66,31 +66,32 @@ def home(request):
                        product["retail_price"], product["singles_stock"], product["slug"])
         inventory.append(item)
 
-    # Also get all carts for user
-    all_carts = list(staff_carts_collection.find({"staff_id": request.user.email}))
-    noOfCarts = len(all_carts)
+    # check that user is logged in
+    if request.user.is_authenticated:
+        # then check if user is staff or admin
+        curr_user = user_collection.find_one({"email": request.user.email})
 
-    # check that user is registered
-    # then check if user is staff or admin
-    curr_user = user_collection.find_one({"email": request.user.email})
-
-    if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
-                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
-                         curr_user["address"], curr_user["state"], curr_user["image"],
-                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
-        
-        if not a_user.registered:
-            messages.error(request, "Please confirm your email address.")
-            return redirect("confirm_code")
-        
-        if a_user.is_admin:
-            return render(request, "main_app/home.html", {"is_admin": True, "is_staff": True, 
-                                                          "inventory": inventory, "noOfCarts": noOfCarts})
-        elif a_user.is_staff:
-            return render(request, "main_app/home.html", {"is_staff": True, "inventory": inventory, "noOfCarts": noOfCarts})
-        else:
-            return render(request, "main_app/home.html", {"inventory": inventory})
+        if curr_user:
+            a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                            curr_user["email"], curr_user["gender"], curr_user["phone_no"],
+                            curr_user["address"], curr_user["state"], curr_user["image"],
+                            curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+            
+            if not a_user.registered:
+                messages.error(request, "Please confirm your email address.")
+                return redirect("confirm_code")
+            
+            # Also get all carts for user, if staff
+            all_carts = list(staff_carts_collection.find({"staff_id": request.user.email}))
+            noOfCarts = len(all_carts)
+            
+            if a_user.is_admin:
+                return render(request, "main_app/home.html", {"is_admin": True, "is_staff": True, 
+                                                            "inventory": inventory, "noOfCarts": noOfCarts})
+            elif a_user.is_staff:
+                return render(request, "main_app/home.html", {"is_staff": True, "inventory": inventory, "noOfCarts": noOfCarts})
+            else:
+                return render(request, "main_app/home.html", {"inventory": inventory})
         
     return render(request, "main_app/home.html", {"inventory": inventory})
 
@@ -647,129 +648,136 @@ def find_product(request, slug):
         return JsonResponse(the_product)
 
 def open_staff_carts(request):
-    # Get all carts from mongodb belonging to particular user
-    all_carts = list(staff_carts_collection.find({"staff_id": request.user.email}))
-    cart_names = []
-    for i in all_carts:
-        cart_names.append(i["name_of_buyer"])
-    
-    return JsonResponse({"carts": cart_names})
+    if request.user.is_authenticated:
+        # Get all carts from mongodb belonging to particular user
+        all_carts = list(staff_carts_collection.find({"staff_id": request.user.email}))
+        cart_names = []
+        for i in all_carts:
+            cart_names.append(i["name_of_buyer"])
+        
+        return JsonResponse({"carts": cart_names})
+    else:
+        return JsonResponse(data={"carts": False})
 
 def find_staff_cart(request):
-    # Gotta be POST
-    if request.method == "POST":
-        post_data = json.loads(request.body.decode("utf-8"))
+    if request.user.is_authenticated:
+        # Gotta be POST
+        if request.method == "POST":
+            post_data = json.loads(request.body.decode("utf-8"))
 
-        cartName = post_data.get("cartName")
-        prodName = post_data.get("prodName")
-        saleType = post_data.get("saleType").strip()
-        true_sale_type = post_data.get("true_sale_type")
-        prodPrice = post_data.get("prodPrice")
-        prodImage = post_data.get("prodImage")
-        prodQuantity = post_data.get("prodQuantity")
-        totalProdQuantity = post_data.get("totalProdQuantity")
-        prodSlug = post_data.get("prodSlug")
-        subTotal = Decimal(prodPrice) * Decimal(prodQuantity) + Decimal("0.00")
-        finSub = subTotal.quantize(Decimal("1.00"))
-        # Check for cart name from mongodb
-        the_cart = staff_carts_collection.find_one({"name_of_buyer": cartName})
+            cartName = post_data.get("cartName")
+            prodName = post_data.get("prodName")
+            saleType = post_data.get("saleType").strip()
+            true_sale_type = post_data.get("true_sale_type")
+            prodPrice = post_data.get("prodPrice")
+            prodImage = post_data.get("prodImage")
+            prodQuantity = post_data.get("prodQuantity")
+            totalProdQuantity = post_data.get("totalProdQuantity")
+            prodSlug = post_data.get("prodSlug")
+            subTotal = Decimal(prodPrice) * Decimal(prodQuantity) + Decimal("0.00")
+            finSub = subTotal.quantize(Decimal("1.00"))
+            # Check for cart name from mongodb
+            the_cart = staff_carts_collection.find_one({"name_of_buyer": cartName})
 
-        if the_cart:
-            # Such a cart already exists
-            total_amount = Decimal(the_cart["total_amount"])
-            # Ensure item isn't in cart list already
-            for product in the_cart["items"]:
-                if prodSlug in product.values():
-                    # product is among items in cart
-                    # Check which slug has the info we need
-                    for item in the_cart["items"]:
-                        if item.get("product_slug") == prodSlug:
-                            # Found the slug
-                            # Get the appended item num and current price
-                            zehPrice = Decimal(item["product_price"])
-                            zehQuantity = Decimal(item["product_quantity"])
-                            priceDiff = finSub - zehPrice * zehQuantity
-                            # Update each related info of dictionary, mongo tho
-                            # item["sale_type_" + str(zehNum)] = saleType
-                            # item["product_price_" + str(zehNum)] = int(prodPrice)
-                            # item["product_quantity_" + str(zehNum)] = float(prodQuantity)
-                            updateResult = staff_carts_collection.update_one({"name_of_buyer": cartName}, 
-                                                                {"$set": {"items.$[elem].sale_type": saleType,
-                                                                          "items.$[elem].true_sale_type": true_sale_type,
-                                                                          "items.$[elem].product_price": str(prodPrice),
-                                                                          "items.$[elem].product_quantity": str(prodQuantity),
-                                                                          "items.$[elem].total_product_quantity": str(totalProdQuantity),
-                                                                          "items.$[elem].sub_total": str(finSub),
-                                                                          "amount_owed": str(total_amount + priceDiff),
-                                                                          "total_amount": str(total_amount + priceDiff)},
-                                                                },
-                                                                array_filters=[{"elem.product_slug": prodSlug}])
-                            
-                            if updateResult.modified_count == 1:
-                                return JsonResponse(data={"result": 1})
-                            else:
-                                # print("Error here")
-                                return JsonResponse(data={"result": False})
+            if the_cart:
+                # Such a cart already exists
+                total_amount = Decimal(the_cart["total_amount"])
+                # Ensure item isn't in cart list already
+                for product in the_cart["items"]:
+                    if prodSlug in product.values():
+                        # product is among items in cart
+                        # Check which slug has the info we need
+                        for item in the_cart["items"]:
+                            if item.get("product_slug") == prodSlug:
+                                # Found the slug
+                                # Get the appended item num and current price
+                                zehPrice = Decimal(item["product_price"])
+                                zehQuantity = Decimal(item["product_quantity"])
+                                priceDiff = finSub - zehPrice * zehQuantity
+                                # Update each related info of dictionary, mongo tho
+                                # item["sale_type_" + str(zehNum)] = saleType
+                                # item["product_price_" + str(zehNum)] = int(prodPrice)
+                                # item["product_quantity_" + str(zehNum)] = float(prodQuantity)
+                                updateResult = staff_carts_collection.update_one({"name_of_buyer": cartName}, 
+                                                                    {"$set": {"items.$[elem].sale_type": saleType,
+                                                                            "items.$[elem].true_sale_type": true_sale_type,
+                                                                            "items.$[elem].product_price": str(prodPrice),
+                                                                            "items.$[elem].product_quantity": str(prodQuantity),
+                                                                            "items.$[elem].total_product_quantity": str(totalProdQuantity),
+                                                                            "items.$[elem].sub_total": str(finSub),
+                                                                            "amount_owed": str(total_amount + priceDiff),
+                                                                            "total_amount": str(total_amount + priceDiff)},
+                                                                    },
+                                                                    array_filters=[{"elem.product_slug": prodSlug}])
+                                
+                                if updateResult.modified_count == 1:
+                                    return JsonResponse(data={"result": 1})
+                                else:
+                                    # print("Error here")
+                                    return JsonResponse(data={"result": False})
 
-            # Create dictionary for new item
-            new_item = SON([("product_name", prodName),
-                            ("sale_type", saleType),
-                            ("true_sale_type", true_sale_type),
-                            ("product_price", str(prodPrice)),
-                            ("product_image", prodImage),
-                            ("product_quantity", str(prodQuantity)),
-                            ("total_product_quantity", str(totalProdQuantity)),
-                            ("sub_total", str(finSub)),
-                            ("product_slug", prodSlug)])
+                # Create dictionary for new item
+                new_item = SON([("product_name", prodName),
+                                ("sale_type", saleType),
+                                ("true_sale_type", true_sale_type),
+                                ("product_price", str(prodPrice)),
+                                ("product_image", prodImage),
+                                ("product_quantity", str(prodQuantity)),
+                                ("total_product_quantity", str(totalProdQuantity)),
+                                ("sub_total", str(finSub)),
+                                ("product_slug", prodSlug)])
 
-            # SON is reportedly better than dict datatype
-            # new_item = {"product_name_" + str(curr_num + 1): prodName,
-            #             "sale_type_" + str(curr_num + 1): saleType,
-            #             "product_price_" + str(curr_num + 1): prodPrice,
-            #             "product_image_" + str(curr_num + 1): prodImage,
-            #             "product_quantity_" + str(curr_num + 1): prodQuantity,
-            #             "product_slug_" + str(curr_num + 1): prodSlug}
+                # SON is reportedly better than dict datatype
+                # new_item = {"product_name_" + str(curr_num + 1): prodName,
+                #             "sale_type_" + str(curr_num + 1): saleType,
+                #             "product_price_" + str(curr_num + 1): prodPrice,
+                #             "product_image_" + str(curr_num + 1): prodImage,
+                #             "product_quantity_" + str(curr_num + 1): prodQuantity,
+                #             "product_slug_" + str(curr_num + 1): prodSlug}
 
-            # Add dictionary to list of items: {"product_name": prodName, "sale_type": saleType}
-            # print(total_amount)
-            # print(finSub)
-            staff_carts_collection.update_one({"name_of_buyer": cartName},
-                                            {"$push": {"items": new_item},
-                                            "$set": {"amount_owed": str(total_amount + finSub),
-                                                     "total_amount": str(total_amount + finSub)}})
-            
-            return JsonResponse(data={"result": True})
+                # Add dictionary to list of items: {"product_name": prodName, "sale_type": saleType}
+                # print(total_amount)
+                # print(finSub)
+                staff_carts_collection.update_one({"name_of_buyer": cartName},
+                                                {"$push": {"items": new_item},
+                                                "$set": {"amount_owed": str(total_amount + finSub),
+                                                        "total_amount": str(total_amount + finSub)}})
+                
+                return JsonResponse(data={"result": True})
+            else:
+                # It's a new cart
+                # Create dictionary for new item
+                new_item = SON([("product_name", prodName),
+                                ("sale_type", saleType),
+                                ("true_sale_type", true_sale_type),
+                                ("product_price", str(prodPrice)),
+                                ("product_image", prodImage),
+                                ("product_quantity", str(prodQuantity)),
+                                ("total_product_quantity", str(totalProdQuantity)),
+                                ("sub_total", str(finSub)),
+                                ("product_slug", prodSlug)])
+                
+                whole_cart = StaffCart(cartName, request.user.email, [new_item], finSub, 0)
+
+                staff_carts_collection.insert_one(whole_cart.to_dict())
+
+                return JsonResponse(data={"result": True})
         else:
-            # It's a new cart
-            # Create dictionary for new item
-            new_item = SON([("product_name", prodName),
-                            ("sale_type", saleType),
-                            ("true_sale_type", true_sale_type),
-                            ("product_price", str(prodPrice)),
-                            ("product_image", prodImage),
-                            ("product_quantity", str(prodQuantity)),
-                            ("total_product_quantity", str(totalProdQuantity)),
-                            ("sub_total", str(finSub)),
-                            ("product_slug", prodSlug)])
-            
-            whole_cart = StaffCart(cartName, request.user.email, [new_item], finSub, 0)
-
-            staff_carts_collection.insert_one(whole_cart.to_dict())
-
-            return JsonResponse(data={"result": True})
+            # print("Error here instead")
+            return JsonResponse(data={"result": False})
     else:
-        # print("Error here instead")
         return JsonResponse(data={"result": False})
     
 # Create view to check if given product is in cart already
 def check_product_in_cart(request, slug):
     # Check through all carts belonging to user in mongo, if product is already in
-    all_carts = list(staff_carts_collection.find({"staff_id": request.user.email}))
-    for cart in all_carts:
-        for item in cart["items"]:
-            if slug in item.values():
-                # Given product is already in cart
-                return JsonResponse(data={"result": True})
+    if request.user.is_authenticated:
+        all_carts = list(staff_carts_collection.find({"staff_id": request.user.email}))
+        for cart in all_carts:
+            for item in cart["items"]:
+                if slug in item.values():
+                    # Given product is already in cart
+                    return JsonResponse(data={"result": True})
 
     return JsonResponse(data={"result": False})
 
@@ -1197,316 +1205,331 @@ def debtors(request):
 
 def add_debtor(request):
     # then check if user is staff or admin
-    curr_user = user_collection.find_one({"email": request.user.email})
+    if request.user.is_authenticated:
+        curr_user = user_collection.find_one({"email": request.user.email})
 
-    if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
-                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
-                         curr_user["address"], curr_user["state"], curr_user["image"],
-                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
-        
-        if a_user.is_admin or a_user.is_staff:
-            if request.method == "POST":
-                post_data = json.loads(request.body.decode("utf-8"))
-
-                first_name = post_data.get("debtor_first_name")
-                last_name = post_data.get("debtor_last_name")
-                email = post_data.get("debtor_email")
-                gender = post_data.get("debtor_gender")
-                dialing_code = post_data.get("debtor_dialing_code")
-                phone_number = standardize_phone(post_data.get("debtor_phone_no"))
-                address = post_data.get("debtor_address")
-                state = post_data.get("debtor_state")
-                # Don't forget to convert to string before storing
-                amount_owed = post_data.get("debt_amount")
-                description = post_data.get("debtor_description")
-                name_in_cart = post_data.get("name_in_cart")
-                amount_paid = post_data.get("amount_paid")
-
-                complete_phone = [{"dialing_code": dialing_code, "number": phone_number}]
-
-                if default_user_image:
-                    image_url, image_path = default_user_image()
-                else:
-                    messages.error(request, "An internal Server error occurred. Please try again later.")
-                    return JsonResponse(data={"result": "Image Error"})
+        if curr_user:
+            a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                            curr_user["email"], curr_user["gender"], curr_user["phone_no"],
+                            curr_user["address"], curr_user["state"], curr_user["image"],
+                            curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
             
-                username = slugify(first_name + last_name)
+            if a_user.is_admin or a_user.is_staff:
+                if request.method == "POST":
+                    post_data = json.loads(request.body.decode("utf-8"))
 
-                new_debtor = Buyer(first_name, last_name, username, email, gender, complete_phone, address,
-                                   state, datetime.now(), amount_owed, description, [image_url, image_path])
+                    first_name = post_data.get("debtor_first_name")
+                    last_name = post_data.get("debtor_last_name")
+                    email = post_data.get("debtor_email")
+                    gender = post_data.get("debtor_gender")
+                    dialing_code = post_data.get("debtor_dialing_code")
+                    phone_number = standardize_phone(post_data.get("debtor_phone_no"))
+                    address = post_data.get("debtor_address")
+                    state = post_data.get("debtor_state")
+                    # Don't forget to convert to string before storing
+                    amount_owed = post_data.get("debt_amount")
+                    description = post_data.get("debtor_description")
+                    name_in_cart = post_data.get("name_in_cart")
+                    amount_paid = post_data.get("amount_paid")
 
-                # Create reference number for information storage
-                reference_no = strip_id(str(datetime.now()) + code_generator())
-                the_date = datetime.now()
+                    complete_phone = [{"dialing_code": dialing_code, "number": phone_number}]
 
-                curr_customer = staff_carts_collection.find_one({"name_of_buyer": name_in_cart,
-                                                                 "staff_id": a_user.email})
-                # Or Cash Payment
-                # Date - Buyer ID - Transaction Type - Transaction Reference - Transaction Amount - Amount Paid - Balance
-                # Today - 0909233 - Goods Purchase - all that reference - 5000 - 4500 - 500 (or inc current debt)
-                # Today - 0909236 - Cash Payment - all that reference - 500 - 500 - 0 (or dec current debt)
-                new_transaction = Transaction("Goods Purchase", "Staff", new_debtor.first_name + " " + new_debtor.last_name, a_user.email,
-                                              curr_customer["items"], the_date, curr_customer["total_amount"],
-                                              amount_paid, reference_no, phone_number)
-
-                product_slugs = []
-                product_quantities = []
-                for item in curr_customer["items"]:
-                    product_slugs.append(item["product_slug"])
-                    product_quantities.append(item["total_product_quantity"])
+                    if default_user_image:
+                        image_url, image_path = default_user_image()
+                    else:
+                        messages.error(request, "An internal Server error occurred. Please try again later.")
+                        return JsonResponse(data={"result": "Image Error"})
                 
-                # Proceed to call the call_back function. Adjust variables to include buyer info
-                with client.start_session() as session:
-                    session.with_transaction(lambda s: payment_callback(s, name_in_cart,
-                                                                        new_transaction.to_dict(),
-                                                                        product_slugs,
-                                                                        product_quantities,
-                                                                        new_debtor.to_dict()))
+                    username = slugify(first_name + last_name)
 
-                # Check if products have negative stock quantities and address
-                for slug in product_slugs:
-                    product = products_collection.find_one({"slug": slug})
-                    if product and int(product["singles_stock"]) <= 0:
-                        products_collection.update_one({"slug": slug},
-                                                        {"$inc": {"carton_bag_stock": -1,
-                                                                    "singles_stock": int(product["no_in_carton_bag"])}})
-                        
-                new_txn = transactions_collection.find_one({"reference_no": reference_no})
+                    new_debtor = Buyer(first_name, last_name, username, email, gender, complete_phone, address,
+                                    state, datetime.now(), amount_owed, description, [image_url, image_path])
 
-                return JsonResponse(data={"result": "New Debtor", "txn_id": str(new_txn["_id"]), "ref_no": reference_no,
-                                          "debt": str(amount_owed)})
-        else:
-            return JsonResponse(data={"result": False})
-    else:
-        return JsonResponse(data={"result": False})
+                    # Create reference number for information storage
+                    reference_no = strip_id(str(datetime.now()) + code_generator())
+                    the_date = datetime.now()
 
-def update_debtor(request):
-    # then check if user is staff or admin
-    curr_user = user_collection.find_one({"email": request.user.email})
-
-    if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
-                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
-                         curr_user["address"], curr_user["state"], curr_user["image"],
-                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
-        
-        if a_user.is_admin or a_user.is_staff:
-            if request.method == "POST":
-                post_data = json.loads(request.body.decode("utf-8"))
-
-                cust_phone_no = post_data.get("d_phone_no")
-                cust_new_debt = post_data.get("d_new_debt")
-                cust_total_debt = post_data.get("d_total_debt")
-                customer_name = post_data.get("customer_name")
-                amount_brought = post_data.get("amount_brought")
-
-                curr_debtor = debtors_collection.find_one({"phone_no.number": cust_phone_no})
-                
-                # Create reference number for information storage
-                reference_no = strip_id(str(datetime.now()) + code_generator())
-                the_date = datetime.now()
-
-                if amount_brought:
-                    the_total_debt = Decimal(curr_debtor["amount_owed"]) - Decimal(str(amount_brought))
-                else:
-                    the_total_debt = Decimal(cust_new_debt) + Decimal(curr_debtor["amount_owed"])
-
-                # Create debtor/Buyer class from gotten info, use class to calculate debt
-                old_debtor = Buyer(curr_debtor["first_name"], curr_debtor["last_name"], curr_debtor["username"],
-                                curr_debtor["email"], curr_debtor["gender"], curr_debtor["phone_no"],
-                                curr_debtor["address"], curr_debtor["state"], the_date,
-                                str(the_total_debt), curr_debtor["description"], curr_debtor["image"])
-                
-                product_slugs = None
-                product_quantities = None
-
-                if cust_new_debt and cust_total_debt and customer_name:
-                    # It's a goods purchase transaction
-                    curr_customer = staff_carts_collection.find_one({"name_of_buyer": customer_name,
+                    curr_customer = staff_carts_collection.find_one({"name_of_buyer": name_in_cart,
                                                                     "staff_id": a_user.email})
-
-                    # Reset debtor/Buyer class from gotten info, use class to calculate debt, if condition is true
-                    old_debtor = Buyer(curr_debtor["first_name"], curr_debtor["last_name"], curr_debtor["username"],
-                                    curr_debtor["email"], curr_debtor["gender"], curr_debtor["phone_no"],
-                                    curr_debtor["address"], curr_debtor["state"], the_date,
-                                    str(cust_total_debt), curr_debtor["description"], curr_debtor["image"])
-                    
-                    new_transaction = Transaction("Goods Purchase", "Staff", old_debtor.first_name + " " + old_debtor.last_name, a_user.email,
+                    # Or Cash Payment
+                    # Date - Buyer ID - Transaction Type - Transaction Reference - Transaction Amount - Amount Paid - Balance
+                    # Today - 0909233 - Goods Purchase - all that reference - 5000 - 4500 - 500 (or inc current debt)
+                    # Today - 0909236 - Cash Payment - all that reference - 500 - 500 - 0 (or dec current debt)
+                    new_transaction = Transaction("Goods Purchase", "Staff", new_debtor.first_name + " " + new_debtor.last_name, a_user.email,
                                                 curr_customer["items"], the_date, curr_customer["total_amount"],
-                                                amount_brought, reference_no, cust_phone_no)
+                                                amount_paid, reference_no, phone_number)
 
                     product_slugs = []
                     product_quantities = []
                     for item in curr_customer["items"]:
                         product_slugs.append(item["product_slug"])
                         product_quantities.append(item["total_product_quantity"])
-
-                elif cust_new_debt:
-                    # Debtor collected more debt
-                    customer_name = curr_debtor["first_name"] + " " + curr_debtor["last_name"]
-
-                    # reverse total amount and amount brought
-                    new_transaction = Transaction("Credit Collect", "Staff", customer_name, a_user.email,
-                                                [], the_date, cust_new_debt, "0.00", reference_no, cust_phone_no)
-                else:
-                    # Cash payment instead
-                    customer_name = curr_debtor["first_name"] + " " + curr_debtor["last_name"]
-
-                    new_transaction = Transaction("Cash Payment", "Staff", customer_name, a_user.email,
-                                                [], the_date, "0.00", amount_brought, reference_no, cust_phone_no)
                     
-                # Proceed to call the call_back function. Adjust variables to include buyer info
-                with client.start_session() as session:
-                    session.with_transaction(lambda s: payment_callback(s, customer_name,
-                                                                        new_transaction.to_dict(),
-                                                                        product_slugs,
-                                                                        product_quantities,
-                                                                        old_debtor.to_dict()))
+                    # Proceed to call the call_back function. Adjust variables to include buyer info
+                    with client.start_session() as session:
+                        session.with_transaction(lambda s: payment_callback(s, name_in_cart,
+                                                                            new_transaction.to_dict(),
+                                                                            product_slugs,
+                                                                            product_quantities,
+                                                                            new_debtor.to_dict()))
 
-                # Check if products have negative stock quantities and address
-                if product_slugs:
+                    # Check if products have negative stock quantities and address
                     for slug in product_slugs:
                         product = products_collection.find_one({"slug": slug})
                         if product and int(product["singles_stock"]) <= 0:
                             products_collection.update_one({"slug": slug},
                                                             {"$inc": {"carton_bag_stock": -1,
                                                                         "singles_stock": int(product["no_in_carton_bag"])}})
+                            
+                    new_txn = transactions_collection.find_one({"reference_no": reference_no})
+
+                    return JsonResponse(data={"result": "New Debtor", "txn_id": str(new_txn["_id"]), "ref_no": reference_no,
+                                            "debt": str(amount_owed)})
+            else:
+                return JsonResponse(data={"result": False})
+        else:
+            return JsonResponse(data={"result": False})
+    else:
+        return JsonResponse(data={"result": False})
+
+def update_debtor(request):
+    if request.user.is_authenticated:
+        # then check if user is staff or admin
+        curr_user = user_collection.find_one({"email": request.user.email})
+
+        if curr_user:
+            a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                            curr_user["email"], curr_user["gender"], curr_user["phone_no"],
+                            curr_user["address"], curr_user["state"], curr_user["image"],
+                            curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+            
+            if a_user.is_admin or a_user.is_staff:
+                if request.method == "POST":
+                    post_data = json.loads(request.body.decode("utf-8"))
+
+                    cust_phone_no = post_data.get("d_phone_no")
+                    cust_new_debt = post_data.get("d_new_debt")
+                    cust_total_debt = post_data.get("d_total_debt")
+                    customer_name = post_data.get("customer_name")
+                    amount_brought = post_data.get("amount_brought")
+
+                    curr_debtor = debtors_collection.find_one({"phone_no.number": cust_phone_no})
+                    
+                    # Create reference number for information storage
+                    reference_no = strip_id(str(datetime.now()) + code_generator())
+                    the_date = datetime.now()
+
+                    if amount_brought:
+                        the_total_debt = Decimal(curr_debtor["amount_owed"]) - Decimal(str(amount_brought))
+                    else:
+                        the_total_debt = Decimal(cust_new_debt) + Decimal(curr_debtor["amount_owed"])
+
+                    # Create debtor/Buyer class from gotten info, use class to calculate debt
+                    old_debtor = Buyer(curr_debtor["first_name"], curr_debtor["last_name"], curr_debtor["username"],
+                                    curr_debtor["email"], curr_debtor["gender"], curr_debtor["phone_no"],
+                                    curr_debtor["address"], curr_debtor["state"], the_date,
+                                    str(the_total_debt), curr_debtor["description"], curr_debtor["image"])
+                    
+                    product_slugs = None
+                    product_quantities = None
+
+                    if cust_new_debt and cust_total_debt and customer_name:
+                        # It's a goods purchase transaction
+                        curr_customer = staff_carts_collection.find_one({"name_of_buyer": customer_name,
+                                                                        "staff_id": a_user.email})
+
+                        # Reset debtor/Buyer class from gotten info, use class to calculate debt, if condition is true
+                        old_debtor = Buyer(curr_debtor["first_name"], curr_debtor["last_name"], curr_debtor["username"],
+                                        curr_debtor["email"], curr_debtor["gender"], curr_debtor["phone_no"],
+                                        curr_debtor["address"], curr_debtor["state"], the_date,
+                                        str(cust_total_debt), curr_debtor["description"], curr_debtor["image"])
                         
-                new_txn = transactions_collection.find_one({"reference_no": reference_no})
+                        new_transaction = Transaction("Goods Purchase", "Staff", old_debtor.first_name + " " + old_debtor.last_name, a_user.email,
+                                                    curr_customer["items"], the_date, curr_customer["total_amount"],
+                                                    amount_brought, reference_no, cust_phone_no)
 
-                if not cust_new_debt:
-                    cust_new_debt = amount_brought
+                        product_slugs = []
+                        product_quantities = []
+                        for item in curr_customer["items"]:
+                            product_slugs.append(item["product_slug"])
+                            product_quantities.append(item["total_product_quantity"])
 
-                if not cust_total_debt:
-                    cust_total_debt = the_total_debt
+                    elif cust_new_debt:
+                        # Debtor collected more debt
+                        customer_name = curr_debtor["first_name"] + " " + curr_debtor["last_name"]
 
-                return JsonResponse(data={"result": "Old Debtor", "txn_id": str(new_txn["_id"]), "ref_no": reference_no,
-                                          "debt": str(cust_new_debt), "total_debt": str(cust_total_debt)})
+                        # reverse total amount and amount brought
+                        new_transaction = Transaction("Credit Collect", "Staff", customer_name, a_user.email,
+                                                    [], the_date, cust_new_debt, "0.00", reference_no, cust_phone_no)
+                    else:
+                        # Cash payment instead
+                        customer_name = curr_debtor["first_name"] + " " + curr_debtor["last_name"]
+
+                        new_transaction = Transaction("Cash Payment", "Staff", customer_name, a_user.email,
+                                                    [], the_date, "0.00", amount_brought, reference_no, cust_phone_no)
+                        
+                    # Proceed to call the call_back function. Adjust variables to include buyer info
+                    with client.start_session() as session:
+                        session.with_transaction(lambda s: payment_callback(s, customer_name,
+                                                                            new_transaction.to_dict(),
+                                                                            product_slugs,
+                                                                            product_quantities,
+                                                                            old_debtor.to_dict()))
+
+                    # Check if products have negative stock quantities and address
+                    if product_slugs:
+                        for slug in product_slugs:
+                            product = products_collection.find_one({"slug": slug})
+                            if product and int(product["singles_stock"]) <= 0:
+                                products_collection.update_one({"slug": slug},
+                                                                {"$inc": {"carton_bag_stock": -1,
+                                                                            "singles_stock": int(product["no_in_carton_bag"])}})
+                            
+                    new_txn = transactions_collection.find_one({"reference_no": reference_no})
+
+                    if not cust_new_debt:
+                        cust_new_debt = amount_brought
+
+                    if not cust_total_debt:
+                        cust_total_debt = the_total_debt
+
+                    return JsonResponse(data={"result": "Old Debtor", "txn_id": str(new_txn["_id"]), "ref_no": reference_no,
+                                            "debt": str(cust_new_debt), "total_debt": str(cust_total_debt)})
+            else:
+                return JsonResponse(data={"result": False})
         else:
             return JsonResponse(data={"result": False})
     else:
         return JsonResponse(data={"result": False})
 
 def get_debtors(request):
-    # then check if user is staff or admin
-    curr_user = user_collection.find_one({"email": request.user.email})
+    if request.user.is_authenticated:
+        # then check if user is staff or admin
+        curr_user = user_collection.find_one({"email": request.user.email})
 
-    if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
-                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
-                         curr_user["address"], curr_user["state"], curr_user["image"],
-                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
-        
-        if a_user.is_admin or a_user.is_staff:
-            all_debtors = list(debtors_collection.find({}, {"_id": 0}))
-            return JsonResponse(data={"result": True, "debtors": all_debtors})
+        if curr_user:
+            a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                            curr_user["email"], curr_user["gender"], curr_user["phone_no"],
+                            curr_user["address"], curr_user["state"], curr_user["image"],
+                            curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+            
+            if a_user.is_admin or a_user.is_staff:
+                all_debtors = list(debtors_collection.find({}, {"_id": 0}))
+                return JsonResponse(data={"result": True, "debtors": all_debtors})
+            else:
+                return JsonResponse(data={"result": False})
         else:
             return JsonResponse(data={"result": False})
     else:
         return JsonResponse(data={"result": False})
         
 def get_the_debtor(request, slug):
-    # then check if user is staff or admin
-    curr_user = user_collection.find_one({"email": request.user.email})
+    if request.user.is_authenticated:
+        # then check if user is staff or admin
+        curr_user = user_collection.find_one({"email": request.user.email})
 
-    if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
-                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
-                         curr_user["address"], curr_user["state"], curr_user["image"],
-                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
-        
-        if a_user.is_admin or a_user.is_staff:
-            the_debtor = debtors_collection.find_one({"phone_no.number": slug}, {"_id": 0})
-            return JsonResponse(data={"result": True, "debtor": the_debtor})
+        if curr_user:
+            a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                            curr_user["email"], curr_user["gender"], curr_user["phone_no"],
+                            curr_user["address"], curr_user["state"], curr_user["image"],
+                            curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+            
+            if a_user.is_admin or a_user.is_staff:
+                the_debtor = debtors_collection.find_one({"phone_no.number": slug}, {"_id": 0})
+                return JsonResponse(data={"result": True, "debtor": the_debtor})
+            else:
+                return JsonResponse(data={"result": False})
         else:
             return JsonResponse(data={"result": False})
     else:
         return JsonResponse(data={"result": False})
 
 def make_payment(request):
-    # then check if user is staff or admin
-    curr_user = user_collection.find_one({"email": request.user.email})
+    if request.user.is_authenticated:
+        # then check if user is staff or admin
+        curr_user = user_collection.find_one({"email": request.user.email})
 
-    if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
-                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
-                         curr_user["address"], curr_user["state"], curr_user["image"],
-                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
-        
-        if a_user.is_admin or a_user.is_staff:
-            if request.method == "POST":
-                post_data = json.loads(request.body.decode("utf-8"))
+        if curr_user:
+            a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                            curr_user["email"], curr_user["gender"], curr_user["phone_no"],
+                            curr_user["address"], curr_user["state"], curr_user["image"],
+                            curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+            
+            if a_user.is_admin or a_user.is_staff:
+                if request.method == "POST":
+                    post_data = json.loads(request.body.decode("utf-8"))
 
-                customer_name = post_data.get("customerName")
-                amount_paid = post_data.get("amountPaid")
-                reference_no = strip_id(str(datetime.now()) + code_generator())
-                the_date = datetime.now()
-                curr_customer = staff_carts_collection.find_one({"name_of_buyer": customer_name,
-                                                                 "staff_id": a_user.email})
+                    customer_name = post_data.get("customerName")
+                    amount_paid = post_data.get("amountPaid")
+                    reference_no = strip_id(str(datetime.now()) + code_generator())
+                    the_date = datetime.now()
+                    curr_customer = staff_carts_collection.find_one({"name_of_buyer": customer_name,
+                                                                    "staff_id": a_user.email})
 
-                new_transaction = Transaction("Goods Purchase", "Staff", customer_name, a_user.email, curr_customer["items"],
-                                                  the_date, curr_customer["total_amount"], amount_paid,
-                                                  reference_no)
+                    new_transaction = Transaction("Goods Purchase", "Staff", customer_name, a_user.email, curr_customer["items"],
+                                                    the_date, curr_customer["total_amount"], amount_paid,
+                                                    reference_no)
 
-                if curr_customer and Decimal(str(amount_paid)) == Decimal(curr_customer["total_amount"]):
-                    # Customer neither owes nor is owed
-                    product_slugs = []
-                    product_quantities = []
-                    for item in curr_customer["items"]:
-                        product_slugs.append(item["product_slug"])
-                        product_quantities.append(item["total_product_quantity"])
+                    if curr_customer and Decimal(str(amount_paid)) == Decimal(curr_customer["total_amount"]):
+                        # Customer neither owes nor is owed
+                        product_slugs = []
+                        product_quantities = []
+                        for item in curr_customer["items"]:
+                            product_slugs.append(item["product_slug"])
+                            product_quantities.append(item["total_product_quantity"])
+                        
+                        # Proceed to call the call_back function
+                        with client.start_session() as session:
+                            session.with_transaction(lambda s: payment_callback(s, customer_name,
+                                                                                new_transaction.to_dict(),
+                                                                                product_slugs,
+                                                                                product_quantities))
+
+                        # Check if products have negative stock quantities and address
+                        for slug in product_slugs:
+                            product = products_collection.find_one({"slug": slug})
+                            if product and int(product["singles_stock"]) <= 0:
+                                products_collection.update_one({"slug": slug},
+                                                            {"$inc": {"carton_bag_stock": -1,
+                                                                        "singles_stock": int(product["no_in_carton_bag"])}})
+                                
+                        new_txn = transactions_collection.find_one({"reference_no": reference_no})
+                                
+                        return JsonResponse(data={"result": "Exact", "txn_id": str(new_txn["_id"]), "ref_no": reference_no})
                     
-                    # Proceed to call the call_back function
-                    with client.start_session() as session:
-                        session.with_transaction(lambda s: payment_callback(s, customer_name,
-                                                                            new_transaction.to_dict(),
-                                                                            product_slugs,
-                                                                            product_quantities))
+                    elif curr_customer and Decimal(str(amount_paid)) > Decimal(curr_customer["total_amount"]):
+                        # Customer is owed change
+                        product_slugs = []
+                        product_quantities = []
+                        for item in curr_customer["items"]:
+                            product_slugs.append(item["product_slug"])
+                            product_quantities.append(item["total_product_quantity"])
+                        
+                        # Proceed to call the call_back function
+                        with client.start_session() as session:
+                            session.with_transaction(lambda s: payment_callback(s, customer_name,
+                                                                                new_transaction.to_dict(),
+                                                                                product_slugs,
+                                                                                product_quantities))
 
-                    # Check if products have negative stock quantities and address
-                    for slug in product_slugs:
-                        product = products_collection.find_one({"slug": slug})
-                        if product and int(product["singles_stock"]) <= 0:
-                            products_collection.update_one({"slug": slug},
-                                                           {"$inc": {"carton_bag_stock": -1,
-                                                                     "singles_stock": int(product["no_in_carton_bag"])}})
-                            
-                    new_txn = transactions_collection.find_one({"reference_no": reference_no})
-                            
-                    return JsonResponse(data={"result": "Exact", "txn_id": str(new_txn["_id"]), "ref_no": reference_no})
-                
-                elif curr_customer and Decimal(str(amount_paid)) > Decimal(curr_customer["total_amount"]):
-                    # Customer is owed change
-                    product_slugs = []
-                    product_quantities = []
-                    for item in curr_customer["items"]:
-                        product_slugs.append(item["product_slug"])
-                        product_quantities.append(item["total_product_quantity"])
-                    
-                    # Proceed to call the call_back function
-                    with client.start_session() as session:
-                        session.with_transaction(lambda s: payment_callback(s, customer_name,
-                                                                            new_transaction.to_dict(),
-                                                                            product_slugs,
-                                                                            product_quantities))
+                        # Check if products have negative stock quantities and address
+                        for slug in product_slugs:
+                            product = products_collection.find_one({"slug": slug})
+                            if product and int(product["singles_stock"]) <= 0:
+                                products_collection.update_one({"slug": slug},
+                                                            {"$inc": {"carton_bag_stock": -1,
+                                                                        "singles_stock": int(product["no_in_carton_bag"])}})
+                                
+                        new_txn = transactions_collection.find_one({"reference_no": reference_no})
+                        la_change = Decimal(str(amount_paid)) - Decimal(curr_customer["total_amount"])
 
-                    # Check if products have negative stock quantities and address
-                    for slug in product_slugs:
-                        product = products_collection.find_one({"slug": slug})
-                        if product and int(product["singles_stock"]) <= 0:
-                            products_collection.update_one({"slug": slug},
-                                                           {"$inc": {"carton_bag_stock": -1,
-                                                                     "singles_stock": int(product["no_in_carton_bag"])}})
-                            
-                    new_txn = transactions_collection.find_one({"reference_no": reference_no})
-                    la_change = Decimal(str(amount_paid)) - Decimal(curr_customer["total_amount"])
-
-                    return JsonResponse(data={"result": "Change", "txn_id": str(new_txn["_id"]),
-                                              "ref_no": reference_no, "change": str(la_change)})
-                else:
-                    # Customer doesn't exist
-                    return JsonResponse(data={"result": "Error"})
+                        return JsonResponse(data={"result": "Change", "txn_id": str(new_txn["_id"]),
+                                                "ref_no": reference_no, "change": str(la_change)})
+                    else:
+                        # Customer doesn't exist
+                        return JsonResponse(data={"result": "Error"})
+            else:
+                return JsonResponse(data={"result": False})
         else:
             return JsonResponse(data={"result": False})
     else:
@@ -1560,124 +1583,130 @@ def get_transactions(request):
         return render(request, "main_app/404.html", {})
 
 def delete_item(request):
-    # then check if user is staff or admin
-    curr_user = user_collection.find_one({"email": request.user.email})
+    if request.user.is_authenticated:
+        # then check if user is staff or admin
+        curr_user = user_collection.find_one({"email": request.user.email})
 
-    if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
-                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
-                         curr_user["address"], curr_user["state"], curr_user["image"],
-                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
-        
-        if a_user.is_staff or a_user.is_admin:
-            if request.method == "POST":
-                post_data = json.loads(request.body.decode("utf-8"))
-                d_slug = post_data.get("item_slug")
-                d_customer = post_data.get("item_customer")
-                
-                # Find and delete document if it only has one item in cart. Else, just remove the item
-                delete_op = staff_carts_collection.find_one_and_delete({"name_of_buyer": d_customer,
-                                                                        "staff_id": a_user.email,
-                                                                        "items": {"$size": 1}})
-                
-                if delete_op:
-                    # Customer only had one item in cart. Deleted
-                    return JsonResponse(data={"result": "Successful"})
-                else:
-                    # Customer has other items he/she intends to buy
-                    # Get the particular product's subtotal
-                    the_cart = staff_carts_collection.find_one({"name_of_buyer": d_customer, "staff_id": a_user.email})
-                    product_sub = "0.00"
-                    for item in the_cart["items"]:
-                        if item["product_slug"] == d_slug:
-                            product_sub = item["sub_total"]
-                            break
+        if curr_user:
+            a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                            curr_user["email"], curr_user["gender"], curr_user["phone_no"],
+                            curr_user["address"], curr_user["state"], curr_user["image"],
+                            curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+            
+            if a_user.is_staff or a_user.is_admin:
+                if request.method == "POST":
+                    post_data = json.loads(request.body.decode("utf-8"))
+                    d_slug = post_data.get("item_slug")
+                    d_customer = post_data.get("item_customer")
                     
-                    cart_total = the_cart["total_amount"]
-                    new_total = Decimal(cart_total) - Decimal(product_sub)
+                    # Find and delete document if it only has one item in cart. Else, just remove the item
+                    delete_op = staff_carts_collection.find_one_and_delete({"name_of_buyer": d_customer,
+                                                                            "staff_id": a_user.email,
+                                                                            "items": {"$size": 1}})
+                    
+                    if delete_op:
+                        # Customer only had one item in cart. Deleted
+                        return JsonResponse(data={"result": "Successful"})
+                    else:
+                        # Customer has other items he/she intends to buy
+                        # Get the particular product's subtotal
+                        the_cart = staff_carts_collection.find_one({"name_of_buyer": d_customer, "staff_id": a_user.email})
+                        product_sub = "0.00"
+                        for item in the_cart["items"]:
+                            if item["product_slug"] == d_slug:
+                                product_sub = item["sub_total"]
+                                break
+                        
+                        cart_total = the_cart["total_amount"]
+                        new_total = Decimal(cart_total) - Decimal(product_sub)
 
-                    # Update cart with new details
-                    staff_carts_collection.update_one({"name_of_buyer": d_customer,
-                                                        "staff_id": a_user.email},
-                                                        {"$pull": {"items": {"product_slug": d_slug}},
-                                                        "$set": {"total_amount": str(new_total),
-                                                                "amount_owed": str(new_total)}})
-                    
-                    return JsonResponse(data={"result": "Successful"})
+                        # Update cart with new details
+                        staff_carts_collection.update_one({"name_of_buyer": d_customer,
+                                                            "staff_id": a_user.email},
+                                                            {"$pull": {"items": {"product_slug": d_slug}},
+                                                            "$set": {"total_amount": str(new_total),
+                                                                    "amount_owed": str(new_total)}})
+                        
+                        return JsonResponse(data={"result": "Successful"})
+            else:
+                return JsonResponse(data={"result": False})
         else:
             return JsonResponse(data={"result": False})
     else:
         return JsonResponse(data={"result": False})
 
 def update_product_price(request):
-     # then check if user is staff or admin
-    curr_user = user_collection.find_one({"email": request.user.email})
+    if request.user.is_authenticated:
+        # then check if user is staff or admin
+        curr_user = user_collection.find_one({"email": request.user.email})
 
-    if curr_user:
-        a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
-                         curr_user["email"], curr_user["gender"], curr_user["phone_no"],
-                         curr_user["address"], curr_user["state"], curr_user["image"],
-                         curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
-        
-        if a_user.is_staff or a_user.is_admin:
-            if request.method == "POST":
-                post_data = json.loads(request.body.decode("utf-8"))
-                product_slug = post_data.get("prod_slug")
-                retail_price = post_data.get("retail_price")
-                wholesale_price = post_data.get("wholesale_price")
-                carton_bag_price = post_data.get("carton_bag_price")
+        if curr_user:
+            a_user = TheUser(curr_user["first_name"], curr_user["last_name"], curr_user["username"],
+                            curr_user["email"], curr_user["gender"], curr_user["phone_no"],
+                            curr_user["address"], curr_user["state"], curr_user["image"],
+                            curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
+            
+            if a_user.is_staff or a_user.is_admin:
+                if request.method == "POST":
+                    post_data = json.loads(request.body.decode("utf-8"))
+                    product_slug = post_data.get("prod_slug")
+                    retail_price = post_data.get("retail_price")
+                    wholesale_price = post_data.get("wholesale_price")
+                    carton_bag_price = post_data.get("carton_bag_price")
 
-                fin_retail = Decimal(retail_price) + Decimal("0.00")
-                fin_wholesale_price = Decimal(wholesale_price) + Decimal("0.00")
-                if carton_bag_price != "NA":
-                    fin_carton_price = Decimal(carton_bag_price) + Decimal("0.00")
-                else:
-                    fin_carton_price = Decimal("0.00")
+                    fin_retail = Decimal(retail_price) + Decimal("0.00")
+                    fin_wholesale_price = Decimal(wholesale_price) + Decimal("0.00")
+                    if carton_bag_price != "NA":
+                        fin_carton_price = Decimal(carton_bag_price) + Decimal("0.00")
+                    else:
+                        fin_carton_price = Decimal("0.00")
 
-                products_collection.update_one({"slug": product_slug},
-                                               {"$set": {
-                                                   "retail_price": str(fin_retail),
-                                                   "wholesale_price": str(fin_wholesale_price),
-                                                   "carton_bag_price": str(fin_carton_price),
-                                                   "price_modified_date": datetime.now()
-                                               }})
-                
-                if len(post_data) > 4:
-                    # Run loop through post data to pick bulk
-                    for item in post_data:
-                        if not item.endswith("_price") and item != "prod_slug":
-                            # Condition only selects bulk prices
-                            products_collection.update_one({"slug": product_slug},
+                    products_collection.update_one({"slug": product_slug},
                                                 {"$set": {
-                                                    "bulk.$[elem].bulk_price": str(Decimal(post_data[item]) + Decimal("0.00"))
-                                                }},
-                                                array_filters=[{"elem.bulk_type": item}])
+                                                    "retail_price": str(fin_retail),
+                                                    "wholesale_price": str(fin_wholesale_price),
+                                                    "carton_bag_price": str(fin_carton_price),
+                                                    "price_modified_date": datetime.now()
+                                                }})
+                    
+                    if len(post_data) > 4:
+                        # Run loop through post data to pick bulk
+                        for item in post_data:
+                            if not item.endswith("_price") and item != "prod_slug":
+                                # Condition only selects bulk prices
+                                products_collection.update_one({"slug": product_slug},
+                                                    {"$set": {
+                                                        "bulk.$[elem].bulk_price": str(Decimal(post_data[item]) + Decimal("0.00"))
+                                                    }},
+                                                    array_filters=[{"elem.bulk_type": item}])
 
-                        if item != "prod_slug":
-                            # Run operation for product in staff_carts, and even buyer carts, when the time comes
-                            # Perform price updates first
-                            staff_carts_collection.update_many({"items.product_slug": product_slug},
-                                                               {"$set": {
-                                                                   "items.$[elem].product_price": str(Decimal(post_data[item]) + Decimal("0.00"))
-                                                               }},
-                                                               array_filters=[{"elem.product_slug": product_slug,
-                                                                               "elem.true_sale_type": item}])
-                else:
-                    for item in post_data:
-                        if item != "prod_slug":
-                            # Run operation for product in staff_carts, and even buyer carts, when the time comes
-                            # Perform price updates first
-                            staff_carts_collection.update_many({"items.product_slug": product_slug},
-                                                               {"$set": {
-                                                                   "items.$[elem].product_price": str(Decimal(post_data[item]) + Decimal("0.00"))
-                                                               }},
-                                                               array_filters=[{"elem.product_slug": product_slug,
-                                                                               "elem.true_sale_type": item}])
-                            
-                # Can now perform calculations for all product prices in all carts
-                calculate_subtotal(product_slug)
+                            if item != "prod_slug":
+                                # Run operation for product in staff_carts, and even buyer carts, when the time comes
+                                # Perform price updates first
+                                staff_carts_collection.update_many({"items.product_slug": product_slug},
+                                                                {"$set": {
+                                                                    "items.$[elem].product_price": str(Decimal(post_data[item]) + Decimal("0.00"))
+                                                                }},
+                                                                array_filters=[{"elem.product_slug": product_slug,
+                                                                                "elem.true_sale_type": item}])
+                    else:
+                        for item in post_data:
+                            if item != "prod_slug":
+                                # Run operation for product in staff_carts, and even buyer carts, when the time comes
+                                # Perform price updates first
+                                staff_carts_collection.update_many({"items.product_slug": product_slug},
+                                                                {"$set": {
+                                                                    "items.$[elem].product_price": str(Decimal(post_data[item]) + Decimal("0.00"))
+                                                                }},
+                                                                array_filters=[{"elem.product_slug": product_slug,
+                                                                                "elem.true_sale_type": item}])
+                                
+                    # Can now perform calculations for all product prices in all carts
+                    calculate_subtotal(product_slug)
 
-                return JsonResponse(data={"result": "Successful"})
+                    return JsonResponse(data={"result": "Successful"})
+            else:
+                return JsonResponse(data={"result": False})
         else:
             return JsonResponse(data={"result": False})
     else:

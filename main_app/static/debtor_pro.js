@@ -72,6 +72,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     failToast.show();
                 }
             })
+            .catch(error => {
+                failToast.show();
+                console.error({"error": error});
+            });
 
             // Update the modal's content.
             
@@ -188,7 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     })
                     .catch(error => {
-                        // failToast.show();
+                        failToast.show();
                         console.error({"error": error});
                     });
 
@@ -240,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     })
                     .catch(error => {
-                        // failToast.show();
+                        failToast.show();
                         console.error({"error": error});
                     });
                 }
