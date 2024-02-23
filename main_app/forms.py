@@ -15,7 +15,6 @@ from django.forms.widgets import TextInput
 from django.template import loader
 from django.contrib.sites.shortcuts import get_current_site
 from .o_functions import send_email_resetpassword
-from .models import TestProduct
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from tinymce.widgets import TinyMCE
@@ -795,30 +794,30 @@ class AddDebtorForm(forms.Form):
                "autocomplete": "off"}), label_suffix="")
     
     
-class TestProductForm(ModelForm):
-    class Meta:
-        model = TestProduct
-        fields = ["pro_name", "pro_size", "pro_price", "pro_image"]
+# class TestProductForm(ModelForm):
+#     class Meta:
+#         model = TestProduct
+#         fields = ["pro_name", "pro_size", "pro_price", "pro_image"]
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super(ModelForm, self).__init__(*args, **kwargs)
+#     def __init__(self, *args: Any, **kwargs: Any) -> None:
+#         super(ModelForm, self).__init__(*args, **kwargs)
 
-        self.fields['pro_name'].widget.attrs['class'] = 'form-control'
-        self.fields['pro_name'].widget.attrs['placeholder'] = 'pro_name'
-        self.fields['pro_name'].widget.attrs['autocomplete'] = 'off'
-        self.fields['pro_name'].label = 'Product Name'
-        self.fields['pro_name'].label_suffix = ""
+#         self.fields['pro_name'].widget.attrs['class'] = 'form-control'
+#         self.fields['pro_name'].widget.attrs['placeholder'] = 'pro_name'
+#         self.fields['pro_name'].widget.attrs['autocomplete'] = 'off'
+#         self.fields['pro_name'].label = 'Product Name'
+#         self.fields['pro_name'].label_suffix = ""
 
-        self.fields['pro_size'].widget.attrs['class'] = 'form-control'
-        self.fields['pro_size'].widget.attrs['placeholder'] = 'pro_size'
-        self.fields['pro_size'].widget.attrs['autocomplete'] = 'off'
-        self.fields['pro_size'].label = 'Product Size'
-        self.fields['pro_size'].label_suffix = ""
+#         self.fields['pro_size'].widget.attrs['class'] = 'form-control'
+#         self.fields['pro_size'].widget.attrs['placeholder'] = 'pro_size'
+#         self.fields['pro_size'].widget.attrs['autocomplete'] = 'off'
+#         self.fields['pro_size'].label = 'Product Size'
+#         self.fields['pro_size'].label_suffix = ""
 
-        self.fields['pro_price'].widget.attrs['class'] = 'form-control'
-        self.fields['pro_price'].widget.attrs['placeholder'] = 'pro_price'
-        self.fields['pro_price'].widget.attrs['autocomplete'] = 'off'
-        self.fields['pro_price'].label = 'Product Price'
-        self.fields['pro_price'].label_suffix = ""
+#         self.fields['pro_price'].widget.attrs['class'] = 'form-control'
+#         self.fields['pro_price'].widget.attrs['placeholder'] = 'pro_price'
+#         self.fields['pro_price'].widget.attrs['autocomplete'] = 'off'
+#         self.fields['pro_price'].label = 'Product Price'
+#         self.fields['pro_price'].label_suffix = ""
 
         
