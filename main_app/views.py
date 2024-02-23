@@ -13,9 +13,6 @@ from decimal import Decimal
 from urllib.request import urlopen
 from shutil import copyfileobj
 
-# Disable on production once cloudflare is up
-from django.core.cache import cache
-
 from .o_functions import humans, payment_callback, standardize_phone, strip_id
 from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, \
     EditProfileImageForm, EditNameForm, AddProductForm, CarouselForm, EditProductForm, AddDebtorForm
@@ -59,31 +56,13 @@ def calculate_subtotal(product_slug):
                                                 }},
                                                 array_filters=[{"elem.product_slug": product_slug}])
 
-"""
-NOTE: ELIMINATE CACHING HERE SO IT'S ALL ON CLOUDFLARE
-"""
 # Create your views here.
-@login_required
 def home(request):
     # Get all products from DB
     all_products = list(products_collection.find().sort("price_modified_date", pymongo.DESCENDING))
     inventory = []
     for product in all_products:
-        # eliminate block when cloudflare is connected
-        prod_image = cache.get(product["slug"])
-        if not prod_image:
-            # Cache doesn't exist
-            # Retrieve image from url
-            img_url = product["product_image"][0]
-            file_path = "media/cached_files/" + product["slug"] + ".jpg"
-
-            # Store in temporary variable
-            with urlopen(img_url) as in_stream, open(file_path, "wb") as filing:
-                copyfileobj(in_stream, filing)
-
-            prod_image = cache.get_or_set(product["slug"], file_path, 10000)
-
-        item = ProductLite(product["brand_name"], product["product_name"], product["size"], [prod_image, product["product_image"][1]],
+        item = ProductLite(product["brand_name"], product["product_name"], product["size"], product["product_image"],
                        product["retail_price"], product["singles_stock"], product["slug"])
         inventory.append(item)
 
@@ -661,15 +640,10 @@ def privacy_policy(request):
     else:
         return render(request, "main_app/privacy.html", {})
 
-"""
-NOTE: ELIMINATE CACHING HERE SO IT'S ALL ON CLOUDFLARE
-"""
 def find_product(request, slug):
     # Find product from mongodb
     the_product = products_collection.find_one({"slug": slug}, {"_id": 0})
     if the_product:
-        prod_image = cache.get(the_product["slug"])
-        the_product["product_image"][0] = prod_image
         return JsonResponse(the_product)
 
 def open_staff_carts(request):

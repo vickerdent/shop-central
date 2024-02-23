@@ -25,6 +25,3 @@ urlpatterns = [
     path('', include('django_backblaze_b2.urls')),
     path('admin/', admin.site.urls),
 ]
-
-urlpatterns += static(settings.MEDIA_URL,
-                          document_root=settings.MEDIA_ROOT)
