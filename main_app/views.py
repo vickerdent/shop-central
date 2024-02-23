@@ -8,8 +8,11 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.http import JsonResponse
 from bson.son import SON
-import pymongo, json
+import pymongo, json, urllib.request
 from decimal import Decimal
+
+# Disable on production once cloudflare is up
+from django.core.cache import cache
 
 from .o_functions import humans, payment_callback, standardize_phone, strip_id
 from .forms import SignUpForm, ConfirmCodeForm, ChangePasswordForm, ResetPasswordForm, TestProductForm, \
@@ -54,6 +57,9 @@ def calculate_subtotal(product_slug):
                                                 }},
                                                 array_filters=[{"elem.product_slug": product_slug}])
 
+"""
+NOTE: ELIMINATE CACHING HERE SO IT'S ALL ON CLOUDFLARE
+"""
 # Create your views here.
 @login_required
 def home(request):
@@ -61,7 +67,19 @@ def home(request):
     all_products = list(products_collection.find().sort("price_modified_date", pymongo.DESCENDING))
     inventory = []
     for product in all_products:
-        item = ProductLite(product["brand_name"], product["product_name"], product["size"], product["product_image"],
+        # eliminate block when cloudflare is connected
+        prod_image = cache.get(product["slug"])
+        if not prod_image:
+            # Cache doesn't exist
+            # Retrieve image from url
+            img_url = product["product_image"][0]
+
+            # Store in temporary variable
+            img_path, http_message = urllib.request.urlretrieve(img_url, "media/cached_files/" + product["slug"] + ".jpg")
+
+            prod_image = cache.get_or_set(product["slug"], img_path, 10000)
+
+        item = ProductLite(product["brand_name"], product["product_name"], product["size"], [prod_image, product["product_image"][1]],
                        product["retail_price"], product["singles_stock"], product["slug"])
         inventory.append(item)
 
@@ -85,25 +103,38 @@ def home(request):
         
         if a_user.is_admin:
             return render(request, "main_app/home.html", {"is_admin": True, "is_staff": True, 
-                                                          "inventory": inventory, "noOfCarts": noOfCarts, "c_timeout": 6000})
+                                                          "inventory": inventory, "noOfCarts": noOfCarts})
         elif a_user.is_staff:
-            return render(request, "main_app/home.html", {"is_staff": True, "inventory": inventory, "noOfCarts": noOfCarts, "c_timeout": 6000})
+            return render(request, "main_app/home.html", {"is_staff": True, "inventory": inventory, "noOfCarts": noOfCarts})
         else:
-            return render(request, "main_app/home.html", {"inventory": inventory, "c_timeout": 6000})
+            return render(request, "main_app/home.html", {"inventory": inventory})
         
-    return render(request, "main_app/home.html", {"inventory": inventory, "c_timeout": 6000})
+    return render(request, "main_app/home.html", {"inventory": inventory})
 
 def test_view(request):
-    form = TestProductForm(request.POST or None, request.FILES or None)
+    # Try to get cache first
+    img_1 = cache.get("img_1")
+    if not img_1:
+        print(img_1)
+        # Cache doesn't exist
+        # Retrieve image from url
+        img_url = "https://f005.backblazeb2.com/file/shop-central/product_images/bama-mayosauce-17ml-carton-image.jpg"
 
-    if form.is_valid():
+        # Store in temporary variable
+        img_path, http_message = urllib.request.urlretrieve(img_url, "media/cached_files/img1.jpg")
 
-        form.save()
-        return redirect("testing_view")
-    
-    all_products = TestProduct.objects.all()
+        img_1 = cache.get_or_set("img_1", img_path, 6000)
 
-    return render(request, "main_app/test_view.html", {"form": form, "products": all_products})
+    img_2 = cache.get("img_2")
+    if not img_2:
+        print(img_2)
+        img_url_2 = "https://f005.backblazeb2.com/file/shop-central/product_images/chivita-happy-hour-125ml.jpg"
+
+        img_path, http_message  = urllib.request.urlretrieve(img_url_2, "media/cached_files/img2.jpg")
+
+        img_2 = cache.get_or_set("img_2", img_path, 6000)
+
+    return render(request, "main_app/test_view.html", {"img_1": img_1, "img_2": img_2})
 
 
 def login_user(request):
@@ -647,10 +678,15 @@ def privacy_policy(request):
     else:
         return render(request, "main_app/privacy.html", {})
 
+"""
+NOTE: ELIMINATE CACHING HERE SO IT'S ALL ON CLOUDFLARE
+"""
 def find_product(request, slug):
     # Find product from mongodb
     the_product = products_collection.find_one({"slug": slug}, {"_id": 0})
     if the_product:
+        prod_image = cache.get(the_product["slug"])
+        the_product["product_image"][0] = prod_image
         return JsonResponse(the_product)
 
 def open_staff_carts(request):
@@ -795,10 +831,10 @@ def staff_carts(request):
         noOfCarts = len(all_carts)
         
         if a_user.is_admin:
-            context = {"is_admin": True, "is_staff": True, "carts": all_carts, "noOfCarts": noOfCarts, "c_timeout": 6000}
+            context = {"is_admin": True, "is_staff": True, "carts": all_carts, "noOfCarts": noOfCarts}
             return render(request, "main_app/staff_carts.html", context)
         elif a_user.is_staff:
-            context = {"is_staff": True, "carts": all_carts, "noOfCarts": noOfCarts, "c_timeout": 6000}
+            context = {"is_staff": True, "carts": all_carts, "noOfCarts": noOfCarts}
             return render(request, "main_app/staff_carts.html", context)
         else:
             messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
@@ -910,11 +946,11 @@ def edit_product(request, slug):
 
                                 if a_user.is_admin:
                                     context = {"form": form, "is_admin": True, "is_staff": True,
-                                            "p_name": old_product_name, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts, "c_timeout": 6000}
+                                            "p_name": old_product_name, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
                                     return render(request, "main_app/add_product.html", context)
                                 elif a_user.is_staff:
                                     context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES,
-                                               "p_name": old_product_name, "noOfCarts": noOfCarts, "c_timeout": 6000}
+                                               "p_name": old_product_name, "noOfCarts": noOfCarts}
                                     return render(request, "main_app/add_product.html", context)
 
                             if request.POST.get(bulk_price) in item.values():
@@ -922,11 +958,11 @@ def edit_product(request, slug):
 
                                 if a_user.is_admin:
                                     context = {"form": form, "is_admin": True, "is_staff": True,
-                                            "p_name": old_product_name, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts, "c_timeout": 6000}
+                                            "p_name": old_product_name, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
                                     return render(request, "main_app/add_product.html", context)
                                 elif a_user.is_staff:
                                     context = {"form": form, "is_staff": True, "bulk": BULK_CHOICES,
-                                               "p_name": old_product_name, "noOfCarts": noOfCarts, "c_timeout": 6000}
+                                               "p_name": old_product_name, "noOfCarts": noOfCarts}
                                     return render(request, "main_app/add_product.html", context)
                         
                         # At this point, duplicates have been handled
@@ -1099,19 +1135,19 @@ def edit_product(request, slug):
                 # Form isn't valid. Return to page with mostly filled data
                 if a_user.is_admin:
                     context = {"form": form, "p_image": old_product_image, "is_admin": True, "noOfCarts": noOfCarts,
-                            "is_staff": True, "p_name": old_product_name, "bulk": BULK_CHOICES, "c_timeout": 6000}
+                            "is_staff": True, "p_name": old_product_name, "bulk": BULK_CHOICES}
                     return render(request, "main_app/edit_product.html", context)
                 elif a_user.is_staff:
                     context = {"form": form, "p_image": old_product_image, "is_staff": True,
-                            "p_name": old_product_name, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts, "c_timeout": 6000}
+                            "p_name": old_product_name, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
                     return render(request, "main_app/edit_product.html", context)
             if a_user.is_admin:
                 context = {"form": form, "p_image": old_product_image, "is_admin": True, "noOfCarts": noOfCarts,
-                           "is_staff": True, "p_name": old_product_name, "bulk": BULK_CHOICES, "c_timeout": 6000}
+                           "is_staff": True, "p_name": old_product_name, "bulk": BULK_CHOICES}
                 return render(request, "main_app/edit_product.html", context)
             elif a_user.is_staff:
                 context = {"form": form, "p_image": old_product_image, "is_staff": True,
-                           "p_name": old_product_name, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts, "c_timeout": 6000}
+                           "p_name": old_product_name, "bulk": BULK_CHOICES, "noOfCarts": noOfCarts}
                 return render(request, "main_app/edit_product.html", context)
             else:
                 messages.error(request, "You're not permitted to view this page. Contact a staff or admin")
