@@ -1,1 +1,1 @@
-web: python manage.py migrate && python manage.py collectstatic --no-input && gunicorn shop_central.wsgi
+web: python manage.py migrate && python manage.py collectstatic --no-input && gunicorn --timeout 200 shop_central.wsgi
