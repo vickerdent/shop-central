@@ -157,8 +157,6 @@ document.addEventListener("DOMContentLoaded", () => {
                             dataList.appendChild(option);
                         });
                         document.getElementById("custInfo").appendChild(dataList)
-                    } else {
-                        failToast.show();
                     }
                 })
                 .catch(error => {
@@ -195,8 +193,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if (result === true) {
                         cartWarning.append(wrapper)
-                    } else {
-                        failToast.show();
                     }
                 })
                 .catch(error => {

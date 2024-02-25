@@ -1538,17 +1538,36 @@ def make_payment(request):
 @login_required
 def get_transactions(request):
     # Get all transactions from DB by date
-    # start_date = request.GET.get("start_date")
-    # end_date = request.GET.get("end_date")
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
     
-    today = datetime.today() # or now()
+    if start_date:
+        starting_point = datetime.strptime(start_date, "%Y-%m-%d")
+        ending_point = datetime.strptime(end_date, "%Y-%m-%d")
+        
+        # Ensure ending point is greater than starting point. We're not going back in time
+        if datetime.date(starting_point) > datetime.date(ending_point):
+            messages.warning(request, "End Date Cannot Be Less Than Start Date!")
+            return render(request, "main_app/transactions.html", {"is_staff": True, "noOfCarts": noOfCarts})
+        
+        # Finally, ensure ending point, if not today, is the very last microsecond of the day
+        if datetime.date(ending_point) == datetime.date(datetime.today()):
+            # Set ending_point to very current second
+            ending_point = datetime.today()
+        else:
+            # Last second of that day it is
+            time_difference = timedelta(hours=23, minutes=59, seconds=59, microseconds=999999)
+            ending_point = ending_point + time_difference
+    else:
+        ending_point = datetime.today() # or now() though, that may be if timezone is required
+        
+        # Reset time to the beginning of the day - the 00:00, u know what I mean. Assign value to morning
+        # Note that in this case, start_date and end_date weren't given
+        time_difference = timedelta(seconds=ending_point.second, hours=ending_point.hour, minutes=ending_point.minute,
+                                    microseconds=ending_point.microsecond)
+        starting_point = ending_point - time_difference
 
-    # Reset time to the morning of the day
-    time_difference = timedelta(seconds=today.second, hours=today.hour, minutes=today.minute,
-                                microseconds=today.microsecond)
-    morning = today - time_difference
-
-    all_transactions = list(transactions_collection.find({"checkout_date": {"$gte": morning}}).sort("checkout_date", pymongo.DESCENDING))
+    all_transactions = list(transactions_collection.find({"$and" : [{"checkout_date": {"$gte": starting_point}}, {"checkout_date": {"$lte": ending_point}}]}).sort("checkout_date", pymongo.DESCENDING))
     full_list = []
     for txn in all_transactions:
         item = Transaction(txn["txn_type"], txn["txn_by"], txn["name_of_buyer"], txn["staff_id"],
@@ -1570,8 +1589,9 @@ def get_transactions(request):
                          curr_user["registered"], curr_user["is_staff"], curr_user["is_admin"])
         
         if a_user.is_admin:
-            return render(request, "main_app/transactions.html", {"is_admin": True, "is_staff": True,
-                                                          "transactions": full_list, "noOfCarts": noOfCarts})
+            return render(request, "main_app/transactions.html", {"is_admin": True, "is_staff": True, "transactions": full_list,
+                                                                  "noOfCarts": noOfCarts, "started_date": start_date if start_date else "",
+                                                                  "ended_date": end_date if end_date else ""})
         elif a_user.is_staff:
             return render(request, "main_app/transactions.html", {"is_staff": True, "transactions": full_list,
                                                             "noOfCarts": noOfCarts})

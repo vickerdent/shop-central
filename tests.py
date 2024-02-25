@@ -23,23 +23,16 @@ product = {"bulk_type_1": "Victor", "bulk_price_1": "Joshua", "no_in_bulk_1": "D
 #     processed_phone = inputed_phone
 
 # print(processed_phone)
+from datetime import datetime, timedelta
+a_date = "2024-02-25"
+ano_date = "2024-02-26"
+first_date = datetime.strptime(a_date, "%Y-%m-%d")
+second_date = datetime.strptime(ano_date, "%Y-%m-%d")
 
-import requests
-from PIL import Image
+# time_difference = timedelta(hours=23, minutes=59, seconds=59, microseconds=999999)
+# second_date = second_date + time_difference
 
-# Retrieve image from url
-img_url = "https://f005.backblazeb2.com/file/shop-central/product_images/bama-mayosauce-17ml-carton-image.jpg"
-
-# Get the data into variable
-img_data = requests.get(img_url).content
-
-file_name = "main_app/static/cached_files/bama.jpg"
-# Save to file
-with open(file_name, "wb") as f:
-    f.write(img_data)
-
-# Open the image and display it
-img = Image.open(r"main_app/static/cached_files/bama.jpg")
-img.show()
-
-print(file_name)
+if datetime.date(second_date) > datetime.date(datetime.today()):
+    print("Is less than")
+else:
+    print("Can't see it")

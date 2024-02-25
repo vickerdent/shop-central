@@ -7,6 +7,34 @@
 {% load static %}
 {% load humanize %}
 
+<script src="{% static 'transact_pro.js' %}"></script>
+
+<form action="" method="">
+    <div class="d-flex justify-content-center">
+        <div class="row">
+            <div class="col-auto">
+                <div class="row">
+                    <label for="start_date" class="col-auto text-nowrap">Start Date</label>    
+                    <div class="col-auto">
+                        <input type="date" id="start_date" name="start_date" class="form-control" value="{{ started_date }}">
+                    </div>
+                </div>
+            </div>
+            <div class="col-auto">
+                <div class="row">
+                    <label for="end_date" class="col text-nowrap">End Date</label>
+                    <div class="col">
+                        <input type="date" id="end_date" name="end_date" class="form-control" value="{{ ended_date }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mt-2 d-flex justify-content-center">
+        <button type="submit" class="btn btn-dark">Get Transactions</button>
+    </div>
+</form>
+
 <div class="d-none d-md-block d-lg-block d-xl-block d-xxl-block">
     <table class="table table-hover">
         <thead>
@@ -43,7 +71,8 @@
                 </tr>
             {% empty %}
                 <tr>
-                    No transactions carried out yet today. <a href="{% url 'home' %}">Purchase</a> some products for customers to see them here.
+                    No transactions for the given time range. <br>
+                    Select a different time range or <a href="{% url 'home' %}">purchase</a> some products for customers to see transactions here.
                 </tr>
             {% endfor %}
           </tbody>
