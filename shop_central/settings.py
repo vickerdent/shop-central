@@ -29,7 +29,7 @@ SECRET_KEY = get_random_secret_key()
 # SECURITY WARNING: don't run with debug turned on in production! 
 DEBUG = os.getenv("SET_DEBUG", False)
 
-ALLOWED_HOSTS = [os.getenv("AL_HOST", default="127.0.0.1")]
+ALLOWED_HOSTS = [os.getenv("AL_HOST", default="localhost")]
 
 
 # Application definition
